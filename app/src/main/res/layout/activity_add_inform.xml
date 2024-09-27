@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- 추가 등록 사항 -->
+    <TextView
+        android:id="@+id/AddInformTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="추가 등록 사항"
+        android:textSize="24sp"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"/>
+
+    <!-- 서비스 유형 선택 -->
+    <Spinner
+        android:layout_marginTop="50dp"
+        android:id="@+id/AddInformService"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/AddInformTitle"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 픽업 종류 선택 -->
+    <Spinner
+        android:layout_marginTop="20dp"
+        android:id="@+id/AddInformPickUp"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/AddInformService"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 층수 선택 -->
+    <Spinner
+        android:layout_marginTop="20dp"
+        android:id="@+id/AddInformFloor"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/AddInformPickUp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 테이블 수 선택 -->
+    <Spinner
+        android:layout_marginTop="20dp"
+        android:id="@+id/AddInformTable"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/AddInformFloor"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 회원가입 버튼 -->
+    <Button
+        android:layout_marginTop="50dp"
+        android:id="@+id/AddInformFinish"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="추가등록완료"
+        android:textColor="@color/black"
+
+        android:backgroundTint="@color/navy01"
+        android:layout_below="@id/AddInformTable"/>
+<!--    뒤로가기-->
+    <Button
+        android:id="@+id/AddInformBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/AddInformFinish"
+        android:layout_marginTop="7dp"
+        android:textColor="@color/black"
+        android:backgroundTint="@color/navy02"
+
+        android:text="뒤로가기" />
+</RelativeLayout>

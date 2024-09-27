@@ -1,0 +1,142 @@
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:id="@+id/main"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+
+    <!-- 소비자 초기화면 텍스트 -->
+    <TextView
+        android:id="@+id/consumer_initial_screen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="소비자 초기화면"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="50dp" />
+
+    <!-- 이메일 입력란 -->
+    <EditText
+        android:id="@+id/email_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="이메일 입력"
+        android:textSize="20sp"
+        app:layout_constraintTop_toBottomOf="@id/consumer_initial_screen"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp" />
+
+    <!-- 비밀번호 입력란 -->
+    <EditText
+        android:id="@+id/password_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="비밀번호 입력"
+        android:textSize="20sp"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/email_input"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginStart="32dp" />
+
+    <!-- 로그인 상태 유지 체크박스 -->
+    <CheckBox
+        android:id="@+id/remember_me_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="로그인 상태 유지"
+        app:layout_constraintTop_toBottomOf="@id/password_input"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="32dp" />
+
+    <!-- 이메일 찾기 TextView -->
+    <TextView
+        android:id="@+id/forgot_email_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="이메일 찾기"
+        app:layout_constraintTop_toTopOf="@id/remember_me_checkbox"
+        app:layout_constraintStart_toEndOf="@id/remember_me_checkbox"
+        android:layout_marginStart="50dp"
+        />
+
+    <!-- 비밀번호 찾기 TextView -->
+    <TextView
+        android:id="@+id/forgot_password_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="비밀번호 찾기"
+        app:layout_constraintTop_toTopOf="@id/remember_me_checkbox"
+        app:layout_constraintStart_toEndOf="@id/forgot_email_text"
+        android:layout_marginStart="8dp" />
+
+
+    <!-- 로그인 버튼 -->
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="로그인"
+        android:textColor="@color/black"
+        android:backgroundTint="@color/navy01"
+        app:layout_constraintTop_toBottomOf="@id/forgot_email_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
+
+    <!-- 회원가입 버튼 -->
+    <Button
+        android:id="@+id/sign_up_button"
+        android:backgroundTint="@color/navy02"
+        android:layout_width="0dp"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content"
+        android:text="회원가입"
+        app:layout_constraintTop_toBottomOf="@id/login_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
+
+    <!-- 관리자 버튼 (하단에 배치) -->
+    <Button
+        android:id="@+id/admin_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="관리자"
+        android:backgroundTint="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="24dp" />
+
+    <!-- 비회원 이용 버튼 (하단에 배치) -->
+    <Button
+        android:id="@+id/guest_use_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="비회원 이용"
+        android:textColor="@color/black"
+        android:backgroundTint="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="24dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

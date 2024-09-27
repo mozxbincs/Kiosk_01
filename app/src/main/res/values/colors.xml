@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="yellow" >#FFFEBD</color>
+    <color name="blue01" >#7EA1C4</color>
+    <color name="blue02" >#e6f5ff</color>
+    <color name="pink01" >#f9ecec</color>
+    <color name="pink02" >#ecc6c6</color>
+    <color name="beige01" >#dfd3c3</color>
+    <color name="beige02" >#c7b199</color>
+    <color name="beige03" >#6c5d53</color>
+    <color name="navy01" >#9191c8</color>
+    <color name="gray01" >#708090</color>
+    <color name="navy02" >#d3d3d3</color>
+
+</resources>

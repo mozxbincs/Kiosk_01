@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment"> <!-- 기본 시작 목적지로 설정 -->
+
+
+
+    <fragment
+        android:id="@+id/adminFragment"
+        android:name="com.example.kiosk02.admin.AdminFragment"
+        android:label="Admin Fragment" />
+    <action
+        android:id="@+id/action_to_adminFragment"
+        app:destination="@id/adminFragment" />
+    <fragment
+        android:id="@+id/findEmailAdminFragment"
+        android:name="com.example.kiosk02.admin.FindEmailAdminFragment"
+        android:label="이메일 찾기" />
+    <fragment
+        android:id="@+id/findPasswordAdminFragment"
+        android:name="com.example.kiosk02.admin.FindPasswordAdminFragment"
+        android:label="비밀번호 찾기" />
+    <fragment
+        android:id="@+id/resetPasswordAdminFragment"
+        android:name="com.example.kiosk02.admin.ResetPasswordAdminFragment"
+        android:label="비밀번호 재설정" />
+    <fragment
+        android:id="@+id/adminActivity"
+        android:name="com.example.kiosk02.admin.AdminActivity"
+        android:label="관리자 로그인" />
+    <fragment
+        android:id="@+id/adminSignFragment"
+        android:name="com.example.kiosk02.admin.AdminSignFragment"
+        android:label="관리자 회원가입" />
+    <fragment
+        android:id="@+id/addInformActivity"
+        android:name="com.example.kiosk02.admin.AddInformActivity"
+        android:label="추가정보등록" />
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.kiosk02.MainFragment"
+        android:label="Main Fragment" />
+    <action
+        android:id="@+id/action_to_mainFragment"
+        app:destination="@id/mainFragment" />
+
+
+
+    <action
+        android:id="@+id/action_to_find_email_admin"
+        app:destination="@id/findEmailAdminFragment" />
+    <action
+        android:id="@+id/action_to_find_password_admin"
+        app:destination="@id/findPasswordAdminFragment" />
+    <action
+        android:id="@+id/action_to_reset_password_admin"
+        app:destination="@id/resetPasswordAdminFragment" />
+    <action
+        android:id="@+id/action_to_admin_sign_fragment"
+        app:destination="@id/adminSignFragment" />
+
+    <action
+        android:id="@+id/action_to_admin_activity"
+        app:destination="@id/adminActivity" />
+
+
+    <action
+        android:id="@+id/action_to_add_inform_activity"
+        app:destination="@id/addInformActivity" />
+
+</navigation>
