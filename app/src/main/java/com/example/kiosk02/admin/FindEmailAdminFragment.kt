@@ -15,9 +15,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
     private lateinit var binding: ActivityFindEmailAdminBinding
-private lateinit var db: FirebaseFirestore
+    private lateinit var db: FirebaseFirestore
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        db = FirebaseFirestore.getInstance()
 
         binding = ActivityFindEmailAdminBinding.bind(view)
 
@@ -50,19 +52,21 @@ private lateinit var db: FirebaseFirestore
     }
 
     //입력한 사업자 등록번호와 전화번호를 기반으로 firestore 탐색
-    private fun searchAdminId(businessNumber: String, phoneNumber: String) {
-        db.collection("Admin")
+    private fun searchAdminId(businessNumber: String, tradeName: String) {
+        db.collection("admin")
             .whereEqualTo("businessnumber", businessNumber)
-            .whereEqualTo("phonenumber", phoneNumber)
+            .whereEqualTo("tradeName", tradeName)
             .get()
             .addOnSuccessListener { documnets ->
                 if (!documnets.isEmpty) {
                     for (document in documnets) {
-                        val adminId = document.getString("adminId")
+                        val adminId = document.getString("email")
 
-                        Snackbar.make(binding.root, "사용중인 아이디: ${adminId}", Snackbar.LENGTH_SHORT)
-                            .show()
-
+                        //다음 fragment로 이메일 전달
+                        val bundle = Bundle().apply{
+                            putString("adminEmail", adminId)
+                        }
+                        findNavController().navigate(R.id.action_to_show_email_admin,bundle)
                     }
                 } else {
                     Snackbar.make(binding.root, "일치하는 아이디를 찾을 수 없습니다.", Snackbar.LENGTH_SHORT)
