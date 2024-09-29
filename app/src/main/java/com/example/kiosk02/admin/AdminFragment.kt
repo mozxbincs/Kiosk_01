@@ -37,16 +37,17 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         binding.adminPasswordInput.addTextChangedListener(textWatcher)
 
         //sharedPreferences 초기화
-        sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         ediotr = sharedPreferences.edit()
 
         // 로그인 상태 유지 선택 시, 자동 로그인
         val isLoggedIn = sharedPreferences.getBoolean("stay_logged_in", false)
-        if(isLoggedIn){
-            val savedID = sharedPreferences.getString("user_id",null)
+        if (isLoggedIn) {
+            val savedID = sharedPreferences.getString("user_id", null)
             val savedPW = sharedPreferences.getString("user_pw", null)
 
-            if(savedID != null && savedPW != null){
+            if (savedID != null && savedPW != null) {
                 findNavController().navigate(R.id.action_to_admin_activity)
             }
         }
@@ -57,29 +58,34 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
             val email = binding.adminEmailInput.text.toString()
             val password = binding.adminPasswordInput.text.toString()
 
-            Firebase.auth.signInWithEmailAndPassword(email,password)
+
+            Firebase.auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener { task ->
-                    if(task.isSuccessful){
+                    if (task.isSuccessful) {
                         findNavController().navigate(R.id.action_to_admin_activity)
 
                         //로그인 상태 유지 체크박스가 선택 되어 있을 시,
-                        if(binding.adminRememberMeCheckbox.isChecked){
+                        if (binding.adminRememberMeCheckbox.isChecked) {
                             //로그인 성공 시, SharedPreferences에 로그인 상태 저장
-                            val sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+                            val sharedPreferences = requireContext().getSharedPreferences(
+                                "LoginPrefs",
+                                Context.MODE_PRIVATE
+                            )
                             val editor = sharedPreferences.edit()
                             editor.putBoolean("isLoggedIn", true)
                             editor.putString("user_email", email)
                             editor.putString("user_password", password)
                             editor.apply()
                         }
-                    }else{
+                    } else {
                         // 로그인 실패 시, 알림
-                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root, "로그인에 실패했습니다.", Snackbar.LENGTH_SHORT)
+                            .show()
                     }
 
                 }
-        }
 
+        }
 
 
         // 이메일 찾기 버튼 클릭 리스너 설정
@@ -107,11 +113,11 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         }
     }
 
-    private fun isEmailValid(email:String):Boolean{
+    private fun isEmailValid(email: String): Boolean {
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    private val textWatcher = object: TextWatcher{
+    private val textWatcher = object : TextWatcher {
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
         }
