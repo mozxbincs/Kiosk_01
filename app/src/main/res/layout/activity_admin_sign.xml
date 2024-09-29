@@ -57,6 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="사업자 등록번호"
+        android:inputType="number"
         android:layout_marginBottom="16dp"/>
 
     <EditText
@@ -71,6 +72,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="개업일"
+        android:inputType="number"
         android:layout_marginBottom="16dp"/>
 
     <TextView
