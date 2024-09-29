@@ -63,18 +63,18 @@ class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
                         val adminId = document.getString("email")
 
                         //다음 fragment로 이메일 전달
-                        val bundle = Bundle().apply{
+                        val bundle = Bundle().apply {
                             putString("adminEmail", adminId)
                         }
-                        findNavController().navigate(R.id.action_to_show_email_admin,bundle)
+                        findNavController().navigate(R.id.action_to_show_email_admin, bundle)
                     }
                 } else {
                     Snackbar.make(binding.root, "일치하는 아이디를 찾을 수 없습니다.", Snackbar.LENGTH_SHORT)
-                        .show();
+                        .show()
                 }
             }
             .addOnFailureListener { exception ->
-                Snackbar.make(binding.root, "일치하는 관리자를 찾을 수 없습니다.", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(binding.root, "일치하는 관리자를 찾을 수 없습니다.", Snackbar.LENGTH_SHORT).show()
             }
     }
 
