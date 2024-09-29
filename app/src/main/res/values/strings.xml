@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">kiosk02</string>
+    <string name="warning_hangul">한글만 입력하세요!</string>
+    <string name="warning_email">이메일 형식에 맞게 입력하세요!</string>
+    <string name="warning_password">문자, 특수문자, 숫자를 조합하여 입력하세요!</string>
+    <string name="warning_businessnumber">10자리까지 입력하세요!</string>
+    <string name="warning_startday">8자리까지 입력하세요!</string>
 </resources>
