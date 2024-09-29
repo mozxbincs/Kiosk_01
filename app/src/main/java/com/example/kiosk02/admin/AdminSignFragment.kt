@@ -174,9 +174,9 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
     }
 
     private fun isAllInputsValid(): Boolean {
-        val WarningHidden = binding.warningTextView.visibility == View.GONE
+        val isWarningHidden = binding.warningTextView.visibility == View.GONE
 
-        return WarningHidden
+        return isWarningHidden
     }
     /*
     private fun checkEmailInFirebase(email: String) {
