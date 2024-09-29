@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/mainFragment"> <!-- 기본 시작 목적지로 설정 -->
-
 
 
     <fragment
         android:id="@+id/adminFragment"
         android:name="com.example.kiosk02.admin.AdminFragment"
-        android:label="Admin Fragment" />
+        android:label="Admin Fragment"
+        tools:layout="@layout/fragment_admin" />
     <action
         android:id="@+id/action_to_adminFragment"
         app:destination="@id/adminFragment" />
@@ -41,12 +42,17 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.example.kiosk02.MainFragment"
-        android:label="Main Fragment" />
+        android:label="Main Fragment"
+        tools:layout="@layout/fragment_main" />
+
+    <fragment
+        android:id="@+id/showEmailAdminFragment"
+        android:name="com.example.kiosk02.admin.ShowEmailAdminFragment"
+        android:label="ShowEmailAdminFragment" />
+
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
-
-
 
     <action
         android:id="@+id/action_to_find_email_admin"
@@ -65,9 +71,13 @@
         android:id="@+id/action_to_admin_activity"
         app:destination="@id/adminActivity" />
 
-
     <action
         android:id="@+id/action_to_add_inform_activity"
         app:destination="@id/addInformActivity" />
+
+    <action
+        android:id="@+id/action_to_show_email_admin"
+        app:destination="@id/showEmailAdminFragment" />
+
 
 </navigation>

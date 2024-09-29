@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">kiosk02</string>
+    <string name="showAdminEmailAddress">사용중인 이메일은 \n %s 입니다.</string>
 </resources>
