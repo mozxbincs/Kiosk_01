@@ -1,6 +1,7 @@
 package com.example.kiosk02.admin
 
 import android.os.Bundle
+import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -63,7 +64,7 @@ class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
     }
 
     private val businessnumberPatten = "^\\d{10}\$".toRegex()
-    private val phonnumberPatten = "^01([0|1|6|7|8|9])\\d{3,4}\\d{4}\$".toRegex()
+    private val phonnumberPatten = "^01[0-9]{8,9}\$".toRegex()
 
     private val textWatcher = object : TextWatcher {
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -105,10 +106,10 @@ class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
     }
 
     //입력한 사업자 등록번호와 전화번호를 기반으로 firestore 탐색
-    private fun searchAdminId(businessNumber: String, tradeName: String) {
+    private fun searchAdminId(businessNumber: String, phoneNumber: String) {
         db.collection("admin")
             .whereEqualTo("businessnumber", businessNumber)
-            .whereEqualTo("tradeName", tradeName)
+            .whereEqualTo("phonnumber", phoneNumber)
             .get()
             .addOnSuccessListener { documnets ->
                 if (!documnets.isEmpty) {

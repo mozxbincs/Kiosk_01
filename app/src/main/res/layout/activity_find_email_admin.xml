@@ -63,9 +63,7 @@
         android:drawableLeft="@drawable/baseline_error_outline_24"
         android:drawablePadding="5dp"
         android:drawableTint="#F20505"
-        android:visibility="gone"
-
-        />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/AdminFindEmailButton"
