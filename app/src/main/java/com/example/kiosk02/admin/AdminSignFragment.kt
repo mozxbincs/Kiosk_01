@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
 import com.example.kiosk02.databinding.ActivityAdminSignBinding
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import retrofit2.Call
@@ -43,13 +44,29 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
         view.findViewById<Button>(R.id.registerBackButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
         }
+
+        view.findViewById<Button>(R.id.businessNumberButton).setOnClickListener {
+            findBusinessNumber(binding.businessNumberEditText.text.toString())
+        }
     }
 
-    private fun registerUser(name: String, email: String, password: String, businessname: String, businessnumber: String, address: String) {
+    private fun findBusinessNumber(businessNumber: String) {
+        firestore.collection("admin")
+            .whereEqualTo("businessnumber", businessNumber)
+            .get()
+            .addOnSuccessListener { document ->
+                Snackbar.make(binding.root, "사용중인 사업자번호가 있습니다.", Snackbar.LENGTH_SHORT).show()
+                if (document.isEmpty) {
+
+                }
+            }
+    }
+
+    private fun registerUser(name: String, email: String, password: String, phonnumber: String ,businessname: String, businessnumber: String, address: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    saveAdminDataToFirestore(name, email, password, businessname, businessnumber, address)
+                    saveAdminDataToFirestore(name, email, phonnumber, businessname, businessnumber, address)
                     findNavController().navigate(R.id.action_to_admin_sign_fragment)
                 } else {
                     Toast.makeText(context, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -57,10 +74,11 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             }
     }
 
-    private fun saveAdminDataToFirestore(name: String, email: String, password: String, businessname: String, businessnumber: String, address: String) {
+    private fun saveAdminDataToFirestore(name: String, email: String, phonnumber: String, businessname: String, businessnumber: String, address: String) {
         val admin = AdminData(
             name = name,
             email = email,
+            phonnumber = phonnumber,
             tradeName = businessname,
             businessnumber = businessnumber,
             address = address
@@ -70,6 +88,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             .set(admin)
             .addOnSuccessListener {
                 Toast.makeText(context, "회원가입 완료", Toast.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.action_to_add_inform_activity)
             }.addOnFailureListener {
                 Toast.makeText(context, "데이터 저장 실패", Toast.LENGTH_SHORT).show()
             }
@@ -86,19 +105,19 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                 if (response.isSuccessful) {
                     val businessData = response.body()?.data?.firstOrNull()
                     if (businessData?.b_stt_cd == "01") {
-                        Toast.makeText(requireContext(), "등록된 사업자 번호", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "사용 가능한 사업자 번호", Toast.LENGTH_SHORT).show()
                         businessNumberCk = true
 
                         // 사업자 번호가 유효하면 회원가입 프로세스 진행
                         val name = binding.nameEditText.text.toString()
                         val email = binding.emailEditText.text.toString()
                         val password = binding.passwordEditText.text.toString()
-                        val confirmPassword = binding.confirmPasswordEditText.text.toString()
-                        val businessname = binding.businessNumberEditText.text.toString()
+                        val phonnumber = binding.phonNumberEditText.text.toString()
+                        val businessname = binding.businessNameEditText.text.toString()
                         val businessnumber = binding.businessNumberEditText.text.toString()
                         val address = binding.addressEditText.text.toString()
 
-                        registerUser(name, email, password, businessname, businessnumber, address)
+                        registerUser(name, email, password, phonnumber, businessname, businessnumber, address)
                     } else {
                         Toast.makeText(requireContext(), "유효하지 않은 등록번호", Toast.LENGTH_SHORT).show()
                     }
