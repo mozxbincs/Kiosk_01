@@ -8,15 +8,22 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
 import com.example.kiosk02.databinding.ActivityAddInformBinding
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
     private lateinit var firestore: FirebaseFirestore
+    private lateinit var auth: FirebaseAuth
     private lateinit var addInformFinishButton: Button
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        firestore = FirebaseFirestore.getInstance()
+        auth = FirebaseAuth.getInstance()
 
         // Spinner 항목 데이터 (첫 번째 값은 설명)
         val services = arrayOf("서비스유형", "음식점", "카페", "제과점", "바")
@@ -55,11 +62,40 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
         // 회원가입 완료 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.AddInformFinish).setOnClickListener {
-            findNavController().navigate(R.id.action_to_adminFragment) // 관리자 메인 화면으로 이동
+            val user = auth.currentUser
+            val email = user?.email
+
+            val serviceType = serviceSpinner.selectedItem.toString()
+            val pickUpType = pickUpSpinner.selectedItem.toString()
+            val floorCount = floorSpinner.selectedItem.toString()
+            val tableCount = tableSpinner.selectedItem.toString()
+
+            if(email != null) {
+                updateFirestore(email, serviceType, pickUpType, floorCount, tableCount)
+            }
         }
         view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_sign_fragment) // 추가등록 전으로 이동
         }
+    }
+
+    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, tableCount: String) {
+        val storeInform = hashMapOf<String, Any>(
+            "serviceType" to serviceType,
+            "pickUpType" to pickUpType,
+            "floorCount" to floorCount,
+            "tableCount" to tableCount
+        )
+
+        firestore.collection("admin")
+            .document(email)
+            .update(storeInform)
+            .addOnSuccessListener {
+                Snackbar.make(requireView(), "가게 정보 저장 완료", Snackbar.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.adminActivity)
+            }.addOnFailureListener { exception ->
+                Snackbar.make(requireView(), "정보 저장 실패 ${exception.message}", Snackbar.LENGTH_SHORT).show()
+            }
     }
 
     //동작 감지후 모두 선택되었을때 버튼 활성화
