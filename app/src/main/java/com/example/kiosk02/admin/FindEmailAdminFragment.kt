@@ -29,7 +29,7 @@ class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
 
         binding = ActivityFindEmailAdminBinding.bind(view)
 
-
+        //예외처리 완료
         binding.AdminFindEmailButton.isEnabled = false
         binding.AdminBusinessNumEditText.addTextChangedListener(textWatcher)
         binding.AdminPhoneEditText.addTextChangedListener(textWatcher)
