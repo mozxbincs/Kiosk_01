@@ -240,7 +240,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             .set(admin)
             .addOnSuccessListener {
                 Toast.makeText(context, "회원가입 완료", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_to_add_inform_activity)
+                findNavController().navigate(R.id.addInformActivity)
             }.addOnFailureListener {
                 Toast.makeText(context, "데이터 저장 실패", Toast.LENGTH_SHORT).show()
             }
