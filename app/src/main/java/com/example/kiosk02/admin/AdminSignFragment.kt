@@ -39,10 +39,10 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             checkBusinessNumber(businessNumber)
         }
 
-        // 관리자 회원가입 전 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.registerBackButton).setOnClickListener {
-            findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
-        }
+//        // 관리자 회원가입 전 버튼 클릭 리스너 설정
+//        view.findViewById<Button>(R.id.registerBackButton).setOnClickListener {
+//            findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
+//        }
     }
 
     private fun registerUser(name: String, email: String, password: String, businessname: String, businessnumber: String, address: String) {
@@ -50,7 +50,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     saveAdminDataToFirestore(name, email, password, businessname, businessnumber, address)
-                    findNavController().navigate(R.id.action_to_admin_sign_fragment)
+                    findNavController().navigate(R.id.action_to_adminFragment)
                 } else {
                     Toast.makeText(context, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -94,7 +94,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                         val email = binding.emailEditText.text.toString()
                         val password = binding.passwordEditText.text.toString()
                         val confirmPassword = binding.confirmPasswordEditText.text.toString()
-                        val businessname = binding.businessNumberEditText.text.toString()
+                        val businessname = binding.businessNameEditText.text.toString()
                         val businessnumber = binding.businessNumberEditText.text.toString()
                         val address = binding.addressEditText.text.toString()
 
