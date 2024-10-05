@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical">
+
+<!-- 층 선택 및 테이블 추가/제거 버튼 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="[층 선택]"
+        android:layout_gravity="center_vertical"/>
+
+    <Spinner
+        android:id="@+id/floor_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"/>
+
+    <Button
+        android:id="@+id/add_table_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="테이블 추가"/>
+
+    <Button
+        android:id="@+id/remove_table_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="테이블 제거"/>
+</LinearLayout>
+
+<!-- 테이블 선택 및 수량 입력 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1인 테이블"/>
+
+    <EditText
+        android:id="@+id/one_seater_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="수량 입력"
+        android:inputType="number"/>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <Button
+        android:id="@+id/add_one_seater_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="추가"/>
+
+    <Button
+        android:id="@+id/delete_table_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="삭제" />
+</LinearLayout>
+
+    <!-- 여기에 추가된 테이블 목록 -->
+    <LinearLayout
+        android:id="@+id/table_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"/>
+</LinearLayout>
+
+<!-- 테이블 배치 -->
+<GridLayout
+    android:id="@+id/table_grid"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:columnCount="4"
+    android:rowCount="3"
+    android:padding="8dp"
+    android:background="#f0f0f0"/>
+
+<!-- 층수 추가 및 업데이트 버튼 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/add_floor_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="층수 추가 (+)"/>
+
+    <Button
+        android:id="@+id/remove_floor_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="층수 제거 (-)"/>
+
+    <Button
+        android:id="@+id/update_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="업데이트"/>
+</LinearLayout>
+</LinearLayout>

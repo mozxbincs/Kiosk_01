@@ -79,5 +79,12 @@
         android:id="@+id/action_to_show_email_admin"
         app:destination="@id/showEmailAdminFragment" />
 
+    <fragment
+        android:id="@+id/tableEditFragment"
+        android:name="com.example.kiosk02.admin.TableManagementEditFragment"
+        android:label="ShowEmailAdminFragment" />
+    <action
+        android:id="@+id/action_to_table_Edit_Fragment"
+        app:destination="@id/tableEditFragment" />
 
 </navigation>

@@ -18,6 +18,10 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<Button>(R.id.BackAdminActivityButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
         }
+        //테이블 레이아웃 클릭시 창전환
+        view.findViewById<Button>(R.id.tableLayoutButton).setOnClickListener {
+            findNavController().navigate(R.id.action_to_table_Edit_Fragment) // 테이블 편집창으로 이동
+        }
     }
 }
 
