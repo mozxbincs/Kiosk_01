@@ -45,7 +45,8 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             selectedTable?.let { tableToRemove ->
                 // FrameLayout에서 선택된 테이블 제거
                 removeTableFromFrame(tableToRemove) // tableFrame에서 테이블 삭제
-                droppedTables.remove(tableToRemove) // 목록에서도 제거
+                // 추가된 테이블 목록에서 제거
+                addedTables.remove(tableToRemove)
                 selectedTable = null // 선택 해제
                 removeTableButton.visibility = View.GONE // 삭제 버튼 숨기기
                 Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
@@ -53,6 +54,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
+
 
 
 
@@ -129,7 +131,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
     // 수량 입력 다이얼로그를 표시하는 함수 (기타 테이블)
     private fun showQuantityPeopleInputDialog() {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("테이블 추가")
+        builder.setTitle("기타 테이블 추가")
 
         // 레이아웃 생성
         val layout = LinearLayout(requireContext()).apply {
@@ -176,11 +178,23 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         builder.show()
     }
 
+//    // FrameLayout에서 선택된 테이블을 제거하는 함수
+//    private fun removeTableFromFrame(table: View) {
+//        val owner = table.parent as? ViewGroup
+//        owner?.removeView(table) // FrameLayout에서 테이블 제거
+//    }
     // FrameLayout에서 선택된 테이블을 제거하는 함수
     private fun removeTableFromFrame(table: View) {
         val owner = table.parent as? ViewGroup
         owner?.removeView(table) // FrameLayout에서 테이블 제거
+
+        // droppedTables에서도 제거
+        droppedTables.remove(table)
+
+        // addedTables에서도 제거
+        addedTables.remove(table)
     }
+
 
     private fun canAddMoreTablesToList(count: Int): Boolean {
         // tableList에 최대 6개까지 추가 가능
