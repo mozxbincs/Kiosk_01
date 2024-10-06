@@ -18,6 +18,10 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<Button>(R.id.BackAdminActivityButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
         }
+
+        view.findViewById<Button>(R.id.additionalRegistrationButton).setOnClickListener {
+            findNavController().navigate(R.id.addInformActivity)
+        }
     }
 }
 
