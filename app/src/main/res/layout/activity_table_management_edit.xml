@@ -11,12 +11,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp">
-
+        <!-- 선택한 층수 표시 TextView -->
         <TextView
+            android:id="@+id/selected_floor_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="[층 선택]"
             android:layout_gravity="center_vertical"/>
+
 
         <Spinner
             android:id="@+id/floor_spinner"
@@ -28,14 +30,15 @@
             android:id="@+id/add_floor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="층수 추가 (+)"/>
+            android:text=" (+)"/>
 
         <Button
             android:id="@+id/remove_floor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="층수 제거 (-)"/>
+            android:text="(-)"/>
     </LinearLayout>
+
 
     <!-- 테이블 선택 -->
     <LinearLayout

@@ -9,15 +9,20 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.kiosk02.R
+import com.google.firebase.auth.FirebaseAuth
+
+import com.google.firebase.firestore.FirebaseFirestore
 
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
@@ -27,10 +32,22 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
     private var droppedTables: MutableList<View> = mutableListOf() // 드롭된 테이블 목록
     private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
     private var selectedTable: View? = null // 선택된 테이블
+    private val db = FirebaseFirestore.getInstance() // Firestore 인스턴스
+
+    //
+    private lateinit var floorSpinner: Spinner
+    private lateinit var floorTextView: TextView
+    private lateinit var addFloorButton: Button
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        floorSpinner = view.findViewById(R.id.floor_spinner)
+
+        // Firebase Firestore에서 floorCount 데이터를 불러옵니다.
+        loadFloorCountFromFirestore()
+
+        //
         tableList = view.findViewById(R.id.table_list)
         tableFrame = view.findViewById(R.id.table_frame)
         removeTableButton = view.findViewById(R.id.remove_table_button)
@@ -54,9 +71,6 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
-
-
-
 
 
         // 1인 테이블 TextView 클릭 이벤트
@@ -95,7 +109,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                 addedTables.removeAt(addedTables.size - 1) // 목록에서도 제거
                 Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             }
-     }
+        }
 //        view.findViewById<Button>(R.id.remove_table_button).setOnClickListener {
 //
 //
@@ -105,6 +119,65 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
         tableFrame.setOnDragListener(dragListener)
     }
+
+    //파이어베이스 연동
+// Firestore에서 floorCount 필드를 가져와 Spinner에 적용하는 함수
+    private fun loadFloorCountFromFirestore() {
+        // Firestore에서 로그인한 사용자의 이메일을 사용하여 데이터를 가져옵니다.
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val docRef = db.collection("admin").document(userEmail)
+
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    // 'floorCount' 필드를 문자열로 가져오고 이를 숫자로 변환합니다.
+                    val floorCountStr = document.getString("floorCount")
+                    floorCountStr?.let {
+                        val floorCount = it.toIntOrNull() // 문자열을 숫자로 변환
+                        if (floorCount != null && floorCount > 0) {
+                            // Spinner에 층수 값을 설정합니다.
+                            setFloorSpinnerValues(floorCount)
+                        } else {
+                            // floorCount가 잘못된 경우 오류 메시지 표시
+                            Toast.makeText(
+                                requireContext(),
+                                "Invalid floor count",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } ?: run {
+                        // floorCount 필드가 없는 경우 메시지 표시
+                        Toast.makeText(requireContext(), "No floor count found", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                } else {
+                    // 문서가 존재하지 않는 경우 메시지 표시
+                    Toast.makeText(requireContext(), "Document does not exist", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+            .addOnFailureListener { e ->
+                // Firestore에서 데이터를 가져오는 데 실패한 경우
+                Toast.makeText(
+                    requireContext(),
+                    "Failed to load data: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    // floorCount 값을 바탕으로 Spinner에 값을 설정하는 함수
+    private fun setFloorSpinnerValues(floorCount: Int) {
+        // 1부터 floorCount까지의 숫자를 배열로 만듭니다.
+        val floorOptions = (1..floorCount).map { String.format("%d층", it) }.toTypedArray()
+
+        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        floorSpinner.adapter = adapter
+    }
+
 
     // 수량 입력 다이얼로그를 표시하는 함수
     private fun showQuantityInputDialog(seaterType: String) {
@@ -178,7 +251,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         builder.show()
     }
 
-//    // FrameLayout에서 선택된 테이블을 제거하는 함수
+    // FrameLayout에서 선택된 테이블을 제거하는 함수
 //    private fun removeTableFromFrame(table: View) {
 //        val owner = table.parent as? ViewGroup
 //        owner?.removeView(table) // FrameLayout에서 테이블 제거
@@ -201,7 +274,11 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         if (tableList.childCount + count <= maxTablesInList) {
             return true
         } else {
-            Toast.makeText(requireContext(), "이 공간에 추가될 수 있는 테이블은 최대 $maxTablesInList 개입니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "이 공간에 추가될 수 있는 테이블은 최대 $maxTablesInList 개입니다.",
+                Toast.LENGTH_SHORT
+            ).show()
             return false
         }
     }
@@ -248,6 +325,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             DragEvent.ACTION_DRAG_STARTED -> {
                 true
             }
+
             DragEvent.ACTION_DROP -> {
                 draggedView?.let { view ->
                     // 뷰를 소유자에서 제거
@@ -258,7 +336,8 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                     val destination = v as FrameLayout
 
                     // 드롭 시 고정 위치 설정
-                    val layoutParams = FrameLayout.LayoutParams(view.layoutParams.width, view.layoutParams.height)
+                    val layoutParams =
+                        FrameLayout.LayoutParams(view.layoutParams.width, view.layoutParams.height)
                     layoutParams.leftMargin = (event.x - (view.layoutParams.width / 2)).toInt()
                     layoutParams.topMargin = (event.y - (view.layoutParams.height / 2)).toInt()
                     destination.addView(view, layoutParams)
@@ -269,20 +348,24 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                     view.setOnClickListener {
                         selectedTable = view
                         removeTableButton.visibility = View.VISIBLE // 삭제 버튼 보이기
-                }}
-                true
-            }
-            DragEvent.ACTION_DRAG_ENDED -> {
-                if (event.result) {
-                    Toast.makeText(requireContext(), "드롭 성공", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(requireContext(), "드롭 실패", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 true
             }
+
+            DragEvent.ACTION_DRAG_ENDED -> {
+//                if (event.result) {
+//                    Toast.makeText(requireContext(), "드롭 성공", Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Toast.makeText(requireContext(), "드롭 실패", Toast.LENGTH_SHORT).show()
+//                }
+                true
+            }
+
             else -> false
         }
     }
+
     // tableList에서 테이블 수량 줄이는 함수
     private fun removeTableFromList(tableType: String) {
         for (i in 0 until tableList.childCount) {
@@ -295,6 +378,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             }
         }
     }
+
     // 테이블 수량을 tableList에 다시 추가하는 함수
     private fun addTableToListBack(tableType: String) {
         val builder = AlertDialog.Builder(requireContext())
@@ -316,4 +400,4 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         builder.show()
     }
 
-    }
+}

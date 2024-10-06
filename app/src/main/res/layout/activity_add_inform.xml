@@ -43,13 +43,13 @@
         android:layout_marginBottom="16dp" />
 
     <!-- 테이블 수 선택 -->
-    <Spinner
-        android:layout_marginTop="20dp"
-        android:id="@+id/AddInformTable"
-        android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:layout_below="@id/AddInformFloor"
-        android:layout_marginBottom="16dp" />
+<!--    <Spinner-->
+<!--        android:layout_marginTop="20dp"-->
+<!--        android:id="@+id/AddInformTable"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="45dp"-->
+<!--        android:layout_below="@id/AddInformFloor"-->
+<!--        android:layout_marginBottom="16dp" />-->
 
     <!-- 회원가입 버튼 -->
     <Button
@@ -62,7 +62,7 @@
         android:textColor="@color/black"
 
         android:backgroundTint="@color/navy01"
-        android:layout_below="@id/AddInformTable"/>
+        android:layout_below="@id/AddInformFloor"/>
 <!--    뒤로가기-->
     <Button
         android:id="@+id/AddInformBack"

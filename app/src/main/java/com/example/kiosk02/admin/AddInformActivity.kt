@@ -28,8 +28,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         // Spinner 항목 데이터 (첫 번째 값은 설명)
         val services = arrayOf("서비스유형", "음식점", "카페", "제과점", "바")
         val pickUps = arrayOf("픽업", "to go", "for here")
-        val floors = arrayOf("층수") + (1..5).map { String.format("%d개", it) }.toTypedArray()
-        val tables = arrayOf("테이블 갯수") + (1..100).map { String.format("%d개", it) }.toTypedArray()
+        val floors = arrayOf("층수") + (1..5).map { it.toString() }.toTypedArray()
+
+
         // val floors = arrayOf("층수", "1층", "2층", "3층","4층")
         // "테이블 갯수"를 포함하고, 1~100까지 숫자를 배열로 생성
 
@@ -40,13 +41,12 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val serviceAdapter = createAdapter(services)
         val pickUpAdapter = createAdapter(pickUps)
         val floorAdapter = createAdapter(floors)
-        val tableAdapter = createAdapter(tables)
+
 
         // 각 Spinner에 어댑터 설정
         val serviceSpinner = view.findViewById<Spinner>(R.id.AddInformService)
         val pickUpSpinner = view.findViewById<Spinner>(R.id.AddInformPickUp)
         val floorSpinner = view.findViewById<Spinner>(R.id.AddInformFloor)
-        val tableSpinner = view.findViewById<Spinner>(R.id.AddInformTable)
 
         //AddInformFinish Button 초기화
         addInformFinishButton = view.findViewById(R.id.AddInformFinish)
@@ -55,10 +55,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         serviceSpinner.adapter = serviceAdapter
         pickUpSpinner.adapter = pickUpAdapter
         floorSpinner.adapter = floorAdapter
-        tableSpinner.adapter = tableAdapter
 
         //spinner 동작감지 호출
-        checkAllSpinnersSelected(serviceSpinner, pickUpSpinner, floorSpinner, tableSpinner)
+        checkAllSpinnersSelected(serviceSpinner, pickUpSpinner, floorSpinner)
 
         // 회원가입 완료 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.AddInformFinish).setOnClickListener {
@@ -68,10 +67,10 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
             val serviceType = serviceSpinner.selectedItem.toString()
             val pickUpType = pickUpSpinner.selectedItem.toString()
             val floorCount = floorSpinner.selectedItem.toString()
-            val tableCount = tableSpinner.selectedItem.toString()
+
 
             if(email != null) {
-                updateFirestore(email, serviceType, pickUpType, floorCount, tableCount)
+                updateFirestore(email, serviceType, pickUpType, floorCount)
             }
         }
         view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
@@ -79,12 +78,12 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         }
     }
 
-    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, tableCount: String) {
+    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String) {
         val storeInform = hashMapOf<String, Any>(
             "serviceType" to serviceType,
             "pickUpType" to pickUpType,
             "floorCount" to floorCount,
-            "tableCount" to tableCount
+
         )
 
         firestore.collection("admin")
@@ -99,13 +98,13 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
     }
 
     //동작 감지후 모두 선택되었을때 버튼 활성화
-    private fun checkAllSpinnersSelected(service: Spinner, pickUp: Spinner, floor: Spinner, table: Spinner) {
+    private fun checkAllSpinnersSelected(service: Spinner, pickUp: Spinner, floor: Spinner) {
         val spinnerListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
                 val isAllSelected = service.selectedItemPosition != 0 &&
                         pickUp.selectedItemPosition != 0 &&
-                        floor.selectedItemPosition != 0 &&
-                        table.selectedItemPosition != 0
+                        floor.selectedItemPosition != 0
+
 
                 addInformFinishButton.isEnabled = isAllSelected
             }
@@ -116,7 +115,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         service.onItemSelectedListener = spinnerListener
         pickUp.onItemSelectedListener = spinnerListener
         floor.onItemSelectedListener = spinnerListener
-        table.onItemSelectedListener = spinnerListener
+//        table.onItemSelectedListener = spinnerListener
     }
 
 
