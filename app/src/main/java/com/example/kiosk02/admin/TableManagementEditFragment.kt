@@ -22,16 +22,40 @@ import com.example.kiosk02.R
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
     private lateinit var tableFrame: FrameLayout
-
+    private lateinit var removeTableButton: Button
     private var addedTables: MutableList<View> = mutableListOf() // 추가된 테이블 목록
     private var droppedTables: MutableList<View> = mutableListOf() // 드롭된 테이블 목록
     private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
+    private var selectedTable: View? = null // 선택된 테이블
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         tableList = view.findViewById(R.id.table_list)
         tableFrame = view.findViewById(R.id.table_frame)
+        removeTableButton = view.findViewById(R.id.remove_table_button)
+
+        removeTableButton.visibility = View.GONE
+
+        // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
+        tableFrame.setOnDragListener(dragListener)
+
+        // 삭제 버튼 클릭 이벤트
+        removeTableButton.setOnClickListener {
+            selectedTable?.let { tableToRemove ->
+                // FrameLayout에서 선택된 테이블 제거
+                removeTableFromFrame(tableToRemove) // tableFrame에서 테이블 삭제
+                droppedTables.remove(tableToRemove) // 목록에서도 제거
+                selectedTable = null // 선택 해제
+                removeTableButton.visibility = View.GONE // 삭제 버튼 숨기기
+                Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            } ?: run {
+                Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+
+
 
         // 1인 테이블 TextView 클릭 이벤트
         view.findViewById<TextView>(R.id.one_seater_text).setOnClickListener {
@@ -69,7 +93,12 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                 addedTables.removeAt(addedTables.size - 1) // 목록에서도 제거
                 Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             }
-        }
+     }
+//        view.findViewById<Button>(R.id.remove_table_button).setOnClickListener {
+//
+//
+//        }
+
 
         // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
         tableFrame.setOnDragListener(dragListener)
@@ -146,6 +175,13 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         // 다이얼로그 표시
         builder.show()
     }
+
+    // FrameLayout에서 선택된 테이블을 제거하는 함수
+    private fun removeTableFromFrame(table: View) {
+        val owner = table.parent as? ViewGroup
+        owner?.removeView(table) // FrameLayout에서 테이블 제거
+    }
+
     private fun canAddMoreTablesToList(count: Int): Boolean {
         // tableList에 최대 6개까지 추가 가능
         if (tableList.childCount + count <= maxTablesInList) {
@@ -215,7 +251,11 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
 
                     // 드롭된 테이블 목록에 추가
                     droppedTables.add(view)
-                }
+                    //테이블 클릭 리스너 추가
+                    view.setOnClickListener {
+                        selectedTable = view
+                        removeTableButton.visibility = View.VISIBLE // 삭제 버튼 보이기
+                }}
                 true
             }
             DragEvent.ACTION_DRAG_ENDED -> {
