@@ -96,7 +96,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                         val email = binding.emailEditText.text.toString()
                         val password = binding.passwordEditText.text.toString()
                         val confirmPassword = binding.confirmPasswordEditText.text.toString()
-                        val businessname = binding.businessNumberEditText.text.toString()
+                        val businessname = binding.businessNameEditText.text.toString()
                         val businessnumber = binding.businessNumberEditText.text.toString()
                         val address = binding.addressEditText.text.toString()
 
