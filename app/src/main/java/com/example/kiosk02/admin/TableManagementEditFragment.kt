@@ -22,10 +22,7 @@ import com.example.kiosk02.R
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
     private lateinit var tableGrid: GridLayout
-    private lateinit var SeaterCountEditText: EditText
-    private lateinit var otherSeaterLayout: LinearLayout
-    private lateinit var customSeaterCountInput: EditText
-    private lateinit var customTableCountInput: EditText
+
 
     private var addedTables: MutableList<View> = mutableListOf() // 추가된 테이블 목록
 
