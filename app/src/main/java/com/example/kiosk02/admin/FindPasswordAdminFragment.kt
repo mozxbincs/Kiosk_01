@@ -98,7 +98,7 @@ class FindPasswordAdminFragment : Fragment(R.layout.activity_find_password_admin
                 if (task.isSuccessful) {
                     if (!task.result.isEmpty) {
                         for (document in task.result) {
-                            val firestorePhone = document.getString("businessnumber")
+                            val firestorePhone = document.getString("phonnumber")
                             if (firestorePhone == inputPhoneNum) {
                                 // 전화번호가 일치하면 비밀번호 재설정 이메일 전송
                                 auth.sendPasswordResetEmail(inputEmail)
