@@ -11,7 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.GridLayout
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -21,23 +21,17 @@ import com.example.kiosk02.R
 
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
-    private lateinit var tableGrid: GridLayout
-
+    private lateinit var tableFrame: FrameLayout
 
     private var addedTables: MutableList<View> = mutableListOf() // 추가된 테이블 목록
+    private var droppedTables: MutableList<View> = mutableListOf() // 드롭된 테이블 목록
+    private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         tableList = view.findViewById(R.id.table_list)
-        tableGrid = view.findViewById(R.id.table_grid)
-
-
-        // 기타 테이블 관련 UI 요소 초기화
-
-
-
-
+        tableFrame = view.findViewById(R.id.table_frame)
 
         // 1인 테이블 TextView 클릭 이벤트
         view.findViewById<TextView>(R.id.one_seater_text).setOnClickListener {
@@ -61,18 +55,15 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
 
         // 기타 테이블 클릭 리스너
         view.findViewById<TextView>(R.id.other_seater_text).setOnClickListener {
-
             showQuantityPeopleInputDialog()
         }
-
-
 
         // 삭제 버튼 클릭 이벤트
         view.findViewById<Button>(R.id.delete_table_button).setOnClickListener {
             if (addedTables.isEmpty()) {
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             } else {
-                // 마지막으로 추가된 테이블 삭제
+                // 마지막으로 생성된 테이블 삭제
                 val tableToRemove = addedTables.last()
                 tableList.removeView(tableToRemove)
                 addedTables.removeAt(addedTables.size - 1) // 목록에서도 제거
@@ -80,8 +71,8 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             }
         }
 
-        // 드롭할 수 있는 그리드 레이아웃에 드롭 리스너 추가
-        tableGrid.setOnDragListener(dragListener)
+        // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
+        tableFrame.setOnDragListener(dragListener)
     }
 
     // 수량 입력 다이얼로그를 표시하는 함수
@@ -96,22 +87,17 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
 
         builder.setPositiveButton("확인") { dialog, which ->
             val count = input.text.toString().toIntOrNull() ?: 0
-            if (addedTables.size + count > 6) {
-                Toast.makeText(requireContext(), "전체 테이블 수는 최대 6개입니다.", Toast.LENGTH_SHORT).show()
-            } else if (count > 4) {
-                Toast.makeText(requireContext(), "최대 4개까지 추가 가능합니다.", Toast.LENGTH_SHORT).show()
-            } else {
+            if (canAddMoreTablesToList(count)) { // 추가 가능한 테이블 수 체크
                 addTablesToList(count, seaterType) // 테이블 추가
             }
+
         }
 
         builder.setNegativeButton("취소") { dialog, which -> dialog.cancel() }
-
         builder.show()
     }
 
-
-    // 수량 입력 다이얼로그를 표시하는 함수
+    // 수량 입력 다이얼로그를 표시하는 함수 (기타 테이블)
     private fun showQuantityPeopleInputDialog() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle("테이블 추가")
@@ -144,8 +130,11 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             val seaterCount = seaterInput.text.toString().toIntOrNull() ?: 0
             val quantityCount = quantityInput.text.toString().toIntOrNull() ?: 0
 
-            if (seaterCount in 5..50 && quantityCount > 0) {
-                addTablesToList(quantityCount, seaterCount.toString())
+            if (seaterCount in 5..20 && quantityCount > 0) {
+                if (canAddMoreTablesToList(quantityCount)) { // 추가 가능한 테이블 수 체크
+                    addTablesToList(quantityCount, seaterCount.toString())
+                }
+
             } else {
                 Toast.makeText(requireContext(), "올바른 숫자를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
@@ -157,7 +146,15 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         // 다이얼로그 표시
         builder.show()
     }
-
+    private fun canAddMoreTablesToList(count: Int): Boolean {
+        // tableList에 최대 6개까지 추가 가능
+        if (tableList.childCount + count <= maxTablesInList) {
+            return true
+        } else {
+            Toast.makeText(requireContext(), "이 공간에 추가될 수 있는 테이블은 최대 $maxTablesInList 개입니다.", Toast.LENGTH_SHORT).show()
+            return false
+        }
+    }
 
     @SuppressLint("MissingInflatedId")
     private fun addTablesToList(count: Int, tableType: String) {
@@ -166,98 +163,103 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
 
             // 테이블 이름 설정
-            tableNameTextView.text = tableType+"인"
+            tableNameTextView.text = "$tableType 인"
 
-            // 테이블 크기 및 스타일 설정 (1인, 2인, 3인, 4인 등)
-//            val size = when (tableType) {
-//                "1" -> (50 * resources.displayMetrics.density).toInt() // 1인 테이블 크기
-//                "2" -> (60 * resources.displayMetrics.density).toInt() // 2인 테이블 크기
-//                "3" -> (70 * resources.displayMetrics.density).toInt() // 3인 테이블 크기
-//                "4" -> (80 * resources.displayMetrics.density).toInt() // 4인 테이블 크기
-//                else -> (90 * resources.displayMetrics.density).toInt() // 기타 테이블 크기
-//            }
-            val size=(50*resources.displayMetrics.density).toInt()
+            // 테이블 크기 및 스타일 설정 (예시로 고정 크기 사용)
+            val size = (50 * resources.displayMetrics.density).toInt() // 각 테이블의 고정 크기
+            val layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                // 여백 설정
+                setMargins(8, 8, 8, 8)
+            }
 
-            // 테이블의 드래그 앤 드롭 기능 추가
+            // 드래그 앤 드롭을 위한 테이블에 터치 리스너 추가
             tableView.setOnTouchListener { v, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     val dragData = ClipData.newPlainText("table", tableType)
                     val dragShadowBuilder = View.DragShadowBuilder(v)
                     v.startDragAndDrop(dragData, dragShadowBuilder, v, 0)
-                    v.performClick()  // Accessibility를 위해 클릭 처리
+                    v.performClick()  // 접근성 클릭
                     true
                 } else {
                     false
                 }
             }
 
-            // 레이아웃 파라미터 및 마진 설정
-            val margin = 8 // 원하는 마진 값
-            val params = LinearLayout.LayoutParams(size, size).apply {
-                setMargins(margin, margin, margin, margin)
-            }
-
-            // 테이블 목록에 추가
-            tableList.addView(tableView, params)
-            addedTables.add(tableView) // 추가된 테이블 목록에 저장
+            // 테이블 뷰를 LinearLayout (tableList)에 추가
+            tableList.addView(tableView, layoutParams)
+            addedTables.add(tableView) // 추가된 테이블을 목록에 저장
         }
     }
 
-
-    private fun addTables(seaterCount: Int, tableCount: Int) {
-        for (i in 1..tableCount) {
-            addTablesToList(seaterCount, "기타")
-        }
-    }
-
-
-    // 드래그 리스너 설정 (드롭을 처리하는 부분)
+    // 드래그 리스너
     private val dragListener = View.OnDragListener { v, event ->
         val draggedView = event.localState as? View // 드래그된 뷰 가져오기
         when (event.action) {
             DragEvent.ACTION_DRAG_STARTED -> {
                 true
             }
-            DragEvent.ACTION_DRAG_ENTERED -> {
-                v.invalidate()
-                true
-            }
-            DragEvent.ACTION_DRAG_LOCATION -> true
-            DragEvent.ACTION_DRAG_EXITED -> {
-                v.invalidate()
-                true
-            }
             DragEvent.ACTION_DROP -> {
                 draggedView?.let { view ->
-                    val owner = view.parent as ViewGroup
-                    owner.removeView(view)
+                    // 뷰를 소유자에서 제거
+                    val owner = view.parent as? ViewGroup
+                    owner?.removeView(view)
 
-                    // 드롭한 뷰를 GridLayout에 추가
-                    val destination = v as GridLayout
+                    // FrameLayout에 뷰 추가
+                    val destination = v as FrameLayout
 
-                    // GridLayout에 뷰를 추가하면서 LayoutParams를 사용해 위치 지정
-                    val params = GridLayout.LayoutParams()
-                    params.width = GridLayout.LayoutParams.WRAP_CONTENT
-                    params.height = GridLayout.LayoutParams.WRAP_CONTENT
-                    params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f) // 컬럼 위치
-                    params.rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f) // 로우 위치
-                    destination.addView(view, params)
+                    // 드롭 시 고정 위치 설정
+                    val layoutParams = FrameLayout.LayoutParams(view.layoutParams.width, view.layoutParams.height)
+                    layoutParams.leftMargin = (event.x - (view.layoutParams.width / 2)).toInt()
+                    layoutParams.topMargin = (event.y - (view.layoutParams.height / 2)).toInt()
+                    destination.addView(view, layoutParams)
+
+                    // 드롭된 테이블 목록에 추가
+                    droppedTables.add(view)
                 }
                 true
             }
             DragEvent.ACTION_DRAG_ENDED -> {
-                // 드래그가 종료된 경우, 드래그가 성공적이었는지 확인
                 if (event.result) {
-                    // 드래그가 성공적으로 종료된 경우
-                    draggedView?.visibility = View.VISIBLE
+                    Toast.makeText(requireContext(), "드롭 성공", Toast.LENGTH_SHORT).show()
                 } else {
-                    // 드래그가 실패한 경우, 원래 위치로 복원
-                    draggedView?.visibility = View.VISIBLE
+                    Toast.makeText(requireContext(), "드롭 실패", Toast.LENGTH_SHORT).show()
                 }
                 true
             }
             else -> false
         }
     }
+    // tableList에서 테이블 수량 줄이는 함수
+    private fun removeTableFromList(tableType: String) {
+        for (i in 0 until tableList.childCount) {
+            val tableView = tableList.getChildAt(i)
+            val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
 
-}
+            if (tableNameTextView.text.toString() == "$tableType 인") {
+                tableList.removeViewAt(i) // 테이블 제거
+                return
+            }
+        }
+    }
+    // 테이블 수량을 tableList에 다시 추가하는 함수
+    private fun addTableToListBack(tableType: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("$tableType 인 테이블 수량 입력")
+
+        // 수량 입력을 위한 EditText 생성
+        val input = EditText(requireContext())
+        input.inputType = InputType.TYPE_CLASS_NUMBER
+        builder.setView(input)
+
+        builder.setPositiveButton("확인") { dialog, which ->
+            val count = input.text.toString().toIntOrNull() ?: 0
+            if (canAddMoreTablesToList(count)) {
+                addTablesToList(count, tableType) // 테이블 다시 추가
+            }
+        }
+
+        builder.setNegativeButton("취소") { dialog, which -> dialog.cancel() }
+        builder.show()
+    }
+
+    }

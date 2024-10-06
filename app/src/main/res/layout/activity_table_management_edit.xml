@@ -122,15 +122,14 @@
         android:orientation="horizontal"/>
 
     <!-- 테이블 그리드 레이아웃 -->
-    <GridLayout
-        android:id="@+id/table_grid"
+    <FrameLayout
+        android:id="@+id/table_frame"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:columnCount="4"
-        android:rowCount="3"
         android:padding="8dp"
-        android:background="#f0f0f0"/>
+        android:background="#f0f0f0">
+    </FrameLayout>
 
     <!-- 업데이트 버튼 -->
     <LinearLayout
