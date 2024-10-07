@@ -19,6 +19,8 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
     private lateinit var auth: FirebaseAuth
     private lateinit var addInformFinishButton: Button
 
+    private var action = R.id.action_to_admin_sign_fragment
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -82,8 +84,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
             }
 
         }
+
         view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
-            findNavController().navigate(R.id.action_to_admin_sign_fragment) // 추가등록 전으로 이동
+            findNavController().navigate(action) // 추가등록 전으로 이동
         }
     }
 
@@ -106,31 +109,38 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
                         val floorCount = document.getString("floorCount")
                         val tableCount = document.getString("tableCount")
 
+                        var hasPreSelectedValues = false
                         serviceType.let {
                             val position = services.indexOf(it)
                             if (position != -1) {
                                 serviceSpinner.setSelection(position)
+                                hasPreSelectedValues = true
                             }
                         }
                         pickUpType.let {
                             val position = pickUps.indexOf(it)
                             if(position != -1) {
                                 pickUpSpinner.setSelection(position)
+                                hasPreSelectedValues = true
                             }
                         }
                         floorCount.let {
                             val position = floors.indexOf(it)
                             if(position != -1) {
                                 floorSpinner.setSelection(position)
+                                hasPreSelectedValues = true
                             }
                         }
                         tableCount.let {
                             val position = tables.indexOf(it)
                             if(position != -1) {
                                 tableSpinner.setSelection(position)
+                                hasPreSelectedValues = true
                             }
                         }
+                        if(hasPreSelectedValues){action = R.id.action_to_admin_activity} else{action = R.id.action_to_admin_sign_fragment}
                     }
+
                 }
     }
 
