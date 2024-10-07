@@ -19,6 +19,8 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
     private lateinit var auth: FirebaseAuth
     private lateinit var addInformFinishButton: Button
 
+    private var action = R.id.action_to_admin_sign_fragment
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -48,6 +50,13 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val floorSpinner = view.findViewById<Spinner>(R.id.AddInformFloor)
         val tableSpinner = view.findViewById<Spinner>(R.id.AddInformTable)
 
+        val user = auth.currentUser
+        val email = user?.email
+
+        if(email != null) {
+            findUser(email, serviceSpinner, pickUpSpinner, floorSpinner, tableSpinner, services, pickUps, floors, tables)
+        }
+
         //AddInformFinish Button 초기화
         addInformFinishButton = view.findViewById(R.id.AddInformFinish)
         addInformFinishButton.isEnabled = false
@@ -73,10 +82,66 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
             if(email != null) {
                 updateFirestore(email, serviceType, pickUpType, floorCount, tableCount)
             }
+
         }
+
         view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
-            findNavController().navigate(R.id.action_to_admin_sign_fragment) // 추가등록 전으로 이동
+            findNavController().navigate(action) // 추가등록 전으로 이동
         }
+    }
+
+    private fun findUser(email: String,
+                         serviceSpinner: Spinner,
+                         pickUpSpinner: Spinner,
+                         floorSpinner: Spinner,
+                         tableSpinner: Spinner,
+                         services: Array<String>,
+                         pickUps: Array<String>,
+                         floors: Array<String>,
+                         tables: Array<String>) {
+            firestore.collection("admin")
+                .document(email)
+                .get()
+                .addOnSuccessListener { document ->
+                    if(document != null && document.exists()) {
+                        val serviceType = document.getString("serviceType")
+                        val pickUpType = document.getString("pickUpType")
+                        val floorCount = document.getString("floorCount")
+                        val tableCount = document.getString("tableCount")
+
+                        var hasPreSelectedValues = false
+                        serviceType.let {
+                            val position = services.indexOf(it)
+                            if (position != -1) {
+                                serviceSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        pickUpType.let {
+                            val position = pickUps.indexOf(it)
+                            if(position != -1) {
+                                pickUpSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        floorCount.let {
+                            val position = floors.indexOf(it)
+                            if(position != -1) {
+                                floorSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        tableCount.let {
+                            val position = tables.indexOf(it)
+                            if(position != -1) {
+                                tableSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        if(hasPreSelectedValues){action = R.id.action_to_admin_activity} else{action = R.id.action_to_admin_sign_fragment}
+                    }
+
+                }
     }
 
     private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, tableCount: String) {
