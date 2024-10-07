@@ -27,12 +27,16 @@
             android:layout_weight="1"/>
 
         <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
             android:id="@+id/add_floor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" (+)"/>
 
         <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
             android:id="@+id/remove_floor_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -110,6 +114,8 @@
 
 
             <Button
+                android:textColor="@color/black"
+                android:backgroundTint="@color/navy01"
                 android:id="@+id/delete_table_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -136,19 +142,30 @@
 
     <!-- 업데이트 버튼 -->
     <LinearLayout
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
         android:gravity="end">
-
+        <TextView
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
+            android:id="@+id/back_activity_admin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/baseline_arrow_back_24"/>
         <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
             android:id="@+id/remove_table_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="테이블 제거"/>
 
         <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
             android:id="@+id/update_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
