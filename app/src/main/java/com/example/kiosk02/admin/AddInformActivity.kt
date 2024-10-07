@@ -19,6 +19,8 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
     private lateinit var auth: FirebaseAuth
     private lateinit var addInformFinishButton: Button
 
+    private var action = R.id.action_to_admin_sign_fragment
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -48,6 +50,10 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val pickUpSpinner = view.findViewById<Spinner>(R.id.AddInformPickUp)
         val floorSpinner = view.findViewById<Spinner>(R.id.AddInformFloor)
 
+        val user = auth.currentUser
+        val email = user?.email
+
+
         //AddInformFinish Button 초기화
         addInformFinishButton = view.findViewById(R.id.AddInformFinish)
         addInformFinishButton.isEnabled = false
@@ -72,7 +78,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
             if(email != null) {
                 updateFirestore(email, serviceType, pickUpType, floorCount)
             }
+
         }
+
         view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_sign_fragment) // 추가등록 전으로 이동
         }

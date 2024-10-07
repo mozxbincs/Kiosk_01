@@ -62,8 +62,16 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
 
         // 상호등록 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.registerButton).setOnClickListener {
-            val businessNumber = binding.businessNumberEditText.text.toString()
-            checkBusinessNumber(businessNumber)
+            val name = binding.nameEditText.text.toString()
+            val email = binding.emailEditText.text.toString()
+            val password = binding.passwordEditText.text.toString()
+            val phonnumber = binding.phonNumberEditText.text.toString()
+            val businessname = binding.businessNameEditText.text.toString()
+            val businessnumber = binding.businessNumberEditText.text.toString()
+            val address = binding.addressEditText.text.toString()
+
+            registerUser(name, email, password, phonnumber, businessname, businessnumber, address)
+
         }
 
         // 관리자 회원가입 전 버튼 클릭 리스너 설정
@@ -72,7 +80,8 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
         }
 
         view.findViewById<Button>(R.id.businessNumberButton).setOnClickListener {
-            findBusinessNumber(binding.businessNumberEditText.text.toString())
+            val businessNumber = binding.businessNumberEditText.text.toString()
+            checkBusinessNumber(businessNumber)
         }
     }
 
@@ -121,7 +130,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             R.id.phonNumberEditText -> {
                 val phonnumber = binding.phonNumberEditText.text.toString().trim()
                 Phonnumbalid = phonnumber.matches(phonNumPatten)
-                if (Emailvalid != true) {
+                if (Phonnumbalid != true) {
                     binding.warningTextView.text = "-없이 전화번호를 정확히 입력해주세요"
                     binding.warningTextView.visibility = View.VISIBLE
                 } else {
@@ -173,8 +182,10 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                 if (businessnumbervalid != true) {
                     binding.warningTextView.text = "10자리 숫자로 입력해주세요"
                     binding.warningTextView.visibility = View.VISIBLE
+                    binding.businessNumberButton.isEnabled = false
                 } else {
                     binding.warningTextView.visibility = View.GONE
+                    binding.businessNumberButton.isEnabled = true
                 }
             }
 
@@ -195,7 +206,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
 
     private fun isAllInputsCheckValid() {
         binding.registerButton.isEnabled = NameValid && Emailvalid && Phonnumbalid && passwordValid && ConfirmpasswordValid
-                && businessnumbervalid && businessnumbervalid && addressValid && Checkredundancy
+                && businessnumbervalid && businessnumbervalid && addressValid && Checkredundancy && businessNumberCk
     }
 
     private fun findBusinessNumber(businessNumber: String) {
@@ -259,29 +270,24 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                     if (businessData?.b_stt_cd == "01") {
                         Toast.makeText(requireContext(), "사용 가능한 사업자 번호", Toast.LENGTH_SHORT).show()
                         businessNumberCk = true
+                        findBusinessNumber(businessNumber)
+                        isAllInputsCheckValid()
 
-                        // 사업자 번호가 유효하면 회원가입 프로세스 진행
-                        val name = binding.nameEditText.text.toString()
-                        val email = binding.emailEditText.text.toString()
-                        val password = binding.passwordEditText.text.toString()
-                        val phonnumber = binding.phonNumberEditText.text.toString()
-                        val businessname = binding.businessNameEditText.text.toString()
-                        val businessnumber = binding.businessNumberEditText.text.toString()
-                        val address = binding.addressEditText.text.toString()
-
-                        registerUser(name, email, password, phonnumber, businessname, businessnumber, address)
                     } else {
                         Toast.makeText(requireContext(), "유효하지 않은 등록번호", Toast.LENGTH_SHORT).show()
                         binding.businessNumberEditText.isEnabled = true
+                        isAllInputsCheckValid()
                     }
                 } else {
                     Toast.makeText(requireContext(), "요청실패 ${response.code()}", Toast.LENGTH_SHORT).show()
                     Log.e("API_ERROR", "요청실패 ${response.code()}")
+                    isAllInputsCheckValid()
                 }
             }
 
             override fun onFailure(call: Call<BusinessResponse>, t: Throwable) {
                 Toast.makeText(requireContext(), "네트워크 오류", Toast.LENGTH_SHORT).show()
+                isAllInputsCheckValid()
             }
         })
     }
