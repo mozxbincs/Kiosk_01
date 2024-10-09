@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:padding="20dp">
+
     <ImageButton
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
@@ -40,15 +42,36 @@
         app:layout_constraintTop_toBottomOf="@id/backButton"
         app:layout_constraintVertical_bias="0.1" />
 
+
     <ImageView
         android:id="@+id/menuImageView"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginTop="30dp"
         android:background="@color/lightGray"
+        android:scaleType="centerCrop"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/subTitleTextview" />
+
+    <ImageView
+        android:id="@+id/addImageButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/baseline_add_24"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/menuImageView"
+        app:layout_constraintEnd_toEndOf="@id/menuImageView"
+        app:layout_constraintStart_toStartOf="@id/menuImageView"
+        app:layout_constraintTop_toTopOf="@id/menuImageView" />
+
+    <ImageView
+        android:id="@+id/clearImageButton"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/baseline_clear_24"
+        app:layout_constraintEnd_toEndOf="@id/menuImageView"
+        app:layout_constraintTop_toTopOf="@id/menuImageView" />
 
     <TextView
         android:id="@+id/menuNameTextview"
@@ -112,10 +135,21 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/menuImageUnderLineView" />
 
+    <Button
+        android:id="@+id/addCategoryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:backgroundTint="#3F51B5"
+        android:text="카테고리 추가"
+        app:layout_constraintBottom_toBottomOf="@id/categoryTextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/categoryTextView" />
+
     <Spinner
         android:id="@+id/categorySpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/categoryTextView" />
 
@@ -155,7 +189,7 @@
         android:id="@+id/compositionEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="메뉴의 구성을 작성해주세요"
+        android:hint="메뉴의 구성을 작성해주세요(선택)"
         app:layout_constraintStart_toStartOf="@id/compositionTextView"
         app:layout_constraintTop_toBottomOf="@id/compositionTextView" />
 
@@ -179,13 +213,40 @@
         app:layout_constraintTop_toBottomOf="@id/menuDetailTextView" />
 
     <Button
-        android:id="@+id/confirmButton"
-        android:text="메뉴 추가하기"
-        android:backgroundTint="#3F51B5"
+        android:id="@+id/deleteButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/gray01"
+        android:text="메뉴 삭제"
+        app:layout_constraintStart_toStartOf="@id/menuDetailEditText"
+        app:layout_constraintTop_toTopOf="@id/confirmButton" />
+
+    <Button
+        android:id="@+id/confirmButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#3F51B5"
+        android:text="메뉴 추가하기"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <FrameLayout
+        android:id="@+id/progressBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+    </FrameLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
