@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
 
 import android.view.View
@@ -40,15 +41,22 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         ediotr = sharedPreferences.edit()
 
-        // 로그인 상태 유지 선택 시, 자동 로그인
-        val isLoggedIn = sharedPreferences.getBoolean("stay_logged_in", false)
-        if(isLoggedIn){
-            val savedID = sharedPreferences.getString("user_id",null)
-            val savedPW = sharedPreferences.getString("user_pw", null)
 
-            if(savedID != null && savedPW != null){
-                findNavController().navigate(R.id.action_to_admin_activity)
-            }
+        // 로그인 상태 유지 선택 시, 자동 로그인
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+        if(isLoggedIn){
+            val savedID = sharedPreferences.getString("user_email",null).toString()
+            val savedPW = sharedPreferences.getString("user_password", null).toString()
+
+            Firebase.auth.signInWithEmailAndPassword(savedID,savedPW)
+                .addOnCompleteListener { task ->
+                    if(task.isSuccessful){
+                        findNavController().navigate(R.id.action_to_admin_activity)
+                    }else{
+                        // 로그인 실패 시, 알림
+                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
         }
 
         //로그인 버튼
@@ -72,6 +80,8 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
                             editor.putString("user_password", password)
                             editor.apply()
                         }
+                        Log.e("stayLoggedIn", "$email")
+                        Log.e("stayLoggedIn", "$password")
                     }else{
                         // 로그인 실패 시, 알림
                         Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
@@ -91,10 +101,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         view.findViewById<TextView>(R.id.admin_forgot_password_text).setOnClickListener {
             findNavController().navigate(R.id.action_to_find_password_admin) // 비밀번호 찾기 화면으로 이동
         }
-        // 로그인 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.admin_login_button).setOnClickListener {
-            findNavController().navigate(R.id.action_to_admin_activity) // 로그인 화면으로 이동
-        }
+
         // 회원가입 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.admin_sign_up_button).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_sign_fragment) // 회원가입 화면으로 이동
