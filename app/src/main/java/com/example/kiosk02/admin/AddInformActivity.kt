@@ -1,6 +1,7 @@
 package com.example.kiosk02.admin
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -90,7 +91,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val storeInform = hashMapOf<String, Any>(
             "serviceType" to serviceType,
             "pickUpType" to pickUpType,
-            "floorCount" to floorCount,
+            "totalFloorCount" to floorCount,
 
         )
 
@@ -125,7 +126,34 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         floor.onItemSelectedListener = spinnerListener
 //        table.onItemSelectedListener = spinnerListener
     }
+    private fun saveFloorData(email: String, floorCount: String) {
+        val floors = (1..floorCount.toInt()).map { "floor-$it" } // "floor-1", "floor-2", ..., "floor-N"
 
+        val batch = firestore.batch()
+
+        // 각 층 정보를 floors 서브 컬렉션에 저장
+        for (floor in floors) {
+            val floorData = hashMapOf(
+                "exists" to true // 층이 존재함을 나타내는 필드 (예시)
+            )
+
+            // Firestore에서 admin의 floors 서브 컬렉션에 각 층 데이터 저장
+            val floorRef = firestore.collection("admin")
+                .document(email)
+                .collection("floors")
+                .document(floor)
+
+            batch.set(floorRef, floorData)
+        }
+
+        // 배치 실행
+        batch.commit().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Log.d("Firestore", "Floor data saved successfully!")
+            } else {
+                Log.e("Firestore", "Failed to save floor data: ${task.exception?.message}")
+            }
+        }}
 
     // 어댑터 생성 (첫 번째 항목을 비활성화)
     private fun createAdapter(items: Array<String>): ArrayAdapter<String> {
