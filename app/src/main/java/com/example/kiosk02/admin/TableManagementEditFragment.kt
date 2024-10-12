@@ -113,9 +113,7 @@ private lateinit var removeFloorButton:Button
         view.findViewById<Button>(R.id.remove_floor_button).setOnClickListener {
             removeFloor() // 층 제거
         }
-        view.findViewById<Button>(R.id.update_button).setOnClickListener {
-            saveTableToFirestore()
-        }
+
 
 
         // 삭제 버튼 클릭 이벤트
@@ -165,32 +163,37 @@ private lateinit var removeFloorButton:Button
         return floorSpinner.selectedItem.toString() // 선택된 플로어 가져오기
     }
 
-    private fun saveTableToFirestore() {
+    // Firestore에 테이블 정보 저장
+    private fun saveTableToFirestore(tableType: String, tableQuantity: Int) {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
         val selectedFloor = getSelectedFloor() // 스피너에서 선택된 값 가져오기
 
-        // 테이블 데이터 설정 (여기에 필요한 데이터를 추가하세요)
-        val tableData = hashMapOf(
-            "tableType" to "1인", // 예시
-            "tableNumber" to 1    // 예시
-        )
+        // 테이블 수량만큼 Firestore에 테이블 정보 저장
+        for (i in 1..tableQuantity) {
+            val tableId = "table_$i" // 테이블 문서 ID 생성 (table_1, table_2, ...)
 
-        // Firestore에 데이터 저장
-        db.collection("admin")
-            .document(userEmail)
-            .collection("floors")
-            .document(selectedFloor) // 동적으로 선택된 floor 값을 사용
-            .collection("tables") // 테이블 컬렉션 추가
-            .document("table_1") // 테이블 문서 ID (필요에 따라 동적으로 변경 가능)
-            .set(tableData)
-            .addOnSuccessListener {
-                Log.d("Firestore", "Table successfully written!")
-            }
-            .addOnFailureListener { e ->
-                Log.w("Firestore", "Error writing table", e)
-            }
+            // 저장할 테이블 데이터
+            val tableData = hashMapOf(
+                "tableType" to "${tableType}인",  // 테이블 종류 (몇 인 테이블)
+                "tableNumber" to i  // 테이블 번호 (1부터 시작)
+            )
+
+            // Firestore에 데이터 저장
+            db.collection("admin")
+                .document(userEmail)
+                .collection("floors")
+                .document(selectedFloor)
+                .collection("tables")
+                .document(tableId) // 문서 ID (table_1, table_2, ...)
+                .set(tableData)
+                .addOnSuccessListener {
+                    Log.d("Firestore", "Table $i successfully written!")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("Firestore", "Error writing table $i", e)
+                }
+        }
     }
-
 
 
 
@@ -375,8 +378,10 @@ private lateinit var removeFloorButton:Button
             val quantityCount = quantityInput.text.toString().toIntOrNull() ?: 0
 
             if (seaterCount in 5..20 && quantityCount > 0) {
+
                 if (canAddMoreTablesToList(quantityCount)) { // 추가 가능한 테이블 수 체크
                     addTablesToList(quantityCount, seaterCount.toString())
+                    saveTableToFirestore(seaterCount.toString(), quantityCount) //##
                 }
 
             } else {
