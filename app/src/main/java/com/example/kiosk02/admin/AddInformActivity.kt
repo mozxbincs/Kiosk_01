@@ -73,7 +73,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
             val serviceType = serviceSpinner.selectedItem.toString()
             val pickUpType = pickUpSpinner.selectedItem.toString()
-            val totalFloorCount = floorSpinner.selectedItem.toString()
+            val totalFloorCount = floorSpinner.selectedItem.toString().toIntOrNull() ?: 0
 
 
             if(email != null) {
@@ -87,7 +87,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         }
     }
 
-    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, totalFloorCount: String) {
+    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, totalFloorCount: Int) {
         val storeInform = hashMapOf<String, Any>(
             "serviceType" to serviceType,
             "pickUpType" to pickUpType,
@@ -127,7 +127,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         floor.onItemSelectedListener = spinnerListener
 //        table.onItemSelectedListener = spinnerListener
     }
-    private fun saveFloorData(email: String, totalFloorCount: String) {
+    private fun saveFloorData(email: String, totalFloorCount: Int) {
         val floors = (1..totalFloorCount.toInt()).map { "floor-$it" } // "floor-1", "floor-2", ..., "floor-N"
 
         val batch = firestore.batch()

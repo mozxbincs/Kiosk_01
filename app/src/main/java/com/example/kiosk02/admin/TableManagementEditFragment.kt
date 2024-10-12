@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.DragEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -34,11 +35,14 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
     private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
     private var selectedTable: View? = null // 선택된 테이블
     private val db = FirebaseFirestore.getInstance() // Firestore 인스턴스
-
+private lateinit var removeFloorButton:Button
     //
     private lateinit var floorSpinner: Spinner
     private lateinit var floorTextView: TextView
     private lateinit var addFloorButton: Button
+    private var currentFloorCount = 0 // 현재 층수 저장
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,7 +50,8 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         floorSpinner = view.findViewById(R.id.floor_spinner)
 
         // Firebase Firestore에서 floorCount 데이터를 불러옴
-        loadFloorCountFromFirestore()
+        loadFloorsFromFirestore()
+
 
         //
         tableList = view.findViewById(R.id.table_list)
@@ -103,12 +108,15 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
 
         // 층수 추가 및 제거 버튼에 대한 클릭 리스너 설정
         view.findViewById<Button>(R.id.add_floor_button).setOnClickListener {
-            updateFloorCount(1) // 층수 추가
+            addFloor() // 층 추가
+        }
+        view.findViewById<Button>(R.id.remove_floor_button).setOnClickListener {
+            removeFloor() // 층 제거
+        }
+        view.findViewById<Button>(R.id.update_button).setOnClickListener {
+            saveTableToFirestore()
         }
 
-        view.findViewById<Button>(R.id.remove_floor_button).setOnClickListener {
-            updateFloorCount(-1) // 층수 제거
-        }
 
         // 삭제 버튼 클릭 이벤트
         view.findViewById<Button>(R.id.delete_table_button).setOnClickListener {
@@ -149,90 +157,159 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
         // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
         tableFrame.setOnDragListener(dragListener)
     }
+//
+
+
+
+    private fun getSelectedFloor(): String {
+        return floorSpinner.selectedItem.toString() // 선택된 플로어 가져오기
+    }
+
+    private fun saveTableToFirestore() {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor() // 스피너에서 선택된 값 가져오기
+
+        // 테이블 데이터 설정 (여기에 필요한 데이터를 추가하세요)
+        val tableData = hashMapOf(
+            "tableType" to "1인", // 예시
+            "tableNumber" to 1    // 예시
+        )
+
+        // Firestore에 데이터 저장
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor) // 동적으로 선택된 floor 값을 사용
+            .collection("tables") // 테이블 컬렉션 추가
+            .document("table_1") // 테이블 문서 ID (필요에 따라 동적으로 변경 가능)
+            .set(tableData)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Table successfully written!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error writing table", e)
+            }
+    }
+
+
+
 
     //파이어베이스 연동
-// Firestore에서 floorCount 필드를 가져와 Spinner에 적용하는 함수
-    private fun loadFloorCountFromFirestore() {
-        // Firestore에서 로그인한 사용자의 이메일을 사용하여 데이터를 가져옴
+// Firestore에서 totalfloorCount 필드를 가져와 Spinner에 적용하는 함수
+    private fun loadFloorsFromFirestore() {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        val docRef = db.collection("admin").document(userEmail)
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                // Firestore에서 모든 층을 가져온 후 스피너 업데이트
+                val floorOptions = querySnapshot.documents.map { document ->
+                    document.id // document의 ID가 "floor-1", "floor-2", ... 형식입니다.
+                }.toTypedArray()
+                updateFloorSpinner(floorOptions)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Failed to load floors: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+    private fun updateFloorSpinner(floorOptions: Array<String>) {
+        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        floorSpinner.adapter = adapter
+    }
 
-        docRef.get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    // 'floorCount' 필드를 문자열로 가져오고 이를 숫자로 변환
-                    val floorCountStr = document.getString("floorCount")
-                    floorCountStr?.let {
-                        val floorCount = it.toIntOrNull() // 문자열을 숫자로 변환
-                        if (floorCount != null && floorCount > 0) {
-                            // Spinner에 층수 값을 설정
-                            setFloorSpinnerValues(floorCount)
-                        } else {
-                            // floorCount가 잘못된 경우 오류 메시지 표시
-                            Toast.makeText(
-                                requireContext(),
-                                "Invalid floor count",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } ?: run {
-                        // floorCount 필드가 없는 경우 메시지 표시
-                        Toast.makeText(requireContext(), "No floor count found", Toast.LENGTH_SHORT)
-                            .show()
+    private fun addFloor() {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val floorsCollection = db.collection("admin").document(userEmail).collection("floors")
+
+        // Firestore에서 현재 층 목록을 가져옴
+        floorsCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                // Firestore에 저장된 층의 개수를 가져옴
+                val existingFloorCount = querySnapshot.size()
+
+                if (existingFloorCount >= 5) {
+                    Toast.makeText(requireContext(), "더 이상 층을 추가할 수 없습니다. 최대 5개 층만 가능합니다.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+
+                // 새로운 층 추가
+                val newFloorNumber = existingFloorCount + 1
+                val newFloorDoc = "floor-$newFloorNumber"
+                val floorData = hashMapOf("exists" to true)
+
+                floorsCollection.document(newFloorDoc)
+                    .set(floorData)
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "$newFloorDoc 추가됨", Toast.LENGTH_SHORT).show()
+                        updateTotalFloorCount(newFloorNumber) // 총 층수 업데이트
+                        loadFloorsFromFirestore() // 스피너를 업데이트하기 위해 층수 다시 로드
                     }
-                } else {
-                    // 문서가 존재하지 않는 경우 메시지 표시
-                    Toast.makeText(requireContext(), "Document does not exist", Toast.LENGTH_SHORT)
-                        .show()
-                }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "층 추가 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener { e ->
-                // Firestore에서 데이터를 가져오는 데 실패한 경우
-                Toast.makeText(
-                    requireContext(),
-                    "Failed to load data: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "층 목록을 가져오는 데 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
-    // Firestore에 층수 업데이트 메소드
-    private fun updateFloorCount(change: Int) {
-        // Firestore에서 로그인한 사용자의 이메일을 사용하여 데이터 업데이트
+
+
+    private fun removeFloor() {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        val docRef = db.collection("admin").document(userEmail)
+        val floorsCollection = db.collection("admin").document(userEmail).collection("floors")
 
-        docRef.get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val floorCountStr = document.getString("floorCount") ?: "0" // 현재 층수 (기본값 0)
-                    val currentFloorCount = floorCountStr.toIntOrNull() ?: 0 // 현재 층수
+        // Firestore에서 현재 층 목록을 가져옴
+        floorsCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                val existingFloorCount = querySnapshot.size()
 
-                    // 층수 업데이트
-                    val newFloorCount = (currentFloorCount + change).coerceAtLeast(0) // 0 이하로 떨어지지 않도록 제한
-
-                    // 새로운 층수 값을 문자열로 저장
-                    docRef.update("floorCount", newFloorCount.toString()) // 문자열로 변환하여 저장
-                        .addOnSuccessListener {
-                            // 층수 변경 후 스피너 값을 업데이트
-                            setFloorSpinnerValues(newFloorCount) // 스피너에 새로운 층수 반영
-                            Toast.makeText(requireContext(), "층수가 업데이트되었습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(requireContext(), "층수 업데이트 실패: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
-                } else {
-                    Toast.makeText(requireContext(), "Document does not exist", Toast.LENGTH_SHORT).show()
+                if (existingFloorCount == 0) {
+                    Toast.makeText(requireContext(), "삭제할 층이 없습니다.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
                 }
+
+                // 삭제할 층의 문서 이름
+                val floorToRemove = "floor-$existingFloorCount"
+
+                // Firestore에서 해당 층 문서 삭제
+                floorsCollection.document(floorToRemove).delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "$floorToRemove 삭제됨", Toast.LENGTH_SHORT).show()
+
+                        // Firestore에서 삭제 후, totalFloorCount를 업데이트
+                        updateTotalFloorCount(existingFloorCount - 1)
+                        loadFloorsFromFirestore() // 스피너를 다시 로드하여 반영
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "층 삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Failed to load data: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "층 목록을 가져오는 데 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
+
+
+    private fun updateTotalFloorCount(newCount: Int) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        db.collection("admin").document(userEmail).update("totalFloorCount", newCount)
+            .addOnSuccessListener {
+                // 층수 업데이트 성공
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Failed to update floor count: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 
     // floorCount 값을 바탕으로 Spinner에 값을 설정하는 함수
-    private fun setFloorSpinnerValues(floorCount: Int) {
+    private fun setFloorSpinnerValues(totalFloorCount: Int) {
         // 1부터 floorCount까지의 숫자를 배열로 만듭니다.
-        val floorOptions = (1..floorCount).map { String.format("%d층", it) }.toTypedArray()
+        val floorOptions = (1..totalFloorCount).map { String.format("%d층", it) }.toTypedArray()
 
         // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
         val adapter =
