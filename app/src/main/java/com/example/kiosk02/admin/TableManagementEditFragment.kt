@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -25,6 +26,7 @@ import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
@@ -60,8 +62,7 @@ private lateinit var removeFloorButton:Button
 
         removeTableButton.visibility = View.GONE
 
-        // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
-        tableFrame.setOnDragListener(dragListener)
+
 
         // 삭제 버튼 클릭 이벤트
         removeTableButton.setOnClickListener {
@@ -150,10 +151,8 @@ private lateinit var removeFloorButton:Button
 //
 //
 //        }
+        setupTableFrameForDrop()
 
-
-        // 드롭할 수 있는 FrameLayout에 드롭 리스너 추가
-        tableFrame.setOnDragListener(dragListener)
     }
 //
 
@@ -164,37 +163,168 @@ private lateinit var removeFloorButton:Button
     }
 
     // Firestore에 테이블 정보 저장
+    // Firestore에 테이블 정보 저장
     private fun saveTableToFirestore(tableType: String, tableQuantity: Int) {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
         val selectedFloor = getSelectedFloor() // 스피너에서 선택된 값 가져오기
 
-        // 테이블 수량만큼 Firestore에 테이블 정보 저장
-        for (i in 1..tableQuantity) {
-            val tableId = "table_$i" // 테이블 문서 ID 생성 (table_1, table_2, ...)
+        // Firestore에서 이미 저장된 테이블의 개수를 먼저 확인
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .get()
+            .addOnSuccessListener { result ->
+                // 이미 존재하는 테이블 수를 가져옴
+                val existingTableCount = result.size()
 
-            // 저장할 테이블 데이터
-            val tableData = hashMapOf(
-                "tableType" to "${tableType}인",  // 테이블 종류 (몇 인 테이블)
-                "tableNumber" to i  // 테이블 번호 (1부터 시작)
-            )
+                // 새로 추가할 테이블의 ID는 기존 테이블 수 + 1부터 시작
+                val startingTableNumber = existingTableCount + 1
 
-            // Firestore에 데이터 저장
-            db.collection("admin")
-                .document(userEmail)
-                .collection("floors")
-                .document(selectedFloor)
-                .collection("tables")
-                .document(tableId) // 문서 ID (table_1, table_2, ...)
-                .set(tableData)
-                .addOnSuccessListener {
-                    Log.d("Firestore", "Table $i successfully written!")
+                // 테이블 수량만큼 Firestore에 테이블 정보 저장
+                for (i in 0 until tableQuantity) {
+                    val tableId = "table_${startingTableNumber + i}" // 테이블 문서 ID 생성
+
+                    // 저장할 테이블 데이터
+                    val tableData = hashMapOf(
+                        "tableType" to "${tableType}인",  // 테이블 종류 (몇 인 테이블)
+                        "tableNumber" to (startingTableNumber + i),  // 테이블 번호
+                        "x" to 0,  // 기본 x 좌표 (드래그 후 업데이트)
+                        "y" to 0   // 기본 y 좌표 (드래그 후 업데이트)
+                    )
+
+                    // Firestore에 데이터 저장
+                    db.collection("admin")
+                        .document(userEmail)
+                        .collection("floors")
+                        .document(selectedFloor)
+                        .collection("tables")
+                        .document(tableId) // 문서 ID (table_1, table_2, ...)
+                        .set(tableData)
+                        .addOnSuccessListener {
+                            Log.d("Firestore", "Table ${startingTableNumber + i} successfully written!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error writing table ${startingTableNumber + i}", e)
+                        }
                 }
-                .addOnFailureListener { e ->
-                    Log.w("Firestore", "Error writing table $i", e)
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error getting documents", e)
+            }
+    }
+
+
+///////////////////////
+
+    private fun loadTablesForSelectedFloor(selectedFloor: String) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+
+        tableFrame.removeAllViews() // 기존에 추가된 테이블 도형 삭제
+
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    val tableId = document.getString("tableId") ?: "0" // 기본값 설정
+                    val x = document.getLong("x")?.toInt() ?: 0
+                    val y = document.getLong("y")?.toInt() ?: 0
+                    val tableType = document.getString("tableType") ?: "Unknown"
+
+                    // 테이블 ID를 숫자로 변환, 실패 시 기본값 사용
+                    val numericTableId = try {
+                        tableId.toInt()
+                    } catch (e: NumberFormatException) {
+                        Log.e("Error", "Invalid tableId format: $tableId", e)
+                        0 // 기본값 설정
+                    }
+
+                    // 테이블 도형을 생성하여 좌표에 배치
+                    val tableView = createTableView(tableType, numericTableId).apply {
+                        tag = tableId
+                    }
+
+                    val layoutParams = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        leftMargin = x
+                        topMargin = y
+                    }
+
+                    tableFrame.addView(tableView, layoutParams)
                 }
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error getting table data", e)
+            }
+    }
+
+
+    // 테이블 도형을 생성하는 함수 (예시)
+    // 테이블 뷰에 드래그 가능하도록 설정
+    private fun createTableView(tableType: String, tableNumber: Int): View {
+        val tableView = TextView(requireContext()).apply {
+            text = "$tableType _ 테이블 $tableNumber"
+            textSize = 18f
+            setPadding(16, 16, 16, 16)
+            setBackgroundResource(R.drawable.table_shape)
+
+            // 드래그 시작
+            setOnLongClickListener {
+                val dragShadow = View.DragShadowBuilder(it)
+                it.startDragAndDrop(null, dragShadow, it, 0)
+                it.visibility = View.INVISIBLE
+                true
+            }
+
+            // 태그 설정 (테이블 ID로 설정)
+            tag = tableNumber.toString() // 또는 tableType을 사용할 수 있습니다.
+        }
+        return tableView
+    }
+
+
+
+
+    private fun updateFloorSpinner(floorOptions: Array<String>) {
+        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        floorSpinner.adapter = adapter
+
+        // Spinner 아이템 선택 리스너 설정
+        floorSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val selectedFloor = parent.getItemAtPosition(position).toString()
+                // 사용자가 층을 선택할 때 테이블 목록을 로드
+                loadTablesForSelectedFloor(selectedFloor)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // 아무것도 선택하지 않았을 때는 처리 없음
+            }
         }
     }
 
+    private fun fetchFloorsFromFirestore() {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        db.collection("admin").document(userEmail).collection("floors")
+            .get()
+            .addOnSuccessListener { documents ->
+                val floorOptions = documents.map { it.id }.toTypedArray() // 층 이름 가져오기
+                updateFloorSpinner(floorOptions) // 층 스피너 업데이트
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error getting floors", e)
+            }
+    }
+//////////////////////////
 
 
     //파이어베이스 연동
@@ -208,7 +338,7 @@ private lateinit var removeFloorButton:Button
             .addOnSuccessListener { querySnapshot ->
                 // Firestore에서 모든 층을 가져온 후 스피너 업데이트
                 val floorOptions = querySnapshot.documents.map { document ->
-                    document.id // document의 ID가 "floor-1", "floor-2", ... 형식입니다.
+                    document.id //
                 }.toTypedArray()
                 updateFloorSpinner(floorOptions)
             }
@@ -216,12 +346,9 @@ private lateinit var removeFloorButton:Button
                 Toast.makeText(requireContext(), "Failed to load floors: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
-    private fun updateFloorSpinner(floorOptions: Array<String>) {
-        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        floorSpinner.adapter = adapter
-    }
+
+
+
 
     private fun addFloor() {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
@@ -258,6 +385,13 @@ private lateinit var removeFloorButton:Button
                 Toast.makeText(requireContext(), "층 목록을 가져오는 데 실패했습니다: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
+
+
+
+
+
+
 
 
     private fun removeFloor() {
@@ -429,8 +563,10 @@ private lateinit var removeFloorButton:Button
     }
 
     @SuppressLint("MissingInflatedId")
+
     private fun addTablesToList(count: Int, tableType: String) {
         for (i in 1..count) {
+            val tableId = "table_$i" // 테이블 ID 생성
             val tableView = LayoutInflater.from(requireContext()).inflate(R.layout.table_item, null)
             val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
 
@@ -447,7 +583,7 @@ private lateinit var removeFloorButton:Button
             // 드래그 앤 드롭을 위한 테이블에 터치 리스너 추가
             tableView.setOnTouchListener { v, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
-                    val dragData = ClipData.newPlainText("table", tableType)
+                    val dragData = ClipData.newPlainText("table", tableId) // 테이블 ID를 드래그 데이터로 설정
                     val dragShadowBuilder = View.DragShadowBuilder(v)
                     v.startDragAndDrop(dragData, dragShadowBuilder, v, 0)
                     v.performClick()  // 접근성 클릭
@@ -464,54 +600,83 @@ private lateinit var removeFloorButton:Button
     }
 
     // 드래그 리스너
-    private val dragListener = View.OnDragListener { v, event ->
-        val draggedView = event.localState as? View // 드래그된 뷰 가져오기
-        when (event.action) {
-            DragEvent.ACTION_DRAG_STARTED -> {
-                true
-            }
+// TableFrame에 드롭 가능하도록 설정
+    private fun setupTableFrameForDrop() {
+        tableFrame.setOnDragListener { view, dragEvent ->
+            when (dragEvent.action) {
+                DragEvent.ACTION_DRAG_STARTED -> true
+                DragEvent.ACTION_DRAG_ENTERED -> true
+                DragEvent.ACTION_DRAG_EXITED -> true
+                DragEvent.ACTION_DROP -> {
+                    // 드래그된 뷰 가져오기
+                    val droppedView = dragEvent.localState as View
+                    val parent = droppedView.parent as ViewGroup
+                    parent.removeView(droppedView)
 
-            DragEvent.ACTION_DROP -> {
-                draggedView?.let { view ->
-                    // 뷰를 소유자에서 제거
-                    val owner = view.parent as? ViewGroup
-                    owner?.removeView(view)
+                    // 드롭된 위치 계산
+                    val x = dragEvent.x.toInt()
+                    val y = dragEvent.y.toInt()
 
-                    // FrameLayout에 뷰 추가
-                    val destination = v as FrameLayout
-
-                    // 드롭 시 고정 위치 설정
-                    val layoutParams =
-                        FrameLayout.LayoutParams(view.layoutParams.width, view.layoutParams.height)
-                    layoutParams.leftMargin = (event.x - (view.layoutParams.width / 2)).toInt()
-                    layoutParams.topMargin = (event.y - (view.layoutParams.height / 2)).toInt()
-                    destination.addView(view, layoutParams)
-
-                    // 드롭된 테이블 목록에 추가
-                    droppedTables.add(view)
-                    tableList.removeView(view) // 테이블 목록에서 드롭된 테이블 삭제
-
-                    //테이블 클릭 리스너 추가
-                    view.setOnClickListener {
-                        selectedTable = view
-                        removeTableButton.visibility = View.VISIBLE // 삭제 버튼 보이기
+                    // 테이블 프레임에 드롭된 위치에 추가
+                    val layoutParams = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        leftMargin = x
+                        topMargin = y
                     }
+
+                    tableFrame.addView(droppedView, layoutParams)
+                    droppedView.visibility = View.VISIBLE
+
+                    // 드래그된 테이블 ID 가져오기
+                    val draggedTableId = (dragEvent.clipData.getItemAt(0).text.toString())
+
+                    // 좌표 저장 로직
+                    saveTablePositionToFirestore(draggedTableId, x, y)
+
+                    true
                 }
-                true
+                DragEvent.ACTION_DRAG_ENDED -> {
+                    if (!dragEvent.result) {
+                        val droppedView = dragEvent.localState as View
+                        droppedView.visibility = View.VISIBLE
+                    }
+                    true
+                }
+                else -> false
             }
-
-            DragEvent.ACTION_DRAG_ENDED -> {
-//                if (event.result) {
-//                    Toast.makeText(requireContext(), "드롭 성공", Toast.LENGTH_SHORT).show()
-//                } else {
-//                    Toast.makeText(requireContext(), "드롭 실패", Toast.LENGTH_SHORT).show()
-//                }
-                true
-            }
-
-            else -> false
         }
     }
+
+
+    private fun saveTablePositionToFirestore(tableId: String, x: Int, y: Int) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor()
+
+        // Firestore에 좌표 정보 저장
+        val tableData = hashMapOf(
+            "tableId" to tableId,
+            "x" to x,
+            "y" to y
+
+        )
+
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .document(tableId)
+            .update(tableData as Map<String, Any>, )
+            .addOnSuccessListener {
+                Log.d("Firestore", "Table position saved!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error saving table position", e)
+            }
+    }
+
 
     // tableList에서 테이블 수량 줄이는 함수
     private fun removeTableFromList(tableType: String) {
