@@ -62,6 +62,12 @@
         android:label="EditMenuFragment"
         tools:layout="@layout/fragment_edit_menu"/>
 
+    <fragment
+        android:id="@+id/manageCategoriesFragment"
+        android:name="com.example.kiosk02.admin.ManageCategoriesFragment"
+        android:label="ManageCategoriesFragment"
+        tools:layout="@layout/fragment_manage_categories"/>
+
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
@@ -98,6 +104,11 @@
     <action
         android:id="@+id/action_to_edit_menu_fragment"
         app:destination="@id/editMenuFragment"/>
+
+    <action
+        android:id="@+id/action_to_manage_categories_fragment"
+        app:destination="@id/manageCategoriesFragment"/>
+
 
 
 </navigation>

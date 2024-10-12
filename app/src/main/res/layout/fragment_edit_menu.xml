@@ -140,7 +140,7 @@
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:backgroundTint="#3F51B5"
-        android:text="카테고리 추가"
+        android:text="카테고리 관리"
         app:layout_constraintBottom_toBottomOf="@id/categoryTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/categoryTextView" />
