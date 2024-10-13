@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin
+package com.example.kiosk02.admin.Menu.data
 
 import android.net.Uri
 import android.os.Bundle
@@ -12,7 +12,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
-import com.example.kiosk02.admin.data.MenuModel
 import com.example.kiosk02.databinding.FragmentEditMenuBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
@@ -69,7 +68,7 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
 
         binding.backButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_admin_activity)
+            findNavController().navigate(R.id.action_to_admin_menu_list_fragment)
         }
 
         binding.addCategoryButton.setOnClickListener {

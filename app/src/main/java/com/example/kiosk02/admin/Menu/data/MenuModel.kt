@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin.data
+package com.example.kiosk02.admin.Menu.data
 
 class MenuModel (
     val menuId: String? = null,

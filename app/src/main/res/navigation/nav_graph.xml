@@ -52,19 +52,19 @@
 
     <fragment
         android:id="@+id/adminMenuListFragment"
-        android:name="com.example.kiosk02.admin.AdminMenuListFragment"
+        android:name="com.example.kiosk02.admin.Menu.data.AdminMenuListFragment"
         android:label="AdminMenuListFragment"
         tools:layout="@layout/fragment_admin_menu_list"/>
 
     <fragment
         android:id="@+id/editMenuFragment"
-        android:name="com.example.kiosk02.admin.EditMenuFragment"
+        android:name="com.example.kiosk02.admin.Menu.data.EditMenuFragment"
         android:label="EditMenuFragment"
         tools:layout="@layout/fragment_edit_menu"/>
 
     <fragment
         android:id="@+id/manageCategoriesFragment"
-        android:name="com.example.kiosk02.admin.ManageCategoriesFragment"
+        android:name="com.example.kiosk02.admin.Menu.data.ManageCategoriesFragment"
         android:label="ManageCategoriesFragment"
         tools:layout="@layout/fragment_manage_categories"/>
 

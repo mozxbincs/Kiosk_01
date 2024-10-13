@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin
+package com.example.kiosk02.admin.Menu.data
 
 import android.os.Bundle
 import android.util.Log
@@ -7,53 +7,46 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.kiosk02.R
-import com.example.kiosk02.admin.data.MenuModel
 import com.example.kiosk02.databinding.FragmentAdminMenuListBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.toObject
 
 class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
     private lateinit var binding: FragmentAdminMenuListBinding
     private lateinit var auth: FirebaseAuth
+    private val firestore = FirebaseFirestore.getInstance()
+    private val user = Firebase.auth.currentUser
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentAdminMenuListBinding.bind(view)
 
-        val db = Firebase.firestore
-        val user = Firebase.auth.currentUser
-
         if (user == null) {
             findNavController().navigate(R.id.adminFragment)
             return
         }
-        val email = user.email.toString()
 
-        val firestore = FirebaseFirestore.getInstance()
-        // admin 컬렉션에서 로그인한 유저 email 문서 참조
-        val adminDoc = firestore.collection("admin").document(email)
-        // 하위 컬렉션 menu에서 메뉴 문서 참조
-        val menuDoc = adminDoc.collection("menu").document("순대국밥")
-
-        menuDoc.get().addOnSuccessListener { document ->
-            val menu = document.toObject<MenuModel>()
-        }.addOnFailureListener {
-            it.printStackTrace()
-        }
+        loadCategoriesToTabs()
 
         setupEditMenuButton(view)
+
+
 
 
         //item_menu 2줄 나열
         val recyclerView = binding.menuListRecyclerView
         val gridLayoutManager = GridLayoutManager(requireContext(), 2)
         recyclerView.layoutManager = gridLayoutManager
+
+        binding.backButton.setOnClickListener {
+            findNavController().navigate(R.id.action_to_admin_activity)
+        }
 
     }
 
@@ -66,5 +59,36 @@ class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
             }
 
         }
+    }
+
+    private fun loadCategoriesToTabs(){
+        getAdminDocument().collection("category")
+            .get()
+            .addOnSuccessListener { documents ->
+                val categories = documents.map{ it.getString("name") ?: "" }
+                setupTabLayoutWithViewPager(categories)
+            }.addOnFailureListener {
+                Log.e("TabLayout","탭 레이아웃 설정 실패")
+            }
+    }
+
+    private fun setupTabLayoutWithViewPager(categories: List<String>){
+        val viewPagerAdapter = MenuPagerAdapter(this)
+        viewPagerAdapter.setCategories(categories)
+        binding.viewPager.adapter = viewPagerAdapter
+
+        TabLayoutMediator(binding.tabLayout, binding.viewPager){ tab, position ->
+            tab.text = viewPagerAdapter.getCategoryTitle(position)
+        }.attach()
+    }
+
+    // 경로 지정 함수
+    private fun getAdminDocument(): DocumentReference {
+        val email = getUserEmail()
+        return firestore.collection("admin").document(email)
+    }
+
+    private fun getUserEmail():String{
+        return user?.email.toString()
     }
 }
