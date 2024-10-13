@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin.Menu.data
+package com.example.kiosk02.admin.menu.data
 
 import android.os.Bundle
 import android.view.LayoutInflater

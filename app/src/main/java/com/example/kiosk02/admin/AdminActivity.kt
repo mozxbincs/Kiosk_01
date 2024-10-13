@@ -18,6 +18,10 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
 
         LogOutButton(view)
 
+        view.findViewById<Button>(R.id.menuCustomizationButton).setOnClickListener {
+            findNavController().navigate(R.id.action_to_admin_menu_list_fragment)
+        }
+
         view.findViewById<Button>(R.id.additionalRegistrationButton).setOnClickListener {
             findNavController().navigate(R.id.addInformActivity)
         }

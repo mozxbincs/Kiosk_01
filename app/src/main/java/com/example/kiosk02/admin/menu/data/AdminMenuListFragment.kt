@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin.Menu.data
+package com.example.kiosk02.admin.menu.data
 
 import android.os.Bundle
 import android.util.Log
@@ -11,14 +11,12 @@ import com.example.kiosk02.databinding.FragmentAdminMenuListBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
 class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
     private lateinit var binding: FragmentAdminMenuListBinding
-    private lateinit var auth: FirebaseAuth
     private val firestore = FirebaseFirestore.getInstance()
     private val user = Firebase.auth.currentUser
 
@@ -35,14 +33,6 @@ class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
         loadCategoriesToTabs()
 
         setupEditMenuButton(view)
-
-
-
-
-        //item_menu 2줄 나열
-        val recyclerView = binding.menuListRecyclerView
-        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
-        recyclerView.layoutManager = gridLayoutManager
 
         binding.backButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_activity)
@@ -61,24 +51,27 @@ class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
         }
     }
 
-    private fun loadCategoriesToTabs(){
+    private fun loadCategoriesToTabs() {
         getAdminDocument().collection("category")
             .get()
             .addOnSuccessListener { documents ->
-                val categories = documents.map{ it.getString("name") ?: "" }
+                val categories = documents.map { it.getString("name") ?: "" }
                 setupTabLayoutWithViewPager(categories)
             }.addOnFailureListener {
-                Log.e("TabLayout","탭 레이아웃 설정 실패")
+                Log.e("TabLayout", "탭 레이아웃 설정 실패")
             }
     }
 
-    private fun setupTabLayoutWithViewPager(categories: List<String>){
+    private fun setupTabLayoutWithViewPager(categories: List<String>) {
         val viewPagerAdapter = MenuPagerAdapter(this)
         viewPagerAdapter.setCategories(categories)
         binding.viewPager.adapter = viewPagerAdapter
 
-        TabLayoutMediator(binding.tabLayout, binding.viewPager){ tab, position ->
-            tab.text = viewPagerAdapter.getCategoryTitle(position)
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            run{
+                tab.text = viewPagerAdapter.getCategoryTitle(position)
+            }
+
         }.attach()
     }
 
@@ -88,7 +81,7 @@ class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
         return firestore.collection("admin").document(email)
     }
 
-    private fun getUserEmail():String{
+    private fun getUserEmail(): String {
         return user?.email.toString()
     }
 }

@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin.Menu.data
+package com.example.kiosk02.admin.menu.data
 
 import android.net.Uri
 import android.os.Bundle
