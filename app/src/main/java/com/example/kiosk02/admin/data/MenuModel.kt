@@ -7,5 +7,6 @@ class MenuModel (
     val composition: String? = null,
     val detail: String? = null,
     val price: Int? = null,
+    val category: String? = null,
 
 )

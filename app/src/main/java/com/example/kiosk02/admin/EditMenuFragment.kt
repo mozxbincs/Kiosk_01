@@ -2,9 +2,10 @@ package com.example.kiosk02.admin
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
+
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
@@ -16,9 +17,10 @@ import com.example.kiosk02.databinding.FragmentEditMenuBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
+import java.util.ArrayList
 import java.util.UUID
 
 class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
@@ -26,8 +28,8 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
     private var selectedUri: Uri? = null
 
-    val user = Firebase.auth.currentUser
-
+    private val user = Firebase.auth.currentUser
+    private val firestore = FirebaseFirestore.getInstance()
 
     //이미지 등록
     val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -48,6 +50,9 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         }
 
         binding = FragmentEditMenuBinding.bind(view)
+        //이미지 추가 버튼 활성화, 제거 버튼 비활성화
+
+        setupImageAddClearButton()
 
         setupClearButton()
 
@@ -57,12 +62,21 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
         setupConfirmButton()
 
+        loadCategoryList()
+
+
+
+
+
         binding.backButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_activity)
         }
 
-    }
+        binding.addCategoryButton.setOnClickListener {
+            findNavController().navigate(R.id.action_to_manage_categories_fragment)
+        }
 
+    }
 
     private fun setupClearButton() {
         binding.clearImageButton.setOnClickListener {
@@ -73,12 +87,44 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         }
     }
 
+    private fun setupImageAddClearButton() {
+        binding.addImageButton.isVisible = true
+        binding.clearImageButton.isVisible = false
+    }
+
     private fun setupPhotoImageView() {
         binding.menuImageView.setOnClickListener {
             if (selectedUri == null) {
                 startPicker()
             }
         }
+    }
+
+    private fun loadCategoryList() {
+        val categoryList = ArrayList<String>()
+
+        getAdminDocument().collection("category")
+            .get()
+            .addOnSuccessListener { documents ->
+                for (document in documents) {
+                    val category = document.getString("name")
+                    if (category != null) {
+                        categoryList.add(category)
+                    }
+                }
+                setUpSpinner(categoryList)
+            }
+            .addOnFailureListener {
+                Log.e("Spinner", "데이터를 불러오는데 실패하였습니다.")
+            }
+    }
+
+    private fun setUpSpinner(categories: List<String>) {
+        val adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.categorySpinner.adapter = adapter
+
     }
 
     private fun setupConfirmButton() {
@@ -94,7 +140,8 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                             binding.menuNameEditText.text.toString(),
                             binding.priceEditText.text.toString().toInt(),
                             binding.compositionEditText.text.toString(),
-                            binding.menuDetailEditText.text.toString()
+                            binding.menuDetailEditText.text.toString(),
+                            binding.categorySpinner.selectedItem.toString()
                         )
                     },
                     errorHandler = {
@@ -128,10 +175,10 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         errorHandler: (Throwable?) -> Unit
     ) {
         val email = user?.email?.replace(".", "_") // 이메일에 '.'을 '_'로 변환
-        val menuName = binding.menuNameTextview.text.toString()
+        val menuName = binding.menuNameEditText.text.toString()
 
         //파일이름
-        val filename = "${UUID.randomUUID()}.png"
+        val filename = "${menuName}.png"
 
         //파일 경로
         val storagePath = "$email/$menuName/$filename"
@@ -145,9 +192,9 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                             successHandler(it.toString())
                         }.addOnFailureListener {
                             errorHandler(it)
-
                         }
                 } else {
+                    Log.e("UploadError", "Image upload failed: ${task.exception?.message}")
                     errorHandler(task.exception)
                 }
             }
@@ -158,28 +205,26 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         menuName: String,
         price: Int,
         composition: String,
-        detail: String
+        detail: String,
+        category: String
     ) {
         val menuId = UUID.randomUUID().toString()
         val menuModel = MenuModel(
+            imageUrl = photoUri,
             menuId = menuId,
             menuName = menuName,
             price = price,
             composition = composition,
             detail = detail,
+            category = category,
 
             )
-        val email = user?.email.toString()
+
         val menuName = binding.menuNameEditText.text.toString()
-
-        val firestore = FirebaseFirestore.getInstance()
-        // admin 컬렉션에서 로그인한 유저 email 문서 참조
-        val adminDoc = firestore.collection("admin").document(email)
         // 하위 컬렉션 menu에서 메뉴 문서 참조
-        val menuDoc = adminDoc.collection("menu").document(menuName)
+        val menuDoc = getAdminDocument().collection("menu").document(menuName)
 
-        Firebase.firestore.collection("articles").document(menuDoc.path)
-            .set(menuModel)
+        menuDoc.set(menuModel)
             .addOnSuccessListener {
                 findNavController().navigate(R.id.adminMenuListFragment)
                 hideProgress()
@@ -190,6 +235,15 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                 }
                 hideProgress()
             }
+    }
+
+    private fun getAdminDocument():DocumentReference{
+        val email = getUserEmail()
+        return firestore.collection("admin").document(email)
+    }
+
+    private fun getUserEmail():String{
+        return user?.email.toString()
     }
 
 }

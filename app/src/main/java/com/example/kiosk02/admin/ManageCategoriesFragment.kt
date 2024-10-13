@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
@@ -21,7 +22,7 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
     private lateinit var binding: FragmentManageCategoriesBinding
     private lateinit var categoriesAdapter: CategoriesAdapter
     private val firestore = FirebaseFirestore.getInstance()
-    val user = Firebase.auth.currentUser
+    private val user = Firebase.auth.currentUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,13 +37,13 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
 
         setupRecyclerView()
 
+        // Firestore에서 카테고리 가져오기
+        loadCategories()
+
         // 카테고리 추가 버튼 클릭 시
         binding.addCategoryButton.setOnClickListener {
             showAddCategoryDialog()
         }
-
-        // Firestore에서 카테고리 가져오기
-        loadCategories()
 
         binding.backButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_edit_menu_fragment)
@@ -59,9 +60,7 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
     }
 
     private fun loadCategories() {
-        val email = user?.email.toString()
-        val adminDoc = firestore.collection("admin").document(email)
-        adminDoc.collection("category").get()
+        getAdminDocument().collection("category").get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }
                 categoriesAdapter.submitList(categories)
@@ -90,13 +89,11 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
     }
 
     private fun addCategory(categoryName: String) {
-        val email = user?.email.toString()
-        val adminDoc = firestore.collection("admin").document(email)
         // 중복 카테고리 검사
-        adminDoc.collection("category").whereEqualTo("name", categoryName).get()
+        getAdminDocument().collection("category").whereEqualTo("name", categoryName).get()
             .addOnSuccessListener { documents ->
                 if (documents.isEmpty) {
-                    val cateDoc = adminDoc.collection("category").document(categoryName)
+                    val cateDoc = getAdminDocument().collection("category").document(categoryName)
                     val category = hashMapOf("name" to categoryName)
 
                     cateDoc.set(category)  // 문서에 데이터 추가
@@ -129,13 +126,11 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
     }
 
     private fun deleteCategory(category: String) {
-        val email = user?.email.toString()
-        val adminDoc = firestore.collection("admin").document(email)
 
-        adminDoc.collection("category").whereEqualTo("name", category).get()
+        getAdminDocument().collection("category").whereEqualTo("name", category).get()
             .addOnSuccessListener { documents ->
                 for (document in documents) {
-                    adminDoc.collection("categories").document(document.id).delete()
+                    getAdminDocument().collection("category").document(document.id).delete()
                         .addOnSuccessListener {
                             Snackbar.make(binding.root, "카테고리가 삭제되었습니다.", Snackbar.LENGTH_SHORT).show()
                             loadCategories() // 카테고리 리스트 업데이트
@@ -148,5 +143,14 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
             .addOnFailureListener {
                 Snackbar.make(binding.root, "카테고리 삭제 중 오류가 발생했습니다.", Snackbar.LENGTH_SHORT).show()
             }
+    }
+
+    private fun getAdminDocument(): DocumentReference {
+        val email = getUserEmail()
+        return firestore.collection("admin").document(email)
+    }
+
+    private fun getUserEmail():String{
+        return user?.email.toString()
     }
 }
