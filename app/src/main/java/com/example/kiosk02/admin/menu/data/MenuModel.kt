@@ -1,6 +1,9 @@
 package com.example.kiosk02.admin.menu.data
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-class MenuModel (
+@Parcelize
+data class MenuModel (
     val menuId: String? = "",
     val menuName: String? = null,
     val imageUrl: String? = null,
@@ -8,4 +11,4 @@ class MenuModel (
     val detail: String? = null,
     val price: Int? = null,
     val category: String? = null,
-)
+) : Parcelable
