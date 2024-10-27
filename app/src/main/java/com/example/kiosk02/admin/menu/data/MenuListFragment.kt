@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.kiosk02.R
 import com.example.kiosk02.databinding.FragmentMenuListBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.Firebase
@@ -52,8 +54,14 @@ class MenuListFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        val adapter = MenuListAdapter()
-        val gridLayoutManager = GridLayoutManager(requireContext(),2)
+        val adapter = MenuListAdapter { menuModel ->
+            // 메뉴 클릭 시, EditMenuFragment(수정모드)로 이동
+            val bundle = Bundle().apply {
+                putParcelable("menuModel", menuModel)
+            }
+            findNavController().navigate(R.id.action_to_edit_menu_fragment, bundle)
+        }
+        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
         binding.menuListRecyclerView.layoutManager = gridLayoutManager
         binding.menuListRecyclerView.adapter = adapter
 
