@@ -111,6 +111,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:hint="가격을 입력해 주세요"
+        android:inputType="number"
         app:layout_constraintStart_toStartOf="@id/priceTextView"
         app:layout_constraintTop_toBottomOf="@id/priceTextView" />
 
@@ -218,6 +219,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="@color/gray01"
         android:text="메뉴 삭제"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="@id/menuDetailEditText"
         app:layout_constraintTop_toTopOf="@id/confirmButton" />
 

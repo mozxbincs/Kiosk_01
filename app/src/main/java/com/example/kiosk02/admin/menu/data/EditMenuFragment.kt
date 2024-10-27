@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.example.kiosk02.R
 import com.example.kiosk02.databinding.FragmentEditMenuBinding
 import com.google.android.material.snackbar.Snackbar
@@ -26,6 +27,7 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
     private lateinit var binding: FragmentEditMenuBinding
 
     private var selectedUri: Uri? = null
+    private var menuModel: MenuModel? = null
 
     private val user = Firebase.auth.currentUser
     private val firestore = FirebaseFirestore.getInstance()
@@ -49,9 +51,19 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         }
 
         binding = FragmentEditMenuBinding.bind(view)
-        //이미지 추가 버튼 활성화, 제거 버튼 비활성화
 
-        setupImageAddClearButton()
+        menuModel = arguments?.getParcelable("menuModel")
+
+        if (menuModel != null) {
+            //수정모드
+            setupEditMode()
+        } else {
+            //추가모드
+            setupAddMode()
+        }
+
+        binding = FragmentEditMenuBinding.bind(view)
+        //이미지 추가 버튼 활성화, 제거 버튼 비활성화
 
         setupClearButton()
 
@@ -62,6 +74,8 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         setupConfirmButton()
 
         loadCategoryList()
+
+        setupDeleteButton()
 
 
 
@@ -77,6 +91,44 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
     }
 
+    private fun setupEditMode() {
+        binding.titleTextview.text = "메뉴 수정"
+        binding.confirmButton.text = "메뉴 수정하기"
+        binding.deleteButton.isVisible = true
+        binding.addImageButton.isVisible = false
+        binding.clearImageButton.isVisible = true
+
+        menuModel?.let { menu ->
+            Glide.with(binding.menuImageView.context)
+                .load(menu.imageUrl)
+                .into(binding.menuImageView)
+
+            selectedUri = Uri.parse(menu.imageUrl)
+
+            //기존 메뉴 정보들 load
+            binding.menuNameEditText.setText(menu.menuName)
+            binding.priceEditText.setText(menu.price.toString())
+            binding.compositionEditText.setText(menu.composition)
+            binding.menuDetailEditText.setText(menu.detail)
+        }
+    }
+
+    private fun setupAddMode() {
+
+        binding.titleTextview.text = "메뉴 추가"
+        binding.confirmButton.text = "메뉴 추가하기"
+        binding.deleteButton.isVisible = false
+        binding.addImageButton.isVisible = true
+        binding.clearImageButton.isVisible = false
+
+        // 이미지와 텍스트 필드 초기화
+        binding.menuImageView.setImageResource(0)
+        binding.menuNameEditText.text = null
+        binding.priceEditText.text = null
+        binding.compositionEditText.text = null
+        binding.menuDetailEditText.text = null
+    }
+
     private fun setupClearButton() {
         binding.clearImageButton.setOnClickListener {
             selectedUri = null
@@ -86,9 +138,36 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         }
     }
 
-    private fun setupImageAddClearButton() {
-        binding.addImageButton.isVisible = true
-        binding.clearImageButton.isVisible = false
+    private fun setupDeleteButton() {
+        binding.deleteButton.setOnClickListener {
+            menuModel?.let { menu ->
+
+                //Storage 경로 설정
+                val storageRef = Firebase.storage.getReferenceFromUrl(menu.imageUrl ?: "")
+
+                // Storage 이미지 삭제
+                storageRef.delete()
+                    .addOnSuccessListener {
+                        Log.d("DeleteStorage", "이미지가 삭제되었습니다.")
+                        //Firestore 문서 삭제
+                        getAdminDocument().collection("menu").document(menu.menuId ?: "")
+                            .delete()
+                            .addOnSuccessListener {
+                                Snackbar.make(binding.root, "메뉴가 삭제되었습니다.", Snackbar.LENGTH_SHORT)
+                                    .show()
+                                findNavController().navigate(R.id.adminMenuListFragment)
+                            }
+                            .addOnFailureListener {
+                                Snackbar.make(binding.root, "메뉴 삭제에 실패했습니다.", Snackbar.LENGTH_SHORT)
+                                    .show()
+                            }
+                    }.addOnFailureListener { exception ->
+                        Log.e("StorageError", "이미지 삭제 실패: ${exception.message}")
+                        Snackbar.make(binding.root, "이미지 삭제에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                    }
+
+            }
+        }
     }
 
     private fun setupPhotoImageView() {
@@ -134,14 +213,27 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                 uploadImage(
                     uri = photoUri,
                     successHandler = {
-                        uploadArticle(
-                            it,
-                            binding.menuNameEditText.text.toString(),
-                            binding.priceEditText.text.toString().toInt(),
-                            binding.compositionEditText.text.toString(),
-                            binding.menuDetailEditText.text.toString(),
-                            binding.categorySpinner.selectedItem.toString()
-                        )
+                        if (menuModel != null) {
+                            // 수정 모드: 기존 메뉴 업데이트
+                            updateMenu(
+                                it,
+                                binding.menuNameEditText.text.toString(),
+                                binding.priceEditText.text.toString().toInt(),
+                                binding.compositionEditText.text.toString(),
+                                binding.menuDetailEditText.text.toString(),
+                                binding.categorySpinner.selectedItem.toString()
+                            )
+                        } else {
+                            // 추가 모드: 새로운 메뉴 추가
+                            uploadArticle(
+                                it,
+                                binding.menuNameEditText.text.toString(),
+                                binding.priceEditText.text.toString().toInt(),
+                                binding.compositionEditText.text.toString(),
+                                binding.menuDetailEditText.text.toString(),
+                                binding.categorySpinner.selectedItem.toString()
+                            )
+                        }
                     },
                     errorHandler = {
                         Snackbar.make(binding.root, "메뉴 등록에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
@@ -153,6 +245,38 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                 hideProgress()
             }
         }
+    }
+
+    private fun updateMenu(
+        photoUri: String,
+        menuName: String,
+        price: Int,
+        composition: String,
+        detail: String,
+        category: String
+    ) {
+        val updatedMenuModel = MenuModel(
+            imageUrl = photoUri,
+            menuId = menuModel?.menuId,
+            menuName = menuName,
+            price = price,
+            composition = composition,
+            detail = detail,
+            category = category,
+        )
+
+        val menuDoc = getAdminDocument().collection("menu").document(menuName)
+
+        menuDoc.set(updatedMenuModel)
+            .addOnSuccessListener {
+                Snackbar.make(binding.root, "메뉴가 수정되었습니다.", Snackbar.LENGTH_SHORT).show()
+                findNavController().navigate(R.id.adminMenuListFragment)
+                hideProgress()
+            }
+            .addOnFailureListener {
+                Snackbar.make(binding.root, "메뉴 수정에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                hideProgress()
+            }
     }
 
 
@@ -236,12 +360,12 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             }
     }
 
-    private fun getAdminDocument():DocumentReference{
+    private fun getAdminDocument(): DocumentReference {
         val email = getUserEmail()
         return firestore.collection("admin").document(email)
     }
 
-    private fun getUserEmail():String{
+    private fun getUserEmail(): String {
         return user?.email.toString()
     }
 
