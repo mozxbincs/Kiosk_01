@@ -11,7 +11,8 @@ import com.example.kiosk02.databinding.ItemMenuBinding
 import java.text.NumberFormat
 import java.util.Locale
 
-class MenuListAdapter : ListAdapter<MenuModel, MenuListAdapter.MenuViewHolder>(MenuDiffCallback()) {
+class MenuListAdapter(private val onItemClick: (MenuModel) -> Unit) :
+    ListAdapter<MenuModel, MenuListAdapter.MenuViewHolder>(MenuDiffCallback()) {
 
     inner class MenuViewHolder(private val binding: ItemMenuBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -19,12 +20,18 @@ class MenuListAdapter : ListAdapter<MenuModel, MenuListAdapter.MenuViewHolder>(M
             // 메뉴명 설정
             binding.menuNameTextView.text = menuModel.menuName ?: "이름 없음"
             // 메뉴 가격 설정
-            val formattedPrice = NumberFormat.getNumberInstance(Locale.KOREA).format(menuModel.price ?: 0)
+            val formattedPrice =
+                NumberFormat.getNumberInstance(Locale.KOREA).format(menuModel.price ?: 0)
             binding.priceTextView.text = "${formattedPrice}원"
             // 메뉴 이미지 설정
             Glide.with(binding.menuImageView.context)
                 .load(menuModel.imageUrl)
                 .into(binding.menuImageView)
+
+            //아이템 클릭 리스너 설정
+            binding.root.setOnClickListener {
+                onItemClick(menuModel)
+            }
         }
     }
 
