@@ -71,31 +71,32 @@ class MenuListFragment : Fragment() {
     private fun loadMenuItemsForCategory(category: String?) {
         category ?: return
 
-        binding.progressBarLayout.visibility = View.VISIBLE
-        binding.menuListRecyclerView.visibility = View.GONE
-
+        // Firestore 데이터 로드 시작
         getAdminDocument().collection("menu")
             .whereEqualTo("category", category)
             .get()
             .addOnSuccessListener { documents ->
                 val menuItems = documents.toObjects(MenuModel::class.java)
-                Log.d("MenuListFragment", "Loaded ${menuItems.size} items")
-                menuItems.forEach { menuItem ->
-                    Log.d("MenuListFragment", "Menu Item: $menuItem")
 
-                    //ProgressBar 숨기기
+                if (menuItems.isEmpty()) {
+                    // 아이템이 없는 경우 ProgressBar를 숨기고, RecyclerView도 숨김
                     binding.progressBarLayout.visibility = View.GONE
+                    binding.menuListRecyclerView.visibility = View.GONE
+                    Snackbar.make(binding.root, "표시할 메뉴가 없습니다.", Snackbar.LENGTH_SHORT).show()
+                } else {
+                    // 아이템이 있는 경우 RecyclerView와 데이터 설정
+                    (binding.menuListRecyclerView.adapter as MenuListAdapter).submitList(menuItems)
                     binding.menuListRecyclerView.visibility = View.VISIBLE
                 }
-                (binding.menuListRecyclerView.adapter as MenuListAdapter).submitList(menuItems)
-                Log.d("MenuListFragment", "Items submitted to adapter: $menuItems")
+
             }
             .addOnFailureListener {
-
-                Snackbar.make(binding.root, "표시할 메뉴가 없습니다.", Snackbar.LENGTH_SHORT).show()
-                //ProgressBar 숨기기
+                // 데이터 로드 실패 시 메시지 표시
+                Snackbar.make(binding.root, "데이터를 불러오는데 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+            }
+            .addOnCompleteListener {
+                // 로드 완료 후 ProgressBar 숨기기
                 binding.progressBarLayout.visibility = View.GONE
-                binding.menuListRecyclerView.visibility = View.VISIBLE
             }
     }
 
