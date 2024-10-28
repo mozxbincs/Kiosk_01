@@ -54,9 +54,6 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val user = auth.currentUser
         val email = user?.email
 
-        if(email != null) {
-            findUser(email, serviceSpinner, pickUpSpinner, floorSpinner, services, pickUps, floors)
-        }
 
         //AddInformFinish Button 초기화
         addInformFinishButton = view.findViewById(R.id.AddInformFinish)
@@ -92,50 +89,6 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         }
     }
 
-    private fun findUser(email: String,
-                         serviceSpinner: Spinner,
-                         pickUpSpinner: Spinner,
-                         floorSpinner: Spinner,
-                         services: Array<String>,
-                         pickUps: Array<String>,
-                         floors: Array<String>, ) {
-            firestore.collection("admin")
-                .document(email)
-                .get()
-                .addOnSuccessListener { document ->
-                    if(document != null && document.exists()) {
-                        val serviceType = document.getString("serviceType")
-                        val pickUpType = document.getString("pickUpType")
-                        val floorCount = document.getString("floorCount")
-
-                        var hasPreSelectedValues = false
-                        serviceType.let {
-                            val position = services.indexOf(it)
-                            if (position != -1) {
-                                serviceSpinner.setSelection(position)
-                                hasPreSelectedValues = true
-                            }
-                        }
-                        pickUpType.let {
-                            val position = pickUps.indexOf(it)
-                            if(position != -1) {
-                                pickUpSpinner.setSelection(position)
-                                hasPreSelectedValues = true
-                            }
-                        }
-                        floorCount.let {
-                            val position = floors.indexOf(it)
-                            if(position != -1) {
-                                floorSpinner.setSelection(position)
-                                hasPreSelectedValues = true
-                            }
-                        }
-
-                        if(hasPreSelectedValues){action = R.id.action_to_admin_activity} else{action = R.id.action_to_admin_sign_fragment}
-                    }
-
-                }
-    }
 
     private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, address: String) {
         val storeInform = hashMapOf<String, Any>(

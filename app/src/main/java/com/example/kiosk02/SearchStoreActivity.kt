@@ -22,6 +22,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.os.Handler
@@ -32,7 +33,11 @@ import androidx.core.app.ActivityCompat
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.util.FusedLocationSource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -106,14 +111,17 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                         val latitude = location.latitude
                         val longitude = location.longitude
 
-                        val currentLocationName = getAddressFormLatLng(latitude, longitude)
+                        val currentLocationName = runBlocking {getAddressFormLatLng(latitude, longitude)}
 
                         if (currentLocationName != null) {
                             searchQuery = "$currentLocationName $query"
                         }
                     }
-                    search(searchQuery){resultLatLng ->
-                        if(resultLatLng != null) {
+
+                    Log.d("searchQuery", "$searchQuery")
+
+                    search(searchQuery) { resultLatLng ->
+                        if (resultLatLng != null) {
                             moveCamera(resultLatLng)
                         }
                     }
@@ -148,10 +156,10 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
 
                 searchItemList.forEach {
-                    Log.d(
-                        "SearchStoreActivity",
+                    /*Log.d(
+                        "Search",
                         "검색 결과 좌표: mapx=${it.mapx}, mapy=${it.mapy}"
-                    )
+                    )*/
                 }
 
                 val markers = searchItemList.map {
@@ -159,7 +167,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                         it.mapy.toDouble() / 10000000,
                         it.mapx.toDouble() / 10000000
                     )
-                    Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
+                    //Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
                     Marker(latLng).apply {
                         captionText = it.title
                         map = naverMap
@@ -219,7 +227,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             val longitude = location.longitude
             Log.d("SearchStoreActivity 위경도", "현재 위치: 위도=$latitude, 경도=$longitude")
 
-            val address = getAddressFormLatLng(latitude, longitude)
+            val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
+            Log.d("SearchStoreActivity 현주소", "현재 주소: $address")
             if (address != null) {
                 Log.d("SearchStoreActivity 현주소", "현재 주소: $address")
             }
@@ -228,30 +237,56 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun getAddressFormLatLng(lat: Double, lng: Double): String? {
-        val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=AIzaSyB77AQD-C0eNPC8YEVqOrGU9y3L5BFiPUw"
-        return try {
-            val connection = URL(url).openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connect()
+    suspend fun getAddressFormLatLng(lat: Double, lng: Double): String? {
+        val apiKey = "AIzaSyB77AQD-C0eNPC8YEVqOrGU9y3L5BFiPUw"  // 여기에 유효한 Google Maps Geocoding API 키를 입력하세요
+        val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$apiKey&language=ko"
 
-            val response = connection.inputStream.bufferedReader().use { it.readText() }
-            val jsonObject = JSONObject(response)
-            val results = jsonObject.getJSONArray("results")
+        return withContext(Dispatchers.IO) {
+            var resultAddress: String? = null
 
-            if (results.length() > 0) {
-                val address = results.getJSONObject(0).getString("formatted_address")
-                Log.d("Full Address", address)
-                return address
-            } else {
-                Log.e("Geocoder Error", "No address found")
-                return null
+            try {
+                val connection = URL(url).openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.connect()
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    //Log.d("Response", "응답 코드: $response")
+
+                    val jsonObject = JSONObject(response)
+                    val results = jsonObject.getJSONArray("results")
+                    //Log.d("Results", "Results array: $results")
+
+                    for (i in 0 until results.length()) {
+                        val resultItem = results.getJSONObject(i)
+                        val typesArray = resultItem.getJSONArray("types")
+
+                        if (typesArray.length() > 0 && typesArray.getString(0) == "street_address") {
+                            val formattedAddress = resultItem.getString("formatted_address")
+                            val addressParts = formattedAddress.split(" ")
+                            val roadName = addressParts.getOrNull(3) ?: ""
+                            val cityName = addressParts.getOrNull(2) ?: ""
+
+                            resultAddress = "$cityName $roadName"
+                            //Log.d("Parsed Address", "Extracted address: $resultAddress")
+                            break
+                        }
+                    }
+
+                    if (resultAddress == null) {
+                        Log.e("Geocoder Error", "No 'street_address' type found in results")
+                    }
+                } else {
+                    Log.e("Geocoder Error", "Error response code: $responseCode")
+                }
+            } catch (e: Exception) {
+                Log.e("Geocoder Error", "Error retrieving address: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.e("Geocoder Error", "Error retrieving address: ${e.message}")
-            null
-        }
-        /*
+
+            return@withContext resultAddress
+
+            /*
         val geocoder = Geocoder(this, Locale.getDefault())
         val address = geocoder.getFromLocation(lat, lng, 1)
         if (!address.isNullOrEmpty()) {
@@ -265,8 +300,9 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             return "$city $roadAdress"
         }
         return null
+        */
+        }
 
-         */
     }
 
     private fun moveCamera(position: LatLng) {
@@ -327,8 +363,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             val longitude = location.longitude
 
             moveCamera(LatLng(latitude, longitude))
-            val address = getAddressFormLatLng(latitude, longitude)
-            if(address != null) {
+            val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
+            if (address != null) {
                 search(address) {}
             }
         }
@@ -339,10 +375,10 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 val longitude = location.longitude
                 Log.d("SearchStoreActivity", "현위치: 위도=$latitude, 경도=$longitude")
 
-                val address = getAddressFormLatLng(latitude, longitude)
+                val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
                 if (address != null) {
                     Log.d("SearchStoreActivity", "현위치 주소: $address")
-                    search(address){}
+                    search(address) {}
                 }
             } else {
                 Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
