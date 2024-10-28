@@ -32,6 +32,11 @@ import androidx.core.app.ActivityCompat
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.util.FusedLocationSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.log
@@ -224,19 +229,28 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun getAddressFormLatLng(lat: Double, lng: Double): String? {
-        val geocoder = Geocoder(this, Locale.getDefault())
-        val address = geocoder.getFromLocation(lat, lng, 1)
-        if (!address.isNullOrEmpty()) {
-            val fullAddress = address[0].getAddressLine(0)
-            Log.d("Full Address", fullAddress)
+        val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=AIzaSyB77AQD-C0eNPC8YEVqOrGU9y3L5BFiPUw"
+        return try {
+            val connection = URL(url).openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.connect()
 
-            val addressParts = fullAddress.split(" ")
-            val city = addressParts.getOrNull(2)
-            val roadAdress = addressParts.getOrNull(3)
-            Log.d("Full Address", "$city $roadAdress")
-            return "$city $roadAdress"
+            val response = connection.inputStream.bufferedReader().use { it.readText() }
+            val jsonObject = JSONObject(response)
+            val results = jsonObject.getJSONArray("results")
+
+            if (results.length() > 0) {
+                val address = results.getJSONObject(0).getString("formatted_address")
+                Log.d("Full Address", address)
+                return address
+            } else {
+                Log.e("Geocoder Error", "No address found")
+                return null
+            }
+        } catch (e: Exception) {
+            Log.e("Geocoder Error", "Error retrieving address: ${e.message}")
+            null
         }
-        return null
     }
 
     private fun moveCamera(position: LatLng) {
@@ -302,7 +316,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 search(address) {}
             }
         }
-
+        /*
         naverMap.addOnLocationChangeListener { location ->
             if (location != null) {
                 val latitude = location.latitude
@@ -318,7 +332,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
             }
         }
-
+        */
 
     }
 }

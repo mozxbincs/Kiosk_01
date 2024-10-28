@@ -13,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-class AddInformActivity : Fragment(R.layout.activity_add_inform) {
+class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth

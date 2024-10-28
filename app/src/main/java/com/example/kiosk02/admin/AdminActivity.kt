@@ -20,7 +20,7 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         }
 
         view.findViewById<Button>(R.id.additionalRegistrationButton).setOnClickListener {
-            findNavController().navigate(R.id.addInformActivity)
+            findNavController().navigate(R.id.action_to_admin_inform)
         }
     }
 }

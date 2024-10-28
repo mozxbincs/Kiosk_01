@@ -79,12 +79,6 @@
             android:enabled="false"/>
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/addressEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="주소"
-        android:layout_marginBottom="16dp"/>
 
     <TextView
         android:id="@+id/warningTextView"

@@ -78,6 +78,19 @@
     <action
         android:id="@+id/action_to_show_email_admin"
         app:destination="@id/showEmailAdminFragment" />
+    <fragment
+        android:id="@+id/adminInformActivity"
+        android:name="com.example.kiosk02.admin.AdminInformActivity"
+        android:label="AdminInformActivity" />
+    <activity
+        android:id="@+id/searchStoreActivity"
+        android:name="com.example.kiosk02.SearchStoreActivity"
+        android:label="activity_search_store"
+        tools:layout="@layout/activity_search_store" />
+
+    <action
+        android:id="@+id/action_to_admin_inform"
+        app:destination="@id/adminInformActivity" />
 
 
 </navigation>
