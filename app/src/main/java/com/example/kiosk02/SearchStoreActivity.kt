@@ -217,11 +217,11 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         if (location != null) {
             val latitude = location.latitude
             val longitude = location.longitude
-            Log.d("SearchStoreActivity", "현재 위치: 위도=$latitude, 경도=$longitude")
+            Log.d("SearchStoreActivity 위경도", "현재 위치: 위도=$latitude, 경도=$longitude")
 
             val address = getAddressFormLatLng(latitude, longitude)
             if (address != null) {
-                Log.d("SearchStoreActivity", "현재 주소: $address")
+                Log.d("SearchStoreActivity 현주소", "현재 주소: $address")
             }
         } else {
             Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
@@ -251,6 +251,22 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.e("Geocoder Error", "Error retrieving address: ${e.message}")
             null
         }
+        /*
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val address = geocoder.getFromLocation(lat, lng, 1)
+        if (!address.isNullOrEmpty()) {
+            val fullAddress = address[0].getAddressLine(0)
+            Log.d("Full Address", fullAddress)
+
+            val addressParts = fullAddress.split(" ")
+            val city = addressParts.getOrNull(2)
+            val roadAdress = addressParts.getOrNull(3)
+            Log.d("Full Address", "$city $roadAdress")
+            return "$city $roadAdress"
+        }
+        return null
+
+         */
     }
 
     private fun moveCamera(position: LatLng) {
@@ -316,7 +332,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 search(address) {}
             }
         }
-        /*
+
         naverMap.addOnLocationChangeListener { location ->
             if (location != null) {
                 val latitude = location.latitude
@@ -332,7 +348,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
             }
         }
-        */
+
 
     }
 }
