@@ -46,6 +46,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics")
 
+    implementation ("com.google.android.gms:play-services-base:17.6.0")
+    implementation ("com.google.android.gms:play-services-location:18.0.0")
+
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 

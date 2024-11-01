@@ -30,6 +30,8 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.util.FusedLocationSource
@@ -139,6 +141,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
+
     private fun search(searchQuery: String, onCamerMove: (LatLng) -> Unit) {
         SearchRepository.getStore(searchQuery).enqueue(object : Callback<SearchResult> {
             override fun onResponse(
@@ -167,15 +170,13 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                         it.mapy.toDouble() / 10000000,
                         it.mapx.toDouble() / 10000000
                     )
-                    //Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
+                    Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
                     Marker(latLng).apply {
                         captionText = it.title
                         map = naverMap
                     }
                 }
-
                 restaurantListAdapter.setData(searchItemList)
-
                 onCamerMove(markers.first().position)
                 //moveCamera(markers.first().position)
 
@@ -252,30 +253,35 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 val responseCode = connection.responseCode
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    //Log.d("Response", "응답 코드: $response")
-
                     val jsonObject = JSONObject(response)
                     val results = jsonObject.getJSONArray("results")
-                    //Log.d("Results", "Results array: $results")
 
                     for (i in 0 until results.length()) {
                         val resultItem = results.getJSONObject(i)
-                        val typesArray = resultItem.getJSONArray("types")
+                        val addressComponents = resultItem.getJSONArray("address_components")
 
-                        if (typesArray.length() > 0 && typesArray.getString(0) == "street_address") {
-                            val formattedAddress = resultItem.getString("formatted_address")
-                            val addressParts = formattedAddress.split(" ")
-                            val roadName = addressParts.getOrNull(3) ?: ""
-                            val cityName = addressParts.getOrNull(2) ?: ""
+                        var sublocality = ""
+                        var locality = ""
 
-                            resultAddress = "$cityName $roadName"
-                            //Log.d("Parsed Address", "Extracted address: $resultAddress")
+                        for (j in 0 until addressComponents.length()) {
+                            val component = addressComponents.getJSONObject(j)
+                            val types = component.getJSONArray("types")
+                            val longName = component.getString("long_name")
+
+                            when {
+                                types.toString().contains("sublocality_level_2") -> sublocality = longName
+                                types.toString().contains("locality") -> locality = longName
+                            }
+                        }
+
+                        if (sublocality.isNotEmpty() && locality.isNotEmpty()) {
+                            resultAddress = "$locality $sublocality"
                             break
                         }
                     }
 
                     if (resultAddress == null) {
-                        Log.e("Geocoder Error", "No 'street_address' type found in results")
+                        Log.e("Geocoder Error", "No matching address components found")
                     }
                 } else {
                     Log.e("Geocoder Error", "Error response code: $responseCode")
@@ -285,22 +291,6 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             return@withContext resultAddress
-
-            /*
-        val geocoder = Geocoder(this, Locale.getDefault())
-        val address = geocoder.getFromLocation(lat, lng, 1)
-        if (!address.isNullOrEmpty()) {
-            val fullAddress = address[0].getAddressLine(0)
-            Log.d("Full Address", fullAddress)
-
-            val addressParts = fullAddress.split(" ")
-            val city = addressParts.getOrNull(2)
-            val roadAdress = addressParts.getOrNull(3)
-            Log.d("Full Address", "$city $roadAdress")
-            return "$city $roadAdress"
-        }
-        return null
-        */
         }
 
     }
