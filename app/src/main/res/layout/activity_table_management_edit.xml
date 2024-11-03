@@ -51,41 +51,7 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/one_seater_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1인 테이블"
-            android:padding="7dp"
-            android:clickable="true"
-            android:focusable="true"/>
 
-        <TextView
-            android:id="@+id/two_seater_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2인 테이블"
-            android:padding="7dp"
-            android:clickable="true"
-            android:focusable="true"/>
-
-        <TextView
-            android:id="@+id/three_seater_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="3인 테이블"
-            android:padding="7dp"
-            android:clickable="true"
-            android:focusable="true"/>
-
-        <TextView
-            android:id="@+id/four_seater_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="4인 테이블"
-            android:padding="7dp"
-            android:clickable="true"
-            android:focusable="true"/>
 
         <TextView
             android:id="@+id/other_seater_text"
@@ -94,7 +60,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="7dp"
-            android:text="기타" />
+            android:text="테이블 생성" />
     </LinearLayout>
 
 

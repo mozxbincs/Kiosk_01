@@ -37,71 +37,62 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
     private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
     private var selectedTable: View? = null // 선택된 테이블
     private val db = FirebaseFirestore.getInstance() // Firestore 인스턴스
-private lateinit var removeFloorButton:Button
+
     //
     private lateinit var floorSpinner: Spinner
-    private lateinit var floorTextView: TextView
-    private lateinit var addFloorButton: Button
-    private var currentFloorCount = 0 // 현재 층수 저장
-
-
-
+    private var quantityCount: Int = 0
+    private var lastSelectedTableType: String = ""
+    private var maxTableId: Int = 0 // 최대 테이블 ID를 저장할 변수
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         floorSpinner = view.findViewById(R.id.floor_spinner)
+        floorSpinner.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+                val selectedFloor = parent.getItemAtPosition(position) as String
+                loadTablesFromFirestore(selectedFloor) // 선택한 층에 대한 테이블 로드
+            }
 
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // 아무 것도 선택되지 않았을 때의 처리
+            }
+        })
         // Firebase Firestore에서 floorCount 데이터를 불러옴
         loadFloorsFromFirestore()
-
+        initializeMaxTableId { maxId ->
+            maxTableId = maxId // 최대 테이블 ID 설정
+            Log.d("Firestore", "Max table ID is now $maxTableId")
+        }
 
         //
         tableList = view.findViewById(R.id.table_list)
         tableFrame = view.findViewById(R.id.table_frame)
         removeTableButton = view.findViewById(R.id.remove_table_button)
 
-        removeTableButton.visibility = View.GONE
+        removeTableButton.visibility = View.VISIBLE
 
 
 
         // 삭제 버튼 클릭 이벤트
+// 삭제 버튼 클릭 이벤트
         removeTableButton.setOnClickListener {
             selectedTable?.let { tableToRemove ->
-                // FrameLayout에서 선택된 테이블 제거
+                // Firestore에서 선택된 테이블 삭제
+                deleteTableFromFirestore(tableToRemove.tag.toString())
+                // UI에서 선택된 테이블 제거
                 removeTableFromFrame(tableToRemove) // tableFrame에서 테이블 삭제
-                // 추가된 테이블 목록에서 제거
-                addedTables.remove(tableToRemove)
+                addedTables.remove(tableToRemove) // 추가된 테이블 목록에서 제거
                 selectedTable = null // 선택 해제
-                removeTableButton.visibility = View.GONE // 삭제 버튼 숨기기
+                removeTableButton.visibility = View.VISIBLE // 삭제 버튼 숨기기
                 Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             } ?: run {
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
+
         view.findViewById<TextView>(R.id. back_activity_admin).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_activity) // 관리자 초기 화면으로 이동
         }
-
-        // 1인 테이블 TextView 클릭 이벤트
-        view.findViewById<TextView>(R.id.one_seater_text).setOnClickListener {
-            showQuantityInputDialog("1")
-        }
-
-        // 2인 테이블 TextView 클릭 이벤트
-        view.findViewById<TextView>(R.id.two_seater_text).setOnClickListener {
-            showQuantityInputDialog("2")
-        }
-
-        // 3인 테이블 TextView 클릭 이벤트
-        view.findViewById<TextView>(R.id.three_seater_text).setOnClickListener {
-            showQuantityInputDialog("3")
-        }
-
-        // 4인 테이블 TextView 클릭 이벤트
-        view.findViewById<TextView>(R.id.four_seater_text).setOnClickListener {
-            showQuantityInputDialog("4")
-        }
-
         // 기타 테이블 클릭 리스너
         view.findViewById<TextView>(R.id.other_seater_text).setOnClickListener {
             showQuantityPeopleInputDialog()
@@ -147,12 +138,8 @@ private lateinit var removeFloorButton:Button
             }
         }
 
-//        view.findViewById<Button>(R.id.remove_table_button).setOnClickListener {
-//
-//
-//        }
         setupTableFrameForDrop()
-
+        onAppStart()
     }
 //
 
@@ -162,62 +149,38 @@ private lateinit var removeFloorButton:Button
         return floorSpinner.selectedItem.toString() // 선택된 플로어 가져오기
     }
 
-    // Firestore에 테이블 정보 저장
-    // Firestore에 테이블 정보 저장
-    private fun saveTableToFirestore(tableType: String, tableQuantity: Int) {
-        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        val selectedFloor = getSelectedFloor() // 스피너에서 선택된 값 가져오기
 
-        // Firestore에서 이미 저장된 테이블의 개수를 먼저 확인
+
+
+
+    private fun saveTableToFirestore(tableType: String, tableQuantity: Int, x: Int, y: Int, existingTableId: String) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor()
+
+        val tableData = hashMapOf(
+            "tableType" to tableType,
+            "tableNumber" to existingTableId.split("_")[1].toInt(), // 기존 ID에서 테이블 번호 추출
+            "x" to x,
+            "y" to y
+        )
+
         db.collection("admin")
             .document(userEmail)
             .collection("floors")
             .document(selectedFloor)
             .collection("tables")
-            .get()
-            .addOnSuccessListener { result ->
-                // 이미 존재하는 테이블 수를 가져옴
-                val existingTableCount = result.size()
-
-                // 새로 추가할 테이블의 ID는 기존 테이블 수 + 1부터 시작
-                val startingTableNumber = existingTableCount + 1
-
-                // 테이블 수량만큼 Firestore에 테이블 정보 저장
-                for (i in 0 until tableQuantity) {
-                    val tableId = "table_${startingTableNumber + i}" // 테이블 문서 ID 생성
-
-                    // 저장할 테이블 데이터
-                    val tableData = hashMapOf(
-                        "tableType" to "${tableType}인",  // 테이블 종류 (몇 인 테이블)
-                        "tableNumber" to (startingTableNumber + i),  // 테이블 번호
-                        "x" to 0,  // 기본 x 좌표 (드래그 후 업데이트)
-                        "y" to 0   // 기본 y 좌표 (드래그 후 업데이트)
-                    )
-
-                    // Firestore에 데이터 저장
-                    db.collection("admin")
-                        .document(userEmail)
-                        .collection("floors")
-                        .document(selectedFloor)
-                        .collection("tables")
-                        .document(tableId) // 문서 ID (table_1, table_2, ...)
-                        .set(tableData)
-                        .addOnSuccessListener {
-                            Log.d("Firestore", "Table ${startingTableNumber + i} successfully written!")
-                        }
-                        .addOnFailureListener { e ->
-                            Log.w("Firestore", "Error writing table ${startingTableNumber + i}", e)
-                        }
-                }
+            .document(existingTableId) // 여기서 기존 ID로 저장
+            .set(tableData)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Table $existingTableId successfully written at ($x, $y)!")
             }
             .addOnFailureListener { e ->
-                Log.w("Firestore", "Error getting documents", e)
+                Log.w("Firestore", "Error writing table $existingTableId", e)
             }
     }
 
 
-///////////////////////
-
+    ///////////////////////
     private fun loadTablesForSelectedFloor(selectedFloor: String) {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
 
@@ -231,22 +194,14 @@ private lateinit var removeFloorButton:Button
             .get()
             .addOnSuccessListener { result ->
                 for (document in result) {
-                    val tableId = document.getString("tableId") ?: "0" // 기본값 설정
+                    val tableId = document.id // 기본값 설정
                     val x = document.getLong("x")?.toInt() ?: 0
                     val y = document.getLong("y")?.toInt() ?: 0
                     val tableType = document.getString("tableType") ?: "Unknown"
 
-                    // 테이블 ID를 숫자로 변환, 실패 시 기본값 사용
-                    val numericTableId = try {
-                        tableId.toInt()
-                    } catch (e: NumberFormatException) {
-                        Log.e("Error", "Invalid tableId format: $tableId", e)
-                        0 // 기본값 설정
-                    }
-
                     // 테이블 도형을 생성하여 좌표에 배치
-                    val tableView = createTableView(tableType, numericTableId).apply {
-                        tag = tableId
+                    val tableView = createTableView(tableType, tableId).apply {
+                        tag = tableId // 태그를 tableId로 설정
                     }
 
                     val layoutParams = FrameLayout.LayoutParams(
@@ -259,32 +214,102 @@ private lateinit var removeFloorButton:Button
 
                     tableFrame.addView(tableView, layoutParams)
                 }
+
+                // 모든 테이블 로드 후 최대 테이블 ID 업데이트
+
             }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error getting table data", e)
             }
     }
+    private fun fetchMaxTableId() {
+        initializeMaxTableId { maxId ->
+            maxTableId = maxId // 최대 테이블 ID 설정
+            Log.d("Firestore", "Max table ID is now $maxTableId")
 
-
+            // 최대 ID가 설정된 후 테이블을 추가
+            addNewTables(quantityCount, lastSelectedTableType)
+        }
+    }
+    private fun onAppStart() {
+        fetchMaxTableId() // 최대 ID 가져오기
+        loadFloorsFromFirestore() // 층 로드
+    }
     // 테이블 도형을 생성하는 함수 (예시)
-    // 테이블 뷰에 드래그 가능하도록 설정
-    private fun createTableView(tableType: String, tableNumber: Int): View {
+// 테이블 뷰에 드래그 가능하도록 설정
+    @SuppressLint("ClickableViewAccessibility")
+    private fun createTableView(tableType: String, tableId: String): View {
         val tableView = TextView(requireContext()).apply {
-            text = "$tableType _ 테이블 $tableNumber"
+            text = "$tableType" // 예: "3 인 테이블 1"
             textSize = 18f
             setPadding(16, 16, 16, 16)
             setBackgroundResource(R.drawable.table_shape)
 
-            // 드래그 시작
-            setOnLongClickListener {
-                val dragShadow = View.DragShadowBuilder(it)
-                it.startDragAndDrop(null, dragShadow, it, 0)
-                it.visibility = View.INVISIBLE
-                true
+            var isDragging = false
+            var downX = 0f
+            var downY = 0f
+
+            // 드래그 및 클릭 리스너 설정
+            setOnTouchListener { v, event ->
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        downX = event.x
+                        downY = event.y
+                        isDragging = false // 초기화
+                        true
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        val distanceX = Math.abs(event.x - downX)
+                        val distanceY = Math.abs(event.y - downY)
+                        if (distanceX > 10 || distanceY > 10) { // 10px 이상 움직이면 드래그로 인식
+                            isDragging = true
+                            val dragData = ClipData.newPlainText("table", tableId)
+                            val dragShadowBuilder = View.DragShadowBuilder(v)
+                            v.startDragAndDrop(dragData, dragShadowBuilder, v, 0)
+                            v.visibility = View.INVISIBLE
+                        }
+                        true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if (!isDragging) {
+                            // 클릭으로 인식
+                            selectedTable = this // 클릭한 테이블을 선택 상태로 변경
+                            removeTableButton.visibility = View.VISIBLE // 삭제 버튼 표시
+                        }
+                        true
+                    }
+                    else -> false
+                }
+            }
+//드래그 기능 추가하니까 클릭이 안먹혀서 삭제할 테이블이 없다고 뜸-> 클릭과 드래그를 구분
+
+
+
+            // 드래그 리스너 설정
+            setOnDragListener { view, dragEvent ->
+                when (dragEvent.action) {
+                    DragEvent.ACTION_DRAG_ENDED -> {
+                        if (dragEvent.result) {
+                            // 드래그가 성공적으로 종료되면, 테이블 위치를 Firestore에 업데이트
+                            val newX = (view.layoutParams as FrameLayout.LayoutParams).leftMargin
+                            val newY = (view.layoutParams as FrameLayout.LayoutParams).topMargin
+                            updateTablePosition(tableId, newX, newY)
+                        }
+                        view.visibility = View.VISIBLE
+                        true
+                    }
+                    else -> false
+                }
             }
 
             // 태그 설정 (테이블 ID로 설정)
-            tag = tableNumber.toString() // 또는 tableType을 사용할 수 있습니다.
+            tag = tableId
+
+            // 초기 클릭 리스너 설정 (드래그가 없을 경우)
+            setOnClickListener {
+                selectedTable = this // 클릭한 테이블을 선택 상태로 변경
+                removeTableButton.visibility = View.VISIBLE // 삭제 버튼 표시
+            }
         }
         return tableView
     }
@@ -292,8 +317,9 @@ private lateinit var removeFloorButton:Button
 
 
 
+
     private fun updateFloorSpinner(floorOptions: Array<String>) {
-        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
+        // ArrayAdapter를 사용해 Spinner에 값을 연결
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         floorSpinner.adapter = adapter
@@ -304,6 +330,7 @@ private lateinit var removeFloorButton:Button
                 val selectedFloor = parent.getItemAtPosition(position).toString()
                 // 사용자가 층을 선택할 때 테이블 목록을 로드
                 loadTablesForSelectedFloor(selectedFloor)
+                fetchMaxTableId() // 최대 테이블 ID를 가져오기
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -312,19 +339,7 @@ private lateinit var removeFloorButton:Button
         }
     }
 
-    private fun fetchFloorsFromFirestore() {
-        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        db.collection("admin").document(userEmail).collection("floors")
-            .get()
-            .addOnSuccessListener { documents ->
-                val floorOptions = documents.map { it.id }.toTypedArray() // 층 이름 가져오기
-                updateFloorSpinner(floorOptions) // 층 스피너 업데이트
-            }
-            .addOnFailureListener { e ->
-                Log.w("Firestore", "Error getting floors", e)
-            }
-    }
-//////////////////////////
+
 
 
     //파이어베이스 연동
@@ -443,40 +458,10 @@ private lateinit var removeFloorButton:Button
     }
 
 
-    // floorCount 값을 바탕으로 Spinner에 값을 설정하는 함수
-    private fun setFloorSpinnerValues(totalFloorCount: Int) {
-        // 1부터 floorCount까지의 숫자를 배열로 만듭니다.
-        val floorOptions = (1..totalFloorCount).map { String.format("%d층", it) }.toTypedArray()
-
-        // ArrayAdapter를 사용해 Spinner에 값을 연결합니다.
-        val adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, floorOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        floorSpinner.adapter = adapter
-    }
 
 
-    // 수량 입력 다이얼로그를 표시하는 함수
-    private fun showQuantityInputDialog(seaterType: String) {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("$seaterType 인 테이블 수량 입력")
 
-        // 수량 입력을 위한 EditText 생성
-        val input = EditText(requireContext())
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        builder.setView(input)
 
-        builder.setPositiveButton("확인") { dialog, which ->
-            val count = input.text.toString().toIntOrNull() ?: 0
-            if (canAddMoreTablesToList(count)) { // 추가 가능한 테이블 수 체크
-                addTablesToList(count, seaterType) // 테이블 추가
-            }
-
-        }
-
-        builder.setNegativeButton("취소") { dialog, which -> dialog.cancel() }
-        builder.show()
-    }
 
     // 수량 입력 다이얼로그를 표시하는 함수 (기타 테이블)
     private fun showQuantityPeopleInputDialog() {
@@ -491,7 +476,7 @@ private lateinit var removeFloorButton:Button
 
         // '몇 인 테이블' 입력 필드
         val seaterInput = EditText(requireContext()).apply {
-            hint = "몇 인 테이블인지 입력 (5~20)"
+            hint = "몇 인 테이블인지 입력 (1~20)"
             inputType = InputType.TYPE_CLASS_NUMBER
         }
 
@@ -511,13 +496,14 @@ private lateinit var removeFloorButton:Button
             val seaterCount = seaterInput.text.toString().toIntOrNull() ?: 0
             val quantityCount = quantityInput.text.toString().toIntOrNull() ?: 0
 
-            if (seaterCount in 5..20 && quantityCount > 0) {
-
-                if (canAddMoreTablesToList(quantityCount)) { // 추가 가능한 테이블 수 체크
-                    addTablesToList(quantityCount, seaterCount.toString())
-                    saveTableToFirestore(seaterCount.toString(), quantityCount) //##
+            if (seaterCount in 1..20 && quantityCount > 0) {
+                // 현재 테이블 수가 6개 이하인지 확인
+                if (canAddMoreTablesToList(quantityCount)) {
+                    lastSelectedTableType = "$seaterCount 인" // 테이블 타입 저장
+                    addTablesToList(quantityCount, lastSelectedTableType) // 테이블 타입 전달
+                } else {
+                    Toast.makeText(requireContext(), "최대 6개의 테이블만 추가할 수 있습니다.", Toast.LENGTH_SHORT).show()
                 }
-
             } else {
                 Toast.makeText(requireContext(), "올바른 숫자를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
@@ -530,11 +516,8 @@ private lateinit var removeFloorButton:Button
         builder.show()
     }
 
-    // FrameLayout에서 선택된 테이블을 제거하는 함수
-//    private fun removeTableFromFrame(table: View) {
-//        val owner = table.parent as? ViewGroup
-//        owner?.removeView(table) // FrameLayout에서 테이블 제거
-//    }
+
+
     // FrameLayout에서 선택된 테이블을 제거하는 함수
     private fun removeTableFromFrame(table: View) {
         val owner = table.parent as? ViewGroup
@@ -553,51 +536,142 @@ private lateinit var removeFloorButton:Button
         if (tableList.childCount + count <= maxTablesInList) {
             return true
         } else {
-            Toast.makeText(
-                requireContext(),
-                "이 공간에 추가될 수 있는 테이블은 최대 $maxTablesInList 개입니다.",
-                Toast.LENGTH_SHORT
-            ).show()
+
             return false
         }
     }
-
+//테이블 아이디 1부터 시작되는 문제 해결(나갔다 들어오면)->1부터 시작 부분
     @SuppressLint("MissingInflatedId")
 
     private fun addTablesToList(count: Int, tableType: String) {
-        for (i in 1..count) {
-            val tableId = "table_$i" // 테이블 ID 생성
+        val existingTableCount = addedTables.size // 현재 추가된 테이블 수
+
+        for (i in 0 until count) {
+            val tableId = maxTableId + existingTableCount + i + 1  // 1부터 시작
+
             val tableView = LayoutInflater.from(requireContext()).inflate(R.layout.table_item, null)
             val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
 
             // 테이블 이름 설정
-            tableNameTextView.text = "$tableType 인"
+            tableNameTextView.text = tableType
 
-            // 테이블 크기 및 스타일 설정 (예시로 고정 크기 사용)
-            val size = (50 * resources.displayMetrics.density).toInt() // 각 테이블의 고정 크기
+            // 테이블 ID를 태그로 설정
+            tableView.tag = "table_$tableId" // 태그 설정
+
+            // 레이아웃 설정
+            val size = (50 * resources.displayMetrics.density).toInt()
             val layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                // 여백 설정
                 setMargins(8, 8, 8, 8)
             }
+            tableView.layoutParams = layoutParams
 
-            // 드래그 앤 드롭을 위한 테이블에 터치 리스너 추가
+            // 드래그 앤 드롭 리스너
             tableView.setOnTouchListener { v, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
-                    val dragData = ClipData.newPlainText("table", tableId) // 테이블 ID를 드래그 데이터로 설정
+                    val dragData = ClipData.newPlainText("table", "${tableView.tag};$tableType")
                     val dragShadowBuilder = View.DragShadowBuilder(v)
                     v.startDragAndDrop(dragData, dragShadowBuilder, v, 0)
-                    v.performClick()  // 접근성 클릭
+                    v.performClick()
                     true
                 } else {
                     false
                 }
             }
+            // 클릭 리스너 추가
+            tableView.setOnClickListener {
+                selectedTable = tableView // 선택된 테이블 저장
+                removeTableButton.visibility = View.VISIBLE // 삭제 버튼 보이기
+            }
 
-            // 테이블 뷰를 LinearLayout (tableList)에 추가
-            tableList.addView(tableView, layoutParams)
+            tableList.addView(tableView)
             addedTables.add(tableView) // 추가된 테이블을 목록에 저장
         }
     }
+
+
+    private fun deleteTableFromFirestore(tableId: String) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor() ?: return
+
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .document(tableId) // 드롭한 테이블 ID로 Firestore에서 삭제
+            .delete()
+            .addOnSuccessListener {
+                Log.d("Firestore", "Table $tableId successfully deleted!")
+                Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error deleting table $tableId", e)
+                Toast.makeText(requireContext(), "테이블 삭제 실패: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
+    //나갔다 들어왔을때, 층수 변동시 아이디 끼리 안겹치게 하기 위해 문서내 테이블 중 가장 큰값을 찾도록 함
+    private fun initializeMaxTableId(callback: (Int) -> Unit) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+
+        // 모든 층의 최대 테이블 ID를 찾기 위한 리스트
+        val maxTableIds = mutableListOf<Int>()
+
+        // Firestore에서 층 목록을 가져오기
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .get()
+            .addOnSuccessListener { floors ->
+                // 모든 층에서 테이블 ID를 가져오기 위한 카운터
+                var floorsProcessed = 0
+
+                for (floor in floors.documents) {
+                    // 각 층의 테이블 ID를 가져오기
+                    val floorId = floor.id
+                    db.collection("admin")
+                        .document(userEmail)
+                        .collection("floors")
+                        .document(floorId)
+                        .collection("tables")
+                        .get()
+                        .addOnSuccessListener { tables ->
+                            for (table in tables.documents) {
+                                val tableId = table.id // 테이블 ID는 문서 ID
+                                val numericId = tableId.substringAfter("table_").toIntOrNull()
+                                if (numericId != null) {
+                                    maxTableIds.add(numericId)
+                                }
+                            }
+
+                            // 모든 층을 확인한 후 최대 ID를 찾기
+                            floorsProcessed++
+                            if (floorsProcessed == floors.size()) {
+                                val maxId = maxTableIds.maxOrNull() ?: 0
+                                callback(maxId) // 최대 ID를 반환
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("Firestore", "Error getting tables for floor $floorId", e)
+                        }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error getting floors", e)
+            }
+    }
+
+
+
+    private fun addNewTables(quantityCount: Int, tableType: String) {
+        val newIdBase = maxTableId // 여기서 maxTableId를 사용
+        for (i in 0 until quantityCount) {
+            val newTableId = "table_${newIdBase + i + 1}" // ID 생성
+            // 테이블 추가 로직...
+        }
+    }
+
 
     // 드래그 리스너
 // TableFrame에 드롭 가능하도록 설정
@@ -608,16 +682,102 @@ private lateinit var removeFloorButton:Button
                 DragEvent.ACTION_DRAG_ENTERED -> true
                 DragEvent.ACTION_DRAG_EXITED -> true
                 DragEvent.ACTION_DROP -> {
-                    // 드래그된 뷰 가져오기
                     val droppedView = dragEvent.localState as View
                     val parent = droppedView.parent as ViewGroup
                     parent.removeView(droppedView)
 
-                    // 드롭된 위치 계산
                     val x = dragEvent.x.toInt()
                     val y = dragEvent.y.toInt()
 
-                    // 테이블 프레임에 드롭된 위치에 추가
+                    // tableView에서 tableId 가져오기
+                    val draggedTableId = droppedView.tag as String // tableView의 태그에서 ID 가져오기
+
+                    // clipData의 길이를 체크하여 안전하게 접근
+                    if (dragEvent.clipData.itemCount > 0) {
+                        val tableType = dragEvent.clipData.getItemAt(0).text.toString().split(";").getOrNull(1) ?: "unknown"
+
+                        // Firestore에 해당 테이블의 원래 ID로 저장
+                        checkTableExists(draggedTableId, tableType, x, y, droppedView)
+
+                        val layoutParams = FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.WRAP_CONTENT,
+                            FrameLayout.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            leftMargin = x
+                            topMargin = y
+                        }
+
+                        // 테이블 뷰를 테이블 프레임에 추가
+                        tableFrame.addView(droppedView, layoutParams)
+                        droppedView.visibility = View.VISIBLE
+                        return@setOnDragListener true
+                    } else {
+                        Log.w("DragEvent", "No clip data available.")
+                        return@setOnDragListener false
+                    }
+                }
+                else -> false
+            }
+        }
+    }
+//파이어베이스에 존재했을시에는 위치 값만 업데이트 해야하므로 체킹해주는 함수 필요
+// ->드롭시 무조건 테이블 생성되게 되니까 같은 테이블을 위치 옮기는 건데도 테이블이 새로생성
+    //->따라서 존재하는건지여부를 확인하게 함
+
+    private fun checkTableExists(tableId: String, tableType: String, x: Int, y: Int, droppedView: View) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor() ?: return
+
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .document(tableId) // 드롭한 테이블 ID로 Firestore에서 확인
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    updateTablePosition(tableId, x, y) // 위치 업데이트
+                } else {
+                    // Firestore에 새 테이블 생성 (드롭 후)
+                    saveTableToFirestore(tableType, 1, x, y, tableId) // 드롭한 테이블 ID로 저장
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error checking table existence", e)
+            }
+    }
+
+
+
+    private fun loadTablesFromFirestore(floorId: String) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(floorId)
+            .collection("tables")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    val tableId = document.id
+                    val tableType = document.getString("type") ?: "기타 테이블"
+                    val x = document.getLong("x")?.toInt() ?: 0
+                    val y = document.getLong("y")?.toInt() ?: 0
+
+                    // 테이블 뷰 생성
+                    val tableView = LayoutInflater.from(requireContext()).inflate(R.layout.table_item, null)
+                    val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
+                    tableNameTextView.text = tableType
+                    tableView.tag = tableId // 테이블 ID를 태그로 설정
+
+                    // 클릭 리스너 추가
+                    tableView.setOnClickListener {
+                        removeTableFromFirestore(tableId, tableView)
+                    }
+
+                    // 레이아웃 설정
                     val layoutParams = FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT
@@ -626,90 +786,63 @@ private lateinit var removeFloorButton:Button
                         topMargin = y
                     }
 
-                    tableFrame.addView(droppedView, layoutParams)
-                    droppedView.visibility = View.VISIBLE
-
-                    // 드래그된 테이블 ID 가져오기
-                    val draggedTableId = (dragEvent.clipData.getItemAt(0).text.toString())
-
-                    // 좌표 저장 로직
-                    saveTablePositionToFirestore(draggedTableId, x, y)
-
-                    true
+                    // 테이블 뷰를 테이블 프레임에 추가
+                    tableFrame.addView(tableView, layoutParams)
                 }
-                DragEvent.ACTION_DRAG_ENDED -> {
-                    if (!dragEvent.result) {
-                        val droppedView = dragEvent.localState as View
-                        droppedView.visibility = View.VISIBLE
-                    }
-                    true
-                }
-                else -> false
             }
-        }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error getting tables", e)
+            }
     }
 
-
-    private fun saveTablePositionToFirestore(tableId: String, x: Int, y: Int) {
+    private fun removeTableFromFirestore(tableId: String, tableView: View) {
         val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
-        val selectedFloor = getSelectedFloor()
+        val selectedFloor = getSelectedFloor() ?: return
 
-        // Firestore에 좌표 정보 저장
-        val tableData = hashMapOf(
-            "tableId" to tableId,
-            "x" to x,
-            "y" to y
-
-        )
-
+        // Firestore에서 테이블 삭제
         db.collection("admin")
             .document(userEmail)
             .collection("floors")
             .document(selectedFloor)
             .collection("tables")
             .document(tableId)
-            .update(tableData as Map<String, Any>, )
+            .delete()
             .addOnSuccessListener {
-                Log.d("Firestore", "Table position saved!")
+                // UI에서 테이블 뷰 제거
+                tableFrame.removeView(tableView)
+                Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Log.w("Firestore", "Error saving table position", e)
+                Log.w("Firestore", "Error deleting table", e)
             }
     }
 
 
-    // tableList에서 테이블 수량 줄이는 함수
-    private fun removeTableFromList(tableType: String) {
-        for (i in 0 until tableList.childCount) {
-            val tableView = tableList.getChildAt(i)
-            val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
+    private fun updateTablePosition(tableId: String, x: Int, y: Int) {
+        val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: return
+        val selectedFloor = getSelectedFloor()
 
-            if (tableNameTextView.text.toString() == "$tableType 인") {
-                tableList.removeViewAt(i) // 테이블 제거
-                return
+        Log.d("UpdateTable", "Updating table ID: $tableId to position ($x, $y)")
+
+        // Firestore에서 해당 테이블의 위치 업데이트
+        db.collection("admin")
+            .document(userEmail)
+            .collection("floors")
+            .document(selectedFloor)
+            .collection("tables")
+            .document(tableId) // 드래그 앤 드롭한 테이블의 ID 사용
+            .update("x", x, "y", y)
+            .addOnSuccessListener {
+                Log.d("Firestore", "Table $tableId position successfully updated!")
             }
-        }
-    }
-
-    // 테이블 수량을 tableList에 다시 추가하는 함수
-    private fun addTableToListBack(tableType: String) {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("$tableType 인 테이블 수량 입력")
-
-        // 수량 입력을 위한 EditText 생성
-        val input = EditText(requireContext())
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        builder.setView(input)
-
-        builder.setPositiveButton("확인") { dialog, which ->
-            val count = input.text.toString().toIntOrNull() ?: 0
-            if (canAddMoreTablesToList(count)) {
-                addTablesToList(count, tableType) // 테이블 다시 추가
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error updating table $tableId position", e)
             }
-        }
+    }}
 
-        builder.setNegativeButton("취소") { dialog, which -> dialog.cancel() }
-        builder.show()
-    }
 
-}
+
+
+
+
+
