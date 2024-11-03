@@ -103,9 +103,7 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                 .load(menu.imageUrl)
                 .into(binding.menuImageView)
 
-            selectedUri = Uri.parse(menu.imageUrl)
-
-            //기존 메뉴 정보들 load
+            // 기존 메뉴 정보들 로드
             binding.menuNameEditText.setText(menu.menuName)
             binding.priceEditText.setText(menu.price.toString())
             binding.compositionEditText.setText(menu.composition)
@@ -208,75 +206,30 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
     private fun setupConfirmButton() {
         binding.confirmButton.setOnClickListener {
             showProgress()
+            val menuName = binding.menuNameEditText.text.toString()
+            val price = binding.priceEditText.text.toString().toIntOrNull() ?: 0
+            val composition = binding.compositionEditText.text.toString()
+            val detail = binding.menuDetailEditText.text.toString()
+            val category = binding.categorySpinner.selectedItem.toString()
+
             if (selectedUri != null) {
-                val photoUri = selectedUri ?: return@setOnClickListener
+                // 새로운 이미지가 선택된 경우에만 업로드
                 uploadImage(
-                    uri = photoUri,
-                    successHandler = {
-                        if (menuModel != null) {
-                            // 수정 모드: 기존 메뉴 업데이트
-                            updateMenu(
-                                it,
-                                binding.menuNameEditText.text.toString(),
-                                binding.priceEditText.text.toString().toInt(),
-                                binding.compositionEditText.text.toString(),
-                                binding.menuDetailEditText.text.toString(),
-                                binding.categorySpinner.selectedItem.toString()
-                            )
-                        } else {
-                            // 추가 모드: 새로운 메뉴 추가
-                            uploadArticle(
-                                it,
-                                binding.menuNameEditText.text.toString(),
-                                binding.priceEditText.text.toString().toInt(),
-                                binding.compositionEditText.text.toString(),
-                                binding.menuDetailEditText.text.toString(),
-                                binding.categorySpinner.selectedItem.toString()
-                            )
-                        }
+                    uri = selectedUri!!,
+                    successHandler = { imageUrl ->
+                        updateOrAddMenu(imageUrl, menuName, price, composition, detail, category)
                     },
                     errorHandler = {
-                        Snackbar.make(binding.root, "메뉴 등록에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root, "이미지 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
                         hideProgress()
                     }
                 )
             } else {
-                Snackbar.make(binding.root, "이미지가 선택되지 않았습니다.", Snackbar.LENGTH_SHORT).show()
-                hideProgress()
+                // 이미지가 수정되지 않은 경우 기존 imageUrl 사용
+                val existingImageUrl = menuModel?.imageUrl ?: ""
+                updateOrAddMenu(existingImageUrl, menuName, price, composition, detail, category)
             }
         }
-    }
-
-    private fun updateMenu(
-        photoUri: String,
-        menuName: String,
-        price: Int,
-        composition: String,
-        detail: String,
-        category: String
-    ) {
-        val updatedMenuModel = MenuModel(
-            imageUrl = photoUri,
-            menuId = menuModel?.menuId,
-            menuName = menuName,
-            price = price,
-            composition = composition,
-            detail = detail,
-            category = category,
-        )
-
-        val menuDoc = getAdminDocument().collection("menu").document(menuName)
-
-        menuDoc.set(updatedMenuModel)
-            .addOnSuccessListener {
-                Snackbar.make(binding.root, "메뉴가 수정되었습니다.", Snackbar.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.adminMenuListFragment)
-                hideProgress()
-            }
-            .addOnFailureListener {
-                Snackbar.make(binding.root, "메뉴 수정에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-                hideProgress()
-            }
     }
 
 
@@ -323,39 +276,34 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             }
     }
 
-    private fun uploadArticle(
-        photoUri: String,
+    private fun updateOrAddMenu(
+        imageUrl: String,
         menuName: String,
         price: Int,
         composition: String,
         detail: String,
         category: String
     ) {
-        val menuId = UUID.randomUUID().toString()
-        val menuModel = MenuModel(
-            imageUrl = photoUri,
-            menuId = menuId,
+        val menuData = MenuModel(
+            imageUrl = imageUrl,
+            menuId = menuModel?.menuId ?: UUID.randomUUID().toString(),
             menuName = menuName,
             price = price,
             composition = composition,
             detail = detail,
-            category = category,
+            category = category
+        )
 
-            )
+        val menuDoc = getAdminDocument().collection("menu").document(menuData.menuId ?: UUID.randomUUID().toString())
 
-        val menuName = binding.menuNameEditText.text.toString()
-        // 하위 컬렉션 menu에서 메뉴 문서 참조
-        val menuDoc = getAdminDocument().collection("menu").document(menuName)
-
-        menuDoc.set(menuModel)
+        menuDoc.set(menuData)
             .addOnSuccessListener {
+                Snackbar.make(binding.root, "메뉴가 성공적으로 ${if (menuModel != null) "수정" else "추가"}되었습니다.", Snackbar.LENGTH_SHORT).show()
                 findNavController().navigate(R.id.adminMenuListFragment)
                 hideProgress()
-            }.addOnFailureListener {
-                it.printStackTrace()
-                view?.let { view ->
-                    Snackbar.make(view, "메뉴 등록에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-                }
+            }
+            .addOnFailureListener {
+                Snackbar.make(binding.root, "메뉴 등록에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
                 hideProgress()
             }
     }
