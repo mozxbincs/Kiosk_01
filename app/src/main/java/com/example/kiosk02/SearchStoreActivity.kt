@@ -21,6 +21,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -30,6 +31,9 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.navigation.findNavController
+import com.example.kiosk02.admin.AdminActivity
+import com.example.kiosk02.admin.AdminSignFragment
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.naver.maps.map.LocationTrackingMode
@@ -65,8 +69,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
-    private var restaurantListAdapter = RestaurantListAdapter {
-
+    private var restaurantListAdapter = RestaurantListAdapter { title ->
+        checkStoreInFireStore(title)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,6 +145,32 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
+    private fun checkStoreInFireStore (title : String) {
+        Log.d("checkStoreInFireStore", "dd")
+        val FireStore = FirebaseFirestore.getInstance()
+        FireStore.collection("admin")
+            .whereEqualTo("tradeName", title)
+            .get()
+            .addOnSuccessListener { docuemts ->
+                if (!docuemts.isEmpty) {
+                    val getEmail = docuemts.first().getString("email") ?: "정보 없음"
+                    Log.d("firestore email check", "$getEmail")
+
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("email", getEmail) // 이메일 정보를 추가
+                    startActivity(intent)
+
+                    /*
+                    val navController = findNavController(R.id.nav_host_fragment)
+                    val bundle = Bundle().apply {
+                        putString("email", getEmail)
+                    }
+                    navController.navigate(R.id.adminActivity, bundle)*/
+                }
+            }.addOnFailureListener {
+                Log.d("firestore 정보 연결 실패", "정보 연결 실패")
+            }
+    }
 
     private fun search(searchQuery: String, onCamerMove: (LatLng) -> Unit) {
         SearchRepository.getStore(searchQuery).enqueue(object : Callback<SearchResult> {

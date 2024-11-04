@@ -3,6 +3,7 @@ package com.example.kiosk02
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -26,6 +27,10 @@ class MainActivity : AppCompatActivity() {
         // 관리자 버튼 클릭 리스너 설정
         findViewById<Button>(R.id.admin_button).setOnClickListener {
             navController.navigate(R.id.adminFragment) // 관리자 화면으로 이동
+        }
+
+        findViewById<Button>(R.id.login_button).setOnClickListener {
+
         }
 
     }

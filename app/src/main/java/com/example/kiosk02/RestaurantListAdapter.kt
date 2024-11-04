@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.databinding.ItemRestaurantBinding
 import com.naver.maps.geometry.LatLng
 
-class RestaurantListAdapter(private val onClick: (LatLng) -> Unit): RecyclerView.Adapter<RestaurantListAdapter.ViewHolder>() {
+class RestaurantListAdapter(private val onClick: (String) -> Unit): RecyclerView.Adapter<RestaurantListAdapter.ViewHolder>() {
 
     private var dataSet = emptyList<SearchItem>()
 
@@ -17,7 +17,7 @@ class RestaurantListAdapter(private val onClick: (LatLng) -> Unit): RecyclerView
             binding.locationTextView.text = item.roadAddress
 
             binding.root.setOnClickListener {
-                onClick(LatLng(item.mapx.toDouble() / 10000000, item.mapy.toDouble() / 10000000))
+                onClick(item.title)
             }
         }
     }
