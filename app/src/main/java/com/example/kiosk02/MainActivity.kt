@@ -50,6 +50,10 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.adminFragment) // 관리자 화면으로 이동
         }
 
+        findViewById<Button>(R.id.guest_use_button).setOnClickListener {
+            navController.navigate(R.id.action_to_ConsumerMenuList)
+        }
+        /*
         findViewById<Button>(R.id.login_button).setOnClickListener {
             val email = findViewById<EditText>(R.id.email_input).text.toString()
             val password = findViewById<EditText>(R.id.password_input).text.toString()
@@ -59,9 +63,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.sign_up_button).setOnClickListener {
             navController.navigate(R.id.action_to_fragment_consumer_sig)
         }
-
+        */
     }
-
+/*
     private fun LoginToFirebase(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -72,9 +76,6 @@ class MainActivity : AppCompatActivity() {
                     Log.e("LoginError", "Login failed", task.exception)
                 }
             }
-        findViewById<Button>(R.id.guest_use_button).setOnClickListener {
-            navController.navigate(R.id.action_to_ConsumerMenuList)
-        }
 
-    }
+    }*/
 }
