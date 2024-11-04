@@ -50,7 +50,3 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
     }
 }
 
-
-
-}
-

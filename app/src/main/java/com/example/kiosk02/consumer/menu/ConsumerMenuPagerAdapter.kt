@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter

@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import android.os.Bundle
 import android.util.Log

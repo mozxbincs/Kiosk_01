@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import android.content.Context
 import android.os.Bundle
@@ -12,8 +12,6 @@ import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerOrderFragmentBinding
 import com.google.common.reflect.TypeToken
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import java.text.NumberFormat
 import java.util.Locale
