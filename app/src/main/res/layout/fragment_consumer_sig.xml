@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:layout_height="match_parent">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="관리자 회원가입"
+        android:text="회원가입"
         android:layout_marginTop="50dp"
         android:textSize="24sp"
         android:layout_gravity="center"
@@ -45,52 +44,26 @@
         android:inputType="textPassword"
         android:layout_marginBottom="16dp"/>
 
-    <EditText
-        android:id="@+id/confirmPasswordEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="비밀번호 확인"
-        android:inputType="textPassword"
-        android:layout_marginBottom="16dp"/>
-
-    <EditText
-        android:id="@+id/businessNameEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="상호명"
-        android:layout_marginBottom="16dp"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <EditText
-            android:id="@+id/businessNumberEditText"
+            android:id="@+id/confirmPasswordEditText"
             android:layout_width="wrap_content"
             android:layout_weight="8"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:hint="사업자 등록번호"
+            android:hint="비밀번호 확인"
             android:layout_marginBottom="16dp"/>
         <Button
             android:id="@+id/businessNumberButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="중복확인"
-            android:enabled="false"/>
+            android:text="확인" />
     </LinearLayout>
 
 
-    <TextView
-        android:id="@+id/warningTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="#F20505"
-        android:textStyle="italic"
-        android:textSize="13dp"
-        android:drawableLeft="@drawable/baseline_error_outline_24"
-        android:drawablePadding="5dp"
-        android:drawableTint="#F20505"
-        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -103,7 +76,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="회원가입 및 상호 등록 완료"
+            android:text="회원가입"
             android:textColor="@color/black"
             android:backgroundTint="@color/navy01"
             android:layout_marginEnd="8dp"/>
@@ -117,4 +90,5 @@
             android:textColor="@color/black"
             android:backgroundTint="@color/navy02"/>
     </LinearLayout>
+
 </LinearLayout>

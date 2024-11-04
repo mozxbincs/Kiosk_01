@@ -129,7 +129,43 @@
     <action
         android:id="@+id/action_to_show_email_admin"
         app:destination="@id/showEmailAdminFragment" />
+    <fragment
+        android:id="@+id/adminInformActivity"
+        android:name="com.example.kiosk02.admin.AdminInformActivity"
+        android:label="AdminInformActivity" />
+    <activity
+        android:id="@+id/searchStoreActivity"
+        android:name="com.example.kiosk02.SearchStoreActivity"
+        android:label="activity_search_store"
+        tools:layout="@layout/activity_search_store"/>
 
+    <action
+        android:id="@+id/action_to_admin_inform"
+        app:destination="@id/adminInformActivity" />
+    <fragment
+        android:id="@+id/consumerSignFragment"
+        android:name="com.example.kiosk02.ConsumerSignFragment"
+        android:label="ConsumerSignFragment" />
+
+    <action
+        android:id="@+id/action_to_mainActivity"
+        app:destination="@id/mainFragment" />
+
+    <action
+        android:id="@+id/action_to_fragment_consumer_sig"
+        app:destination="@id/consumerSignFragment" />
+
+    <action
+        android:id="@+id/action_to_activity_search_store"
+        app:destination="@id/searchStoreActivity" />
+    <fragment
+        android:id="@+id/orderMethodFragment"
+        android:name="com.example.kiosk02.OrderMethodFragment"
+        android:label="OrderMethodFragment" />
+
+    <action
+        android:id="@+id/action_to_OderMethod"
+        app:destination="@id/orderMethodFragment" />
 
     <action
         android:id="@+id/action_to_admin_menu_list_fragment"

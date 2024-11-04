@@ -37,7 +37,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
     private var BusinessnameValid = false
     private var businessnumbervalid = false
     private var Checkredundancy = false
-    private var addressValid = false
+    //private var addressValid = false
 
 
 
@@ -58,7 +58,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
         binding.confirmPasswordEditText.addTextChangedListener(textWatcher)
         binding.businessNameEditText.addTextChangedListener(textWatcher)
         binding.businessNumberEditText.addTextChangedListener(textWatcher)
-        binding.addressEditText.addTextChangedListener(textWatcher)
+        //binding.addressEditText.addTextChangedListener(textWatcher)
 
         // 상호등록 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.registerButton).setOnClickListener {
@@ -68,9 +68,9 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             val phonnumber = binding.phonNumberEditText.text.toString()
             val businessname = binding.businessNameEditText.text.toString()
             val businessnumber = binding.businessNumberEditText.text.toString()
-            val address = binding.addressEditText.text.toString()
+            //val address = binding.addressEditText.text.toString()
 
-            registerUser(name, email, password, phonnumber, businessname, businessnumber, address)
+            registerUser(name, email, password, phonnumber, businessname, businessnumber)
 
         }
 
@@ -188,7 +188,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                     binding.businessNumberButton.isEnabled = true
                 }
             }
-
+            /*
             R.id.addressEditText -> {
                 val address = binding.addressEditText.text.toString()
                 addressValid = address.matches(hangulPatten)
@@ -199,14 +199,14 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                     binding.warningTextView.visibility = View.GONE
                 }
 
-            }
+            }*/
         }
         isAllInputsCheckValid()
     }
 
     private fun isAllInputsCheckValid() {
         binding.registerButton.isEnabled = NameValid && Emailvalid && Phonnumbalid && passwordValid && ConfirmpasswordValid
-                && businessnumbervalid && businessnumbervalid && addressValid && Checkredundancy && businessNumberCk
+                && businessnumbervalid && businessnumbervalid && Checkredundancy && businessNumberCk
     }
 
     private fun findBusinessNumber(businessNumber: String) {
@@ -226,11 +226,11 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             }
     }
 
-    private fun registerUser(name: String, email: String, password: String, phonnumber: String ,businessname: String, businessnumber: String, address: String) {
+    private fun registerUser(name: String, email: String, password: String, phonnumber: String ,businessname: String, businessnumber: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    saveAdminDataToFirestore(name, email, phonnumber, businessname, businessnumber, address)
+                    saveAdminDataToFirestore(name, email, phonnumber, businessname, businessnumber)
                     findNavController().navigate(R.id.action_to_admin_sign_fragment)
                 } else {
                     Toast.makeText(context, "회원가입 실패: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
@@ -238,14 +238,13 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
             }
     }
 
-    private fun saveAdminDataToFirestore(name: String, email: String, phonnumber: String, businessname: String, businessnumber: String, address: String) {
+    private fun saveAdminDataToFirestore(name: String, email: String, phonnumber: String, businessname: String, businessnumber: String) {
         val admin = AdminData(
             name = name,
             email = email,
             phonnumber = phonnumber,
             tradeName = businessname,
             businessnumber = businessnumber,
-            address = address
         )
 
         firestore.collection("admin").document(email)

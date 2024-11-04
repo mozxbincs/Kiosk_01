@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
     <!-- 추가 등록 사항 -->
     <TextView
@@ -42,35 +41,19 @@
         android:layout_below="@id/AddInformPickUp"
         android:layout_marginBottom="16dp" />
 
-    <EditText
-        android:id="@+id/addressEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/AddInformFloor"
-        android:hint="주소"
-        android:layout_marginBottom="16dp"/>
-    <!-- 테이블 수 선택 -->
-<!--    <Spinner-->
-<!--        android:layout_marginTop="20dp"-->
-<!--        android:id="@+id/AddInformTable"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="45dp"-->
-<!--        android:layout_below="@id/AddInformFloor"-->
-<!--        android:layout_marginBottom="16dp" />-->
-
-
     <!-- 회원가입 버튼 -->
-    <!--    뒤로가기-->
     <Button
         android:layout_marginTop="50dp"
         android:id="@+id/AddInformFinish"
         android:enabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:text="추가등록완료"
+        android:textColor="@color/black"
+
         android:backgroundTint="@color/navy01"
-        android:layout_below="@id/addressEditText"/>
-
-
+        android:layout_below="@id/AddInformFloor"/>
+    <!--    뒤로가기-->
     <Button
         android:id="@+id/AddInformBack"
         android:layout_width="match_parent"
@@ -81,4 +64,5 @@
         android:backgroundTint="@color/navy02"
 
         android:text="뒤로가기" />
+
 </RelativeLayout>
