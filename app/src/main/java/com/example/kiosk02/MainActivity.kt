@@ -28,5 +28,9 @@ class MainActivity : AppCompatActivity() {
             navController.navigate(R.id.adminFragment) // 관리자 화면으로 이동
         }
 
+        findViewById<Button>(R.id.guest_use_button).setOnClickListener {
+            navController.navigate(R.id.action_to_ConsumerMenuList)
+        }
+
     }
 }
