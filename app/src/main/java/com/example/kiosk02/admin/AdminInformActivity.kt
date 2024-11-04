@@ -1,7 +1,6 @@
 package com.example.kiosk02.admin
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -14,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-class AddInformActivity : Fragment(R.layout.activity_add_inform) {
+class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
 
     private lateinit var firestore: FirebaseFirestore
     private lateinit var auth: FirebaseAuth
@@ -55,6 +54,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         val user = auth.currentUser
         val email = user?.email
 
+        if(email != null) {
+            findUser(email, serviceSpinner, pickUpSpinner, floorSpinner, services, pickUps, floors)
+        }
 
         //AddInformFinish Button 초기화
         addInformFinishButton = view.findViewById(R.id.AddInformFinish)
@@ -63,6 +65,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         serviceSpinner.adapter = serviceAdapter
         pickUpSpinner.adapter = pickUpAdapter
         floorSpinner.adapter = floorAdapter
+        //tableSpinner.adapter = tableAdapter
 
         //spinner 동작감지 호출
         checkAllSpinnersSelected(serviceSpinner, pickUpSpinner, floorSpinner)
@@ -74,11 +77,12 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
             val serviceType = serviceSpinner.selectedItem.toString()
             val pickUpType = pickUpSpinner.selectedItem.toString()
-            val totalFloorCount = floorSpinner.selectedItem.toString().toIntOrNull() ?: 0
+            val floorCount = floorSpinner.selectedItem.toString()
             val addressString = addressEditText.text.toString()
+            //val tableCount = tableSpinner.selectedItem.toString()
 
             if(email != null) {
-                updateFirestore(email, serviceType, pickUpType, totalFloorCount, addressString)
+                updateFirestore(email, serviceType, pickUpType, floorCount, addressString )
             }
 
         }
@@ -88,15 +92,57 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         }
     }
 
+    private fun findUser(email: String,
+                         serviceSpinner: Spinner,
+                         pickUpSpinner: Spinner,
+                         floorSpinner: Spinner,
+                         services: Array<String>,
+                         pickUps: Array<String>,
+                         floors: Array<String>, ) {
+            firestore.collection("admin")
+                .document(email)
+                .get()
+                .addOnSuccessListener { document ->
+                    if(document != null && document.exists()) {
+                        val serviceType = document.getString("serviceType")
+                        val pickUpType = document.getString("pickUpType")
+                        val floorCount = document.getString("floorCount")
 
-    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, totalFloorCount: Int, address: String) {
+                        var hasPreSelectedValues = false
+                        serviceType.let {
+                            val position = services.indexOf(it)
+                            if (position != -1) {
+                                serviceSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        pickUpType.let {
+                            val position = pickUps.indexOf(it)
+                            if(position != -1) {
+                                pickUpSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        floorCount.let {
+                            val position = floors.indexOf(it)
+                            if(position != -1) {
+                                floorSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+
+                        if(hasPreSelectedValues){action = R.id.action_to_admin_activity} else{action = R.id.action_to_admin_sign_fragment}
+                    }
+
+                }
+    }
+
+    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, address: String) {
         val storeInform = hashMapOf<String, Any>(
             "serviceType" to serviceType,
             "pickUpType" to pickUpType,
-            "totalFloorCount" to totalFloorCount,
+            "floorCount" to floorCount,
             "address" to address
-
-
         )
 
         firestore.collection("admin")
@@ -118,7 +164,6 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
                         pickUp.selectedItemPosition != 0 &&
                         floor.selectedItemPosition != 0
 
-
                 addInformFinishButton.isEnabled = isAllSelected
             }
 
@@ -129,34 +174,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         pickUp.onItemSelectedListener = spinnerListener
         floor.onItemSelectedListener = spinnerListener
     }
-    private fun saveFloorData(email: String, totalFloorCount: Int) {
-        val floors = (1..totalFloorCount.toInt()).map { "floor-$it" } // "floor-1", "floor-2", ..., "floor-N"
 
-        val batch = firestore.batch()
-
-        // 각 층 정보를 floors 서브 컬렉션에 저장
-        for (floor in floors) {
-            val floorData = hashMapOf(
-                "exists" to true // 층이 존재함을 나타내는 필드 (예시)
-            )
-
-            // Firestore에서 admin의 floors 서브 컬렉션에 각 층 데이터 저장
-            val floorRef = firestore.collection("admin")
-                .document(email)
-                .collection("floors")
-                .document(floor)
-
-            batch.set(floorRef, floorData)
-        }
-
-        // 배치 실행
-        batch.commit().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                Log.d("Firestore", "Floor data saved successfully!")
-            } else {
-                Log.e("Firestore", "Failed to save floor data: ${task.exception?.message}")
-            }
-        }}
 
     // 어댑터 생성 (첫 번째 항목을 비활성화)
     private fun createAdapter(items: Array<String>): ArrayAdapter<String> {
