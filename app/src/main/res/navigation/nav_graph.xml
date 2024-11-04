@@ -11,9 +11,7 @@
         android:name="com.example.kiosk02.admin.AdminFragment"
         android:label="Admin Fragment"
         tools:layout="@layout/fragment_admin" />
-    <action
-        android:id="@+id/action_to_adminFragment"
-        app:destination="@id/adminFragment" />
+
     <fragment
         android:id="@+id/findEmailAdminFragment"
         android:name="com.example.kiosk02.admin.FindEmailAdminFragment"
@@ -49,6 +47,59 @@
         android:id="@+id/showEmailAdminFragment"
         android:name="com.example.kiosk02.admin.ShowEmailAdminFragment"
         android:label="ShowEmailAdminFragment" />
+
+
+    <fragment
+        android:id="@+id/adminMenuListFragment"
+        android:name="com.example.kiosk02.admin.menu.data.AdminMenuListFragment"
+        android:label="AdminMenuListFragment"
+        tools:layout="@layout/fragment_admin_menu_list"/>
+
+    <fragment
+        android:id="@+id/editMenuFragment"
+        android:name="com.example.kiosk02.admin.menu.data.EditMenuFragment"
+        android:label="EditMenuFragment"
+        tools:layout="@layout/fragment_edit_menu">
+        <argument
+            android:name="menuModel"
+            app:argType="com.example.kiosk02.admin.menu.data.MenuModel"
+            app:nullable="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/manageCategoriesFragment"
+        android:name="com.example.kiosk02.admin.menu.data.ManageCategoriesFragment"
+        android:label="ManageCategoriesFragment"
+        tools:layout="@layout/fragment_manage_categories"/>
+
+    <fragment
+        android:id="@+id/menuListFragment"
+        android:name="com.example.kiosk02.admin.menu.data.MenuListFragment"
+        android:label="MenuListFragment"
+        tools:layout="@layout/fragment_menu_list"/>
+
+    <fragment
+        android:id="@+id/ConsumerMenuList"
+        android:name="com.example.kiosk02.customer.menu.ConsumerMenuListFragment"
+        android:label="ConsumerMenuList"
+        tools:layout="@layout/fragment_consumer_menu_list"/>
+
+    <fragment
+        android:id="@+id/ConsumerOrderFragment"
+        android:name="com.example.kiosk02.customer.menu.ConsumerOrderFragment"
+        android:label="ConsumerOrderFragment"
+        tools:layout="@layout/fragment_consumer_order_fragment"/>
+
+    <fragment
+        android:id="@+id/ConsumerCartFragment"
+        android:name="com.example.kiosk02.customer.menu.ConsumerCartFragment"
+        android:label="ConsumerOrderFragment"
+        tools:layout="@layout/fragment_consumer_cart"/>
+
+
+    <action
+        android:id="@+id/action_to_adminFragment"
+        app:destination="@id/adminFragment" />
 
     <action
         android:id="@+id/action_to_mainFragment"
@@ -115,5 +166,48 @@
     <action
         android:id="@+id/action_to_OderMethod"
         app:destination="@id/orderMethodFragment" />
+
+    <action
+        android:id="@+id/action_to_admin_menu_list_fragment"
+        app:destination="@id/adminMenuListFragment" />
+
+    <action
+        android:id="@+id/action_to_edit_menu_fragment"
+        app:destination="@id/editMenuFragment"/>
+
+    <action
+        android:id="@+id/action_to_manage_categories_fragment"
+        app:destination="@id/manageCategoriesFragment"/>
+
+    <action
+        android:id="@+id/action_to_ConsumerMenuList"
+        app:destination="@id/ConsumerMenuList" />
+
+    <action
+        android:id="@+id/action_to_ConsumerOrderFragment"
+        app:destination="@id/ConsumerOrderFragment"/>
+
+    <action
+        android:id="@+id/action_to_ConsumerCartFragment"
+        app:destination="@id/ConsumerCartFragment"/>
+
+    <fragment
+        android:id="@+id/tableEditFragment"
+        android:name="com.example.kiosk02.admin.TableManagementEditFragment"
+        android:label="ShowEmailAdminFragment" />
+    <action
+        android:id="@+id/action_to_table_Edit_Fragment"
+        app:destination="@id/tableEditFragment" />
+
+    <fragment
+        android:id="@+id/tableSelectFragment"
+        android:name="com.example.kiosk02.consumer.ConsumerTableFragment"
+        android:label="소비자테이블클릭" />
+    <action
+        android:id="@+id/action_to_table_Select_Fragment"
+        app:destination="@id/tableSelectFragment" />
+
+
+
 
 </navigation>

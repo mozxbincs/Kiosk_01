@@ -72,5 +72,9 @@ class MainActivity : AppCompatActivity() {
                     Log.e("LoginError", "Login failed", task.exception)
                 }
             }
+        findViewById<Button>(R.id.guest_use_button).setOnClickListener {
+            navController.navigate(R.id.action_to_ConsumerMenuList)
+        }
+
     }
 }
