@@ -138,5 +138,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="24dp" />
-
+    <Button
+        android:id="@+id/test_01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="소비자 테"
+        android:backgroundTint="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/guest_use_button"
+        app:layout_constraintStart_toStartOf="@id/guest_use_button"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="24dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

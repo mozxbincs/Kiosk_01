@@ -21,11 +21,12 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<Button>(R.id.menuCustomizationButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_menu_list_fragment)
         }
-
-        view.findViewById<Button>(R.id.additionalRegistrationButton).setOnClickListener {
-            findNavController().navigate(R.id.addInformActivity)
+        //테이블 레이아웃 클릭시 창전환
+        view.findViewById<Button>(R.id.tableLayoutButton).setOnClickListener {
+            findNavController().navigate(R.id.action_to_table_Edit_Fragment) // 테이블 편집창으로 이동
         }
     }
+
 
     private fun LogOutButton(view: View) {
         view.findViewById<Button>(R.id.logoutButton).setOnClickListener {
@@ -49,4 +50,7 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
     }
 }
 
+
+
+}
 

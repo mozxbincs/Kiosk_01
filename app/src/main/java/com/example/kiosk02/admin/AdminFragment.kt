@@ -112,9 +112,13 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         view.findViewById<Button>(R.id.guest_use_button).setOnClickListener {
             findNavController().navigate(R.id.action_to_mainFragment) // 초기화면으로 이동
         }
+///
+
     }
 
-    private fun isEmailValid(email:String):Boolean{
+
+
+        private fun isEmailValid(email:String):Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
