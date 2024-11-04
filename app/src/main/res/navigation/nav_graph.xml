@@ -79,6 +79,24 @@
         android:label="MenuListFragment"
         tools:layout="@layout/fragment_menu_list"/>
 
+    <fragment
+        android:id="@+id/ConsumerMenuList"
+        android:name="com.example.kiosk02.customer.menu.ConsumerMenuListFragment"
+        android:label="ConsumerMenuList"
+        tools:layout="@layout/fragment_consumer_menu_list"/>
+
+    <fragment
+        android:id="@+id/ConsumerOrderFragment"
+        android:name="com.example.kiosk02.customer.menu.ConsumerOrderFragment"
+        android:label="ConsumerOrderFragment"
+        tools:layout="@layout/fragment_consumer_order_fragment"/>
+
+    <fragment
+        android:id="@+id/ConsumerCartFragment"
+        android:name="com.example.kiosk02.customer.menu.ConsumerCartFragment"
+        android:label="ConsumerOrderFragment"
+        tools:layout="@layout/fragment_consumer_cart"/>
+
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
@@ -119,6 +137,18 @@
     <action
         android:id="@+id/action_to_manage_categories_fragment"
         app:destination="@id/manageCategoriesFragment"/>
+
+    <action
+        android:id="@+id/action_to_ConsumerMenuList"
+        app:destination="@id/ConsumerMenuList" />
+
+    <action
+        android:id="@+id/action_to_ConsumerOrderFragment"
+        app:destination="@id/ConsumerOrderFragment"/>
+
+    <action
+        android:id="@+id/action_to_ConsumerCartFragment"
+        app:destination="@id/ConsumerCartFragment"/>
 
 
 

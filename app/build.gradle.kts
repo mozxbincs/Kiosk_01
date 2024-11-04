@@ -56,6 +56,8 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:5.0.0-rc01")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.0-rc01")
 
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
