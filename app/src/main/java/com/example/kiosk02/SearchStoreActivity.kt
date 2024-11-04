@@ -31,7 +31,9 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import com.example.kiosk02.admin.AdminActivity
 import com.example.kiosk02.admin.AdminSignFragment
 import com.google.firebase.Firebase
@@ -58,6 +60,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivitySearchStoreBinding
     private lateinit var naverMap: NaverMap
     private lateinit var locationSource: FusedLocationSource
+    private lateinit var navController: NavController
     private var isMapInit = false
     private val LOCATION_PERMISSION_REQUEST_CODE = 5000
 
@@ -148,6 +151,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun checkStoreInFireStore (title : String) {
         Log.d("checkStoreInFireStore", "dd")
         val FireStore = FirebaseFirestore.getInstance()
+
         FireStore.collection("admin")
             .whereEqualTo("tradeName", title)
             .get()
@@ -156,16 +160,13 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                     val getEmail = docuemts.first().getString("email") ?: "정보 없음"
                     Log.d("firestore email check", "$getEmail")
 
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("email", getEmail) // 이메일 정보를 추가
-                    startActivity(intent)
-
-                    /*
-                    val navController = findNavController(R.id.nav_host_fragment)
-                    val bundle = Bundle().apply {
-                        putString("email", getEmail)
+                    val intent = Intent(this, MainActivity::class.java).apply {
+                        putExtra("email", getEmail)
+                        putExtra("fragmentToShow", "targetFragment")
                     }
-                    navController.navigate(R.id.adminActivity, bundle)*/
+                    startActivity(intent)
+                    finish()
+
                 }
             }.addOnFailureListener {
                 Log.d("firestore 정보 연결 실패", "정보 연결 실패")
