@@ -60,7 +60,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="7dp"
-            android:text="테이블 생성" />
+            android:text="자리 예약하기" />
     </LinearLayout>
 
 
@@ -120,18 +120,16 @@
             android:id="@+id/back_activity_admin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
-
             android:drawableLeft="@drawable/baseline_arrow_back_24"/>
+
+
         <Button
             android:textColor="@color/black"
             android:backgroundTint="@color/navy01"
-            android:id="@+id/remove_table_button"
+            android:id="@+id/update_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="200dp"
-            android:text="테이블 제거"/>
-
-
+            android:text="주문하기"/>
     </LinearLayout>
 </LinearLayout>

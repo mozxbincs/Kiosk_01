@@ -20,6 +20,10 @@ class MainFragment : Fragment() {
             findNavController().navigate(R.id.action_to_adminFragment)
         }
 
+        view.findViewById<Button>(R.id.test_01).setOnClickListener {
+            findNavController().navigate(R.id.action_to_table_Select_Fragment) // 초기화면으로 이동
+        }
+
         return view
     }
 }

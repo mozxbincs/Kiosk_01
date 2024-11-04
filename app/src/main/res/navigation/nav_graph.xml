@@ -87,4 +87,14 @@
         android:id="@+id/action_to_table_Edit_Fragment"
         app:destination="@id/tableEditFragment" />
 
+    <fragment
+        android:id="@+id/tableSelectFragment"
+        android:name="com.example.kiosk02.consumer.ConsumerTableFragment"
+        android:label="소비자테이블클릭" />
+    <action
+        android:id="@+id/action_to_table_Select_Fragment"
+        app:destination="@id/tableSelectFragment" />
+
+
+
 </navigation>
