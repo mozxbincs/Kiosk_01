@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 층 선택 및 테이블 추가/제거 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+        <!-- 선택한 층수 표시 TextView -->
+        <TextView
+            android:id="@+id/selected_floor_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="[층 선택]"
+            android:layout_gravity="center_vertical"/>
+
+
+        <Spinner
+            android:id="@+id/floor_spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
+            android:id="@+id/add_floor_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" (+)"/>
+
+        <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
+            android:id="@+id/remove_floor_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(-)"/>
+    </LinearLayout>
+
+
+    <!-- 테이블 선택 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+
+
+        <TextView
+            android:id="@+id/other_seater_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="7dp"
+            android:text="테이블 생성" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+
+
+            <Button
+                android:textColor="@color/black"
+                android:backgroundTint="@color/navy01"
+                android:id="@+id/delete_table_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="삭제"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 여기에 추가된 테이블 목록 -->
+    <LinearLayout
+        android:id="@+id/table_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"/>
+
+    <!-- 테이블 그리드 레이아웃 -->
+    <FrameLayout
+        android:id="@+id/table_frame"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:background="#f0f0f0">
+    </FrameLayout>
+
+    <!-- 업데이트 버튼 -->
+    <LinearLayout
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="start">
+        <TextView
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
+            android:id="@+id/back_activity_admin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+
+
+            android:drawableLeft="@drawable/baseline_arrow_back_24"/>
+        <Button
+            android:textColor="@color/black"
+            android:backgroundTint="@color/navy01"
+            android:id="@+id/remove_table_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="200dp"
+            android:text="테이블 제거"/>
+
+
+    </LinearLayout>
+</LinearLayout>

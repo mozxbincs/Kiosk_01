@@ -91,10 +91,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         view.findViewById<TextView>(R.id.admin_forgot_password_text).setOnClickListener {
             findNavController().navigate(R.id.action_to_find_password_admin) // 비밀번호 찾기 화면으로 이동
         }
-        // 로그인 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.admin_login_button).setOnClickListener {
-            findNavController().navigate(R.id.action_to_admin_activity) // 로그인 화면으로 이동
-        }
+
         // 회원가입 버튼 클릭 리스너 설정
         view.findViewById<Button>(R.id.admin_sign_up_button).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_sign_fragment) // 회원가입 화면으로 이동
@@ -105,9 +102,13 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         view.findViewById<Button>(R.id.guest_use_button).setOnClickListener {
             findNavController().navigate(R.id.action_to_mainFragment) // 초기화면으로 이동
         }
+///
+
     }
 
-    private fun isEmailValid(email:String):Boolean{
+
+
+        private fun isEmailValid(email:String):Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
