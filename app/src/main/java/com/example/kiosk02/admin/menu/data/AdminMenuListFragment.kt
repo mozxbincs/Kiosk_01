@@ -5,7 +5,6 @@ import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
 import com.example.kiosk02.R
 import com.example.kiosk02.databinding.FragmentAdminMenuListBinding
 import com.google.android.material.snackbar.Snackbar

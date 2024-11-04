@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="20dp">
+
+
+    <ImageView
+        android:id="@+id/menuImageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:background="@color/gray01"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/menuNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/MenuName"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="@id/menuImageView"
+        app:layout_constraintStart_toEndOf="@id/menuImageView"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="20dp"/>
+    <TextView
+        android:id="@+id/compositionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="구성입니다"
+        app:layout_constraintStart_toStartOf="@id/menuNameTextView"
+        app:layout_constraintTop_toBottomOf="@id/menuNameTextView"
+        android:textSize="15sp"
+        android:layout_marginTop="5dp"/>
+
+
+    <TextView
+        android:id="@+id/priceTextView"
+        tools:text="10,000원"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="@id/menuNameTextView"
+        app:layout_constraintTop_toBottomOf="@id/compositionTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
