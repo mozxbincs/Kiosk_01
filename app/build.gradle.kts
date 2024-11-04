@@ -42,18 +42,22 @@ android {
 
 dependencies {
 //navigation
-
-
     implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-analytics")
+
+    implementation ("com.google.android.gms:play-services-base:17.6.0")
+    implementation ("com.google.android.gms:play-services-location:18.0.0")
+
     implementation ("com.google.firebase:firebase-database-ktx:20.3.0")// 버전은 최신으로 변경 가능
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
 
     implementation("com.github.bumptech.glide:glide:5.0.0-rc01")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.0-rc01")
@@ -72,4 +76,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation("com.naver.maps:map-sdk:3.19.1")
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
 }
