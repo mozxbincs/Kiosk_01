@@ -32,14 +32,16 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         val fragmentToShow = intent?.getStringExtra("fragmentToShow")
-        val email = intent?.getStringExtra("email")
+        val Aemail = intent?.getStringExtra("Aemail")
+        val Uemail = intent?.getStringExtra("Uemail")
 
         when (fragmentToShow) {
             "targetFragment" -> {
                 val bundle = Bundle().apply {
-                    putString("email", email) // 이메일 정보를 번들로 추가
+                    putString("Aemail", Aemail)
+                    putString("Uemail", Uemail)
                 }
-                navController.navigate(R.id.addInformActivity, bundle)
+                navController.navigate(R.id.action_to_OderMethod, bundle)
             }
         }
 
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.login_button).setOnClickListener {
             val email = findViewById<EditText>(R.id.email_input).text.toString()
             val password = findViewById<EditText>(R.id.password_input).text.toString()
-            performLogin(email, password)
+            LoginToFirebase(email, password)
         }
 
         findViewById<Button>(R.id.sign_up_button).setOnClickListener {
@@ -60,7 +62,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun performLogin(email: String, password: String) {
+    private fun LoginToFirebase(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {

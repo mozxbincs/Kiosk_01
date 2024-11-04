@@ -28,8 +28,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
         firestore = FirebaseFirestore.getInstance()
         auth = FirebaseAuth.getInstance()
 
-        val Email = arguments?.getString("email")
-        Log.d("AddInformActivity", "Received email: $Email")
+
 
         // Spinner 항목 데이터 (첫 번째 값은 설명)
         val services = arrayOf("서비스유형", "음식점", "카페", "제과점", "바")

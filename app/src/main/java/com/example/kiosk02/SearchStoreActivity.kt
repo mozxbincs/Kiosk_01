@@ -37,6 +37,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.kiosk02.admin.AdminActivity
 import com.example.kiosk02.admin.AdminSignFragment
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
@@ -59,8 +60,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var binding: ActivitySearchStoreBinding
     private lateinit var naverMap: NaverMap
+    private lateinit var auth: FirebaseAuth
     private lateinit var locationSource: FusedLocationSource
-    private lateinit var navController: NavController
     private var isMapInit = false
     private val LOCATION_PERMISSION_REQUEST_CODE = 5000
 
@@ -86,6 +87,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        auth = FirebaseAuth.getInstance()
 
         if (!hasPermission()) {
             ActivityCompat.requestPermissions(
@@ -158,10 +161,12 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnSuccessListener { docuemts ->
                 if (!docuemts.isEmpty) {
                     val getEmail = docuemts.first().getString("email") ?: "정보 없음"
-                    Log.d("firestore email check", "$getEmail")
-
+                    val userEmail = auth?.currentUser?.email.toString()
+                    Log.d("firestore Uemail check", "$userEmail")
+                    Log.d("firestore Aemail check", "$getEmail")
                     val intent = Intent(this, MainActivity::class.java).apply {
-                        putExtra("email", getEmail)
+                        putExtra("Aemail", getEmail)
+                        putExtra("Uemail", userEmail)
                         putExtra("fragmentToShow", "targetFragment")
                     }
                     startActivity(intent)

@@ -107,7 +107,13 @@
     <action
         android:id="@+id/action_to_activity_search_store"
         app:destination="@id/searchStoreActivity" />
+    <fragment
+        android:id="@+id/orderMethodFragment"
+        android:name="com.example.kiosk02.OrderMethodFragment"
+        android:label="OrderMethodFragment" />
 
-
+    <action
+        android:id="@+id/action_to_OderMethod"
+        app:destination="@id/orderMethodFragment" />
 
 </navigation>
