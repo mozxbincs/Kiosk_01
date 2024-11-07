@@ -21,8 +21,21 @@
         android:layout_margin="10dp"
         android:background="@color/white" />
 
+
     <include
         android:id="@+id/bottomSheetLayout"
-        layout="@layout/bottom_sheat_item"/>
+        layout="@layout/bottom_sheat_item" />
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/my_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/navy01"
+        android:contentDescription="내 위치로 이동합니다."
+        android:src="@drawable/baseline_my_location_24"
+        app:layout_anchor="@id/bottomSheetLayout"
+        android:layout_gravity="end|bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
