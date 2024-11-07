@@ -63,6 +63,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var auth: FirebaseAuth
     private lateinit var locationSource: FusedLocationSource
     private var isMapInit = false
+    private val markerList = mutableListOf<Marker>()
     private val LOCATION_PERMISSION_REQUEST_CODE = 5000
 
     private val locationCheckInterval: Long = 300000
@@ -125,8 +126,15 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
                         val currentLocationName = runBlocking {getAddressFormLatLng(latitude, longitude)}
 
+                        var cityOnly =""
+                        if (currentLocationName != null && currentLocationName.contains(" ")) {
+                            cityOnly = currentLocationName.split(" ")[0]
+                        } else if (currentLocationName != null) {
+                            cityOnly = currentLocationName  // "익산시"만 있는 경우 그대로 사용
+                        }
+
                         if (currentLocationName != null) {
-                            searchQuery = "$currentLocationName $query"
+                            searchQuery = "$cityOnly $query"
                         }
                     }
 
@@ -179,6 +187,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun search(searchQuery: String, onCamerMove: (LatLng) -> Unit) {
+        clearMarkers()
+
         SearchRepository.getStore(searchQuery).enqueue(object : Callback<SearchResult> {
             override fun onResponse(
                 call: Call<SearchResult>,
@@ -212,6 +222,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                         map = naverMap
                     }
                 }
+                markerList.addAll(markers)
                 restaurantListAdapter.setData(searchItemList)
                 onCamerMove(markers.first().position)
                 //moveCamera(markers.first().position)
@@ -225,6 +236,13 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
         })
+    }
+
+    private fun clearMarkers() {
+        for (marker in markerList) {
+            marker.map = null
+        }
+        markerList.clear()
     }
 
     private fun initMapView() {
@@ -374,43 +392,66 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.mapView.onLowMemory()
     }
 
+    private fun startLocationUpdates() {
+        Log.d("SearchStoreActivity", "위치 업데이트 요청 중...")
+
+        // 위치 업데이트 요청을 활성화하여 비동기적으로 위치 수신 대기
+        locationSource.activate { location ->
+            if (location != null) {
+                Log.d("SearchStoreActivity", "위치 업데이트 성공: 위도=${location.latitude}, 경도=${location.longitude}")
+                val currentLatLng = LatLng(location.latitude, location.longitude)
+                moveCamera(currentLatLng)
+
+                // 초기 위치에서 가게 검색 수행
+                val address = runBlocking { getAddressFormLatLng(location.latitude, location.longitude) }
+                Log.d("SearchStoreActivity", "초기 위치 주소: $address")
+                if (address != null) {
+                    search(address) { resultLatLng ->
+                        moveCamera(resultLatLng)
+                    }
+                } else {
+                    Log.d("SearchStoreActivity", "초기 위치 주소를 가져올 수 없습니다.")
+                    Toast.makeText(this, "초기 위치 주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Log.d("SearchStoreActivity", "업데이트된 위치 정보를 가져올 수 없습니다.")
+            }
+        }
+    }
+
     override fun onMapReady(mapObject: NaverMap) {
         naverMap = mapObject
         isMapInit = true
 
         naverMap.locationSource = locationSource
-        naverMap.uiSettings.isLocationButtonEnabled = true
 
         naverMap.locationTrackingMode = LocationTrackingMode.Follow
 
-        val location = locationSource.lastLocation
-        if (location != null) {
-            val latitude = location.latitude
-            val longitude = location.longitude
-
-            moveCamera(LatLng(latitude, longitude))
-            val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
-            if (address != null) {
-                search(address) {}
-            }
+        if (hasPermission()) {
+            Log.d("SearchStoreActivity", "위치 권한 있음, 초기 위치 업데이트 요청")
+            startLocationUpdates()  // 위치 업데이트 요청 시작
+        } else {
+            Log.d("SearchStoreActivity", "위치 권한이 없음, 권한 요청")
+            ActivityCompat.requestPermissions(this, PERMISSIONS, LOCATION_PERMISSION_REQUEST_CODE)
         }
 
-        naverMap.addOnLocationChangeListener { location ->
+        binding.myLocationButton.setOnClickListener {
+            val location = locationSource.lastLocation
             if (location != null) {
                 val latitude = location.latitude
                 val longitude = location.longitude
-                Log.d("SearchStoreActivity", "현위치: 위도=$latitude, 경도=$longitude")
+                val currentLatLng = LatLng(latitude, longitude)
 
                 val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
                 if (address != null) {
                     Log.d("SearchStoreActivity", "현위치 주소: $address")
                     search(address) {}
+                    moveCamera(currentLatLng)
                 }
             } else {
                 Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
             }
         }
-
 
     }
 }
