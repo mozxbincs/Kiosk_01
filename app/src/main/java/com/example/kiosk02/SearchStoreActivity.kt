@@ -96,7 +96,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                 this,
                 PERMISSIONS,
                 LOCATION_PERMISSION_REQUEST_CODE
-            ) // 권한이 있는 경우 위치 업데이트 시작
+            )
         } else {
             initMapView()
         }
@@ -130,7 +130,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                         if (currentLocationName != null && currentLocationName.contains(" ")) {
                             cityOnly = currentLocationName.split(" ")[0]
                         } else if (currentLocationName != null) {
-                            cityOnly = currentLocationName  // "익산시"만 있는 경우 그대로 사용
+                            cityOnly = currentLocationName
                         }
 
                         if (currentLocationName != null) {
@@ -180,6 +180,8 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                     startActivity(intent)
                     finish()
 
+                } else {
+                    Snackbar.make(binding.root, "등록된 가게가 아닙니다.", Snackbar.LENGTH_SHORT).show()
                 }
             }.addOnFailureListener {
                 Log.d("firestore 정보 연결 실패", "정보 연결 실패")
@@ -395,14 +397,12 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun startLocationUpdates() {
         Log.d("SearchStoreActivity", "위치 업데이트 요청 중...")
 
-        // 위치 업데이트 요청을 활성화하여 비동기적으로 위치 수신 대기
         locationSource.activate { location ->
             if (location != null) {
                 Log.d("SearchStoreActivity", "위치 업데이트 성공: 위도=${location.latitude}, 경도=${location.longitude}")
                 val currentLatLng = LatLng(location.latitude, location.longitude)
                 moveCamera(currentLatLng)
 
-                // 초기 위치에서 가게 검색 수행
                 val address = runBlocking { getAddressFormLatLng(location.latitude, location.longitude) }
                 Log.d("SearchStoreActivity", "초기 위치 주소: $address")
                 if (address != null) {
