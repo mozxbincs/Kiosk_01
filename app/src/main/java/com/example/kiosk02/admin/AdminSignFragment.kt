@@ -222,6 +222,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                     Snackbar.make(binding.root, "등록 가능한 사업자번호 입니다.", Snackbar.LENGTH_SHORT).show()
                     Checkredundancy = true
                     binding.businessNumberEditText.isEnabled = false
+                    isAllInputsCheckValid()//추가 안되있어서 다시 추가 버튼 2번 눌러야 하는 거 해결
                 }
             }
     }

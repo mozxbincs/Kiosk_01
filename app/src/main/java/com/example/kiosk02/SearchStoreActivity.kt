@@ -158,7 +158,16 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     }
-
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates()
+        }
+    }
     private fun checkStoreInFireStore (title : String) {
         Log.d("checkStoreInFireStore", "dd")
         val FireStore = FirebaseFirestore.getInstance()

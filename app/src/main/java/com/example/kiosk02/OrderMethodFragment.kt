@@ -21,21 +21,25 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
         val Aemail = arguments?.getString("Aemail")
         Log.d("AddInformActivity", "Received email: $Uemail")
         Log.d("AddInformActivity", "Received email: $Aemail")
+
         binding.togoButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
             }
             //findNavController().navigate()
+            //최용훈씨 여기에다가 메뉴창 추가하시면 되고요
         }
 
-        binding.forhearButton.setOnClickListener {
+        binding.forhereButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
             }
-            //findNavController().navigate()
+            findNavController().navigate(R.id.action_to_table_Select_Fragment,bundle) // 초기화면으로 이동
         }
 
     }
 }
+
+
