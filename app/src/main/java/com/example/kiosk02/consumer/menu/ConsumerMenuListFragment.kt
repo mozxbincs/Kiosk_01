@@ -64,7 +64,7 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     // 경로 지정 함수
     private fun getAdminDocument(): DocumentReference {
 //        val email = getUserEmail()
-        val email = "cherrychoi35@gmail.com"
+        val email = "yonghun516@naver.com"
         return firestore.collection("admin").document(email)
     }
 

@@ -92,7 +92,7 @@ class ConsumerCartFragment: Fragment() {
     }
 
     private fun placeOrder() {
-        val email = "cherrychoi35@gmail.com"
+        val email = "yonghun516@naver.com"
         val consumerEmail = "ccc@ccc.ccc"
         val tableId = "table1"
         val orderData = cartItems.map {
