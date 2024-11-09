@@ -21,6 +21,7 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
         val Aemail = arguments?.getString("Aemail")
         Log.d("AddInformActivity", "Received email: $Uemail")
         Log.d("AddInformActivity", "Received email: $Aemail")
+
         binding.togoButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
@@ -29,13 +30,15 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
             //findNavController().navigate()
         }
 
-        binding.forhearButton.setOnClickListener {
+        binding.forhereButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
             }
-            //findNavController().navigate()
+            findNavController().navigate(R.id.action_to_table_Select_Fragment,bundle) // 초기화면으로 이동
         }
 
     }
 }
+
+

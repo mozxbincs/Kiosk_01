@@ -28,9 +28,6 @@ class MainFragment : Fragment() {
             findNavController().navigate(R.id.action_to_adminFragment)
         }
 
-        view.findViewById<Button>(R.id.test_01).setOnClickListener {
-            findNavController().navigate(R.id.action_to_table_Select_Fragment) // 초기화면으로 이동
-        }
 
         view.findViewById<Button>(R.id.login_button).setOnClickListener {
             val email = view.findViewById<EditText>(R.id.email_input).text.toString()
