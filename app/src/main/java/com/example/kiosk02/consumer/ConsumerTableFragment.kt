@@ -12,6 +12,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -73,18 +74,36 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 Toast.makeText(requireContext(), "테이블을 선택해주세요.", Toast.LENGTH_SHORT).show()
                 Log.d("ConsumerTableFragment", "No table selected for order")
             } else {
-                Log.d("ConsumerTableFragment", "Order button clicked. Selected table: $selectedTableId")
+                Log.d(
+                    "ConsumerTableFragment",
+                    "Order button clicked. Selected table: $selectedTableId"
+                )
                 saveOrderToFirestore(selectedTableId!!)
+
+                val bundle = Bundle().apply {
+                    putString("selectedTableId", selectedTableId)
+                    putString("Aemail", Aemail)
+                    putString("Uemail", Uemail)
+                }
+//                findNavController().navigate()
+                //최용훈씨 여기서부터 작업하면됩니다.
             }
         }
 
+
+        view.findViewById<TextView>(R.id.back_activity_consumer).setOnClickListener {
+            findNavController().navigate(R.id.action_to_mainFragment)
+        }
+
     }
+
     override fun onPause() {
         super.onPause()
         if (selectedTableId != null) {
             removeTableSelection(selectedTableId!!)
         }
     }
+
     private fun removeTableSelection(tableId: String) {
         firestore.collection("admin/$Aemail/floors/${floorSpinner.selectedItem}/tables/$tableId/select")
             .document(Uemail!!)
@@ -97,6 +116,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 Log.e("ConsumerTableFragment", "Error removing selection for table $tableId", e)
             }
     }
+
     private fun loadFloorsFromFirestore(Aemail: String) {
         Log.d("ConsumerTableFragment", "Loading floors for Aemail: $Aemail")
 
@@ -138,7 +158,10 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
             return
         }
 
-        Log.d("ConsumerTableFragment", "Loading tables for floor: $selectedFloor in Aemail: $Aemail")
+        Log.d(
+            "ConsumerTableFragment",
+            "Loading tables for floor: $selectedFloor in Aemail: $Aemail"
+        )
 
         tableFrame.removeAllViews() // 이전 테이블 뷰 삭제
         firestore.collection("admin/$Aemail/floors/$selectedFloor/tables")
@@ -161,20 +184,34 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                             .get()
                             .addOnSuccessListener { selectDoc ->
                                 val isSelected = selectDoc.getBoolean("select") ?: false
-                                Log.d("ConsumerTableFragment", "Table $tableId select state: $isSelected")
+                                Log.d(
+                                    "ConsumerTableFragment",
+                                    "Table $tableId select state: $isSelected"
+                                )
 
                                 val tableWidth = 50f * resources.displayMetrics.density
                                 val tableHeight = 50f * resources.displayMetrics.density
 
 
                                 val tableView = createTableView(
-                                    tableType, tableId, tableX, tableY, tableWidth, tableHeight, isSelected, selectedFloor
+                                    tableType,
+                                    tableId,
+                                    tableX,
+                                    tableY,
+                                    tableWidth,
+                                    tableHeight,
+                                    isSelected,
+                                    selectedFloor
                                 )
 
                                 tableFrame.addView(tableView)
                             }
                             .addOnFailureListener { e ->
-                                Log.e("ConsumerTableFragment", "Error fetching select state for table $tableId", e)
+                                Log.e(
+                                    "ConsumerTableFragment",
+                                    "Error fetching select state for table $tableId",
+                                    e
+                                )
                             }
                     }
                 }
@@ -226,14 +263,14 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 if (selectedTableId == null) {
                     selectTable(tableId, selectedFloor) // 새로운 테이블 선택
                 } else {
-                    Toast.makeText(requireContext(), "이미 다른 테이블이 선택되었습니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "이미 다른 테이블이 선택되었습니다.", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
 
         return tableView
     }
-
 
 
     private fun selectTable(tableId: String, selectedFloor: String) {
@@ -265,11 +302,11 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     }
 
 
-
-
-
     private fun saveOrderToFirestore(tableId: String) {
         val selectedFloor = floorSpinner.selectedItem.toString()
+        val consumerTablePath = "consumer/$Uemail/$tableId"  // 사용자 하위의 tableId 컬렉션 경로
+
+        // 1. 선택된 테이블 정보를 "admin" 컬렉션에 업데이트
         firestore.collection("admin/$Aemail/floors/$selectedFloor/tables/$tableId/select")
             .document(Uemail!!)
             .set(hashMapOf("select" to true))
@@ -277,7 +314,34 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 Log.d("ConsumerTableFragment", "Order confirmed for table $tableId")
                 Toast.makeText(requireContext(), "자리선택이 완료됐습니다.", Toast.LENGTH_SHORT).show()
                 selectedTableId = null // 선택을 고정하여 다시 선택할 수 없도록 함
-                loadTablesFromFirestore(Aemail!!, selectedFloor) // UI 갱신
+
+                // 2. "consumer" 컬렉션의 사용자 하위 tableId 컬렉션에 데이터 추가
+                val reservationData = hashMapOf(
+                    "Aemail" to Aemail,
+                    "floor" to selectedFloor,
+                    "tableId" to tableId,
+                    "timestamp" to System.currentTimeMillis() // 예약 시간 정보
+                )
+
+                // 예약 정보를 consumer 문서 경로 아래 tableId 컬렉션에 저장
+                firestore.collection(consumerTablePath)
+                    .document("reservation_info") // 고정된 문서 ID로 설정
+                    .set(reservationData)
+                    .addOnSuccessListener {
+                        Log.d(
+                            "ConsumerTableFragment",
+                            "Reservation data added in $consumerTablePath"
+                        )
+                        loadTablesFromFirestore(Aemail!!, selectedFloor) // UI 갱신
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("ConsumerTableFragment", "Error adding reservation data", e)
+                        Toast.makeText(
+                            requireContext(),
+                            "데이터 저장 실패. 다시 시도해주세요.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             }
             .addOnFailureListener { e ->
                 Log.e("ConsumerTableFragment", "Error confirming order", e)

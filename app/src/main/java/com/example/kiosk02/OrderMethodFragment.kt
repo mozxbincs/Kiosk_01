@@ -28,6 +28,7 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
                 putString("Uemail", Uemail)
             }
             //findNavController().navigate()
+            //최용훈씨 여기에다가 메뉴창 추가하시면 되고요
         }
 
         binding.forhereButton.setOnClickListener {
