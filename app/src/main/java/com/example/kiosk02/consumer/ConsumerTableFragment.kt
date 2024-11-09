@@ -77,8 +77,26 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 saveOrderToFirestore(selectedTableId!!)
             }
         }
-    }
 
+    }
+    override fun onPause() {
+        super.onPause()
+        if (selectedTableId != null) {
+            removeTableSelection(selectedTableId!!)
+        }
+    }
+    private fun removeTableSelection(tableId: String) {
+        firestore.collection("admin/$Aemail/floors/${floorSpinner.selectedItem}/tables/$tableId/select")
+            .document(Uemail!!)
+            .delete() // 선택 데이터 삭제
+            .addOnSuccessListener {
+                Log.d("ConsumerTableFragment", "Selection for table $tableId removed")
+                selectedTableId = null // 선택된 테이블 ID 초기화
+            }
+            .addOnFailureListener { e ->
+                Log.e("ConsumerTableFragment", "Error removing selection for table $tableId", e)
+            }
+    }
     private fun loadFloorsFromFirestore(Aemail: String) {
         Log.d("ConsumerTableFragment", "Loading floors for Aemail: $Aemail")
 
@@ -129,18 +147,17 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 if (result.isEmpty) {
                     Log.d("ConsumerTableFragment", "No tables found for floor: $selectedFloor")
                 } else {
-                    // 테이블마다 select 상태를 가져와서 처리
+
                     for (document in result) {
                         val tableId = document.id
                         val tableType = document.getString("tableType") ?: "Unknown"
 
-                        // 테이블의 위치 정보 가져오기
                         val tableX = document.getDouble("x")?.toFloat() ?: 0f
                         val tableY = document.getDouble("y")?.toFloat() ?: 0f
 
-                        // select 상태 가져오기 (사용자의 이메일로 접근)
+
                         firestore.collection("admin/$Aemail/floors/$selectedFloor/tables/$tableId/select")
-                            .document(currentUserEmail) // 사용자의 이메일을 사용
+                            .document(currentUserEmail)
                             .get()
                             .addOnSuccessListener { selectDoc ->
                                 val isSelected = selectDoc.getBoolean("select") ?: false
@@ -149,7 +166,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                                 val tableWidth = 50f * resources.displayMetrics.density
                                 val tableHeight = 50f * resources.displayMetrics.density
 
-                                // 선택된 테이블에 대한 뷰 생성
+
                                 val tableView = createTableView(
                                     tableType, tableId, tableX, tableY, tableWidth, tableHeight, isSelected, selectedFloor
                                 )
@@ -167,7 +184,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
             }
     }
 
-    // 테이블 뷰를 생성하는 메서드
+
     private fun createTableView(
         tableType: String,
         tableId: String,
@@ -185,38 +202,32 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
         tableView.layoutParams = params
 
         val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
-
-        // 테이블 이름 설정
         tableNameTextView.text = tableType
-
-        // 테이블 위치 설정
         tableView.x = x
         tableView.y = y
 
-        // 테이블이 선택되었을 때의 UI 처리
         if (isSelected) {
-            tableNameTextView.text = "X" // "X"로 표시
-            tableView.alpha = 0.5f // 예약된 테이블 흐리게 표시
-        }
-
-        // 테이블 클릭 리스너 추가
-        tableView.setOnClickListener {
-            if (selectedTableId != null) {
-                // 이미 선택된 테이블이 있으면 선택 취소 먼저
-                if (selectedTableId != tableId) {
-                    // 이미 선택된 테이블이 있으면 클릭할 수 없도록 함
-                    Toast.makeText(requireContext(), "이미 테이블이 선택되었습니다. 선택을 취소하고 다른 테이블을 선택하세요.", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
+            // 테이블이 선택된 상태에서 예약자와 현재 사용자를 확인
+            if (selectedTableId == tableId) {
+                // 현재 사용자가 선택한 테이블 -> 선택 취소 가능
+                tableView.alpha = 0.7f
+                tableView.setOnClickListener {
+                    deselectTable(tableId)
                 }
-            }
-
-            // 선택되지 않은 테이블을 클릭한 경우, 새로 선택
-            if (isSelected) {
-                // 이미 선택된 테이블을 클릭한 경우, 선택 취소
-                deselectTable(tableId, selectedFloor)
             } else {
-                // 새 테이블을 선택
-                selectTable(tableId, selectedFloor)
+                // 다른 사용자가 예약한 테이블은 선택 불가능
+                tableNameTextView.text = "X"
+                tableView.alpha = 0.5f
+                tableView.isClickable = false
+            }
+        } else {
+            // 테이블이 선택되지 않은 경우 -> 현재 사용자가 선택 가능
+            tableView.setOnClickListener {
+                if (selectedTableId == null) {
+                    selectTable(tableId, selectedFloor) // 새로운 테이블 선택
+                } else {
+                    Toast.makeText(requireContext(), "이미 다른 테이블이 선택되었습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -224,35 +235,29 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     }
 
 
-    private fun selectTable(tableId: String, selectedFloor: String) {
-        if (selectedTableId != null) {
-            // 이미 하나의 테이블이 선택되어 있으면 다른 테이블을 선택할 수 없도록 처리
-            Toast.makeText(requireContext(), "이미 선택된 테이블이 있습니다. 기존 테이블을 취소하고 선택하세요.", Toast.LENGTH_SHORT).show()
-            return
-        }
 
-        // 새 테이블을 선택
+    private fun selectTable(tableId: String, selectedFloor: String) {
         firestore.collection("admin/$Aemail/floors/$selectedFloor/tables/$tableId/select")
             .document(Uemail!!)
             .set(hashMapOf("select" to true))
             .addOnSuccessListener {
                 Log.d("ConsumerTableFragment", "Table $tableId selected")
                 selectedTableId = tableId
-                loadTablesFromFirestore(Aemail!!, selectedFloor)
+                loadTablesFromFirestore(Aemail!!, selectedFloor) // UI 갱신
             }
             .addOnFailureListener { e ->
                 Log.e("ConsumerTableFragment", "Error selecting table $tableId", e)
             }
     }
 
-    private fun deselectTable(tableId: String, selectedFloor: String) {
-        firestore.collection("admin/$Aemail/floors/$selectedFloor/tables/$tableId/select")
+    private fun deselectTable(tableId: String) {
+        firestore.collection("admin/$Aemail/floors/${floorSpinner.selectedItem}/tables/$tableId/select")
             .document(Uemail!!)
-            .set(hashMapOf("select" to false))
+            .delete()
             .addOnSuccessListener {
                 Log.d("ConsumerTableFragment", "Table $tableId deselected")
-                selectedTableId = null // 선택된 테이블 ID 초기화
-                loadTablesFromFirestore(Aemail!!, selectedFloor)
+                selectedTableId = null
+                loadTablesFromFirestore(Aemail!!, floorSpinner.selectedItem.toString()) // UI 갱신
             }
             .addOnFailureListener { e ->
                 Log.e("ConsumerTableFragment", "Error deselecting table $tableId", e)
@@ -262,7 +267,23 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
 
 
-    private fun saveOrderToFirestore(tableId: String) {
 
+    private fun saveOrderToFirestore(tableId: String) {
+        val selectedFloor = floorSpinner.selectedItem.toString()
+        firestore.collection("admin/$Aemail/floors/$selectedFloor/tables/$tableId/select")
+            .document(Uemail!!)
+            .set(hashMapOf("select" to true))
+            .addOnSuccessListener {
+                Log.d("ConsumerTableFragment", "Order confirmed for table $tableId")
+                Toast.makeText(requireContext(), "자리선택이 완료됐습니다.", Toast.LENGTH_SHORT).show()
+                selectedTableId = null // 선택을 고정하여 다시 선택할 수 없도록 함
+                loadTablesFromFirestore(Aemail!!, selectedFloor) // UI 갱신
+            }
+            .addOnFailureListener { e ->
+                Log.e("ConsumerTableFragment", "Error confirming order", e)
+                Toast.makeText(requireContext(), "자리 선택 실패. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+            }
     }
+
+
 }
