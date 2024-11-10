@@ -84,7 +84,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
                 addedTables.remove(tableToRemove) // 추가된 테이블 목록에서 제거
                 selectedTable = null // 선택 해제
                 removeTableButton.visibility = View.VISIBLE // 삭제 버튼 숨기기
-                Toast.makeText(requireContext(), "테이블이 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+
             } ?: run {
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             }
@@ -466,7 +466,7 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
     // 수량 입력 다이얼로그를 표시하는 함수 (기타 테이블)
     private fun showQuantityPeopleInputDialog() {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("기타 테이블 추가")
+        builder.setTitle("테이블 추가")
 
         // 레이아웃 생성
         val layout = LinearLayout(requireContext()).apply {

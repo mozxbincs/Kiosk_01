@@ -79,13 +79,6 @@
 
 
 
-            <Button
-                android:textColor="@color/black"
-                android:backgroundTint="@color/navy01"
-                android:id="@+id/delete_table_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="삭제"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -117,7 +110,7 @@
         <TextView
             android:textColor="@color/black"
             android:backgroundTint="@color/navy01"
-            android:id="@+id/back_activity_admin"
+            android:id="@+id/back_activity_consumer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/baseline_arrow_back_24"/>
