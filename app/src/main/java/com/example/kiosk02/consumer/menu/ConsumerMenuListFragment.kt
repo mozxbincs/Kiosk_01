@@ -16,18 +16,18 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     private lateinit var binding: FragmentConsumerMenuListBinding
     private val firestore = FirebaseFirestore.getInstance()
 
-    // 소비자가 매장을 선택했을 때 해당 매장의 document명을 받아와야 함
-//    private val user = "cherrychoi35@gmail.com"
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentConsumerMenuListBinding.bind(view)
 
-        loadCategoriesToTabs()
+        val bundle = arguments
+        val Aemail = bundle?.getString("Aemail") ?:""
+
+        loadCategoriesToTabs(Aemail)
 
         binding.cartImageButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_ConsumerCartFragment)
+            findNavController().navigate(R.id.action_to_ConsumerCartFragment, bundle)
         }
 
 //        binding.backButton.setOnClickListener {
@@ -37,19 +37,20 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     }
 
 
-    private fun loadCategoriesToTabs() {
-        getAdminDocument().collection("category")
+    private fun loadCategoriesToTabs(Aemail:String) {
+        val bundle = arguments
+        getAdminDocument(Aemail).collection("category")
             .get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }
-                setupTabLayoutWithViewPager(categories)
+                setupTabLayoutWithViewPager(categories,bundle)
             }.addOnFailureListener {
                 Log.e("TabLayout", "탭 레이아웃 설정 실패")
             }
     }
 
-    private fun setupTabLayoutWithViewPager(categories: List<String>) {
-        val viewPagerAdapter = ConsumerMenuPagerAdapter(this)
+    private fun setupTabLayoutWithViewPager(categories: List<String>, bundle: Bundle?) {
+        val viewPagerAdapter = ConsumerMenuPagerAdapter(this, bundle)
         viewPagerAdapter.setCategories(categories)
         binding.viewPager.adapter = viewPagerAdapter
 
@@ -62,15 +63,7 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     }
 
     // 경로 지정 함수
-    private fun getAdminDocument(): DocumentReference {
-//        val email = getUserEmail()
-        val email = "yonghun516@naver.com"
-        return firestore.collection("admin").document(email)
+    private fun getAdminDocument(Aemail: String): DocumentReference {
+        return firestore.collection("admin").document(Aemail)
     }
-
-
-// 해당 매장의 document명 처리 함수
-//    private fun getUserEmail(): String {
-//        return user?.email.toString()
-//    }
 }

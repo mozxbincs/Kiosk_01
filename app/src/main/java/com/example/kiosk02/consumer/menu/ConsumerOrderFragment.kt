@@ -20,10 +20,12 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
     private lateinit var binding: FragmentConsumerOrderFragmentBinding
     private var menuId: String? = null
     private var menuModel: MenuModel? = null
+    private var bundle: Bundle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         menuId = arguments?.getString("menuId")
+        bundle = arguments
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -33,12 +35,17 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
 
         menuModel = arguments?.getParcelable("menuModel")
 
+
+
         loadMenuData()
 
         setupSpinner()
 
         binding.cartImageButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_ConsumerCartFragment)
+            val newBundle = Bundle(bundle).apply {
+                remove("menuModel") // 전달받은 Bundle값 중 menuModel 삭제
+            }
+            findNavController().navigate(R.id.action_to_ConsumerCartFragment, newBundle)
         }
 
         binding.toCartButton.setOnClickListener {
@@ -49,7 +56,6 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
             goToConsumerMenuList()
         }
     }
-
 
 
     private fun loadMenuData() {
