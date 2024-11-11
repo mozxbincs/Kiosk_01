@@ -16,11 +16,16 @@ class ShowEmailAdminFragment : Fragment(R.layout.fragment_show_email_admin){
 
         // 전달된 관리자 이메일 받기
         val adminEmail = arguments?.getString("adminEmail")
+        val goto = arguments?.getString("goto")
 
         binding.AdminEmailTextView.text = getString(R.string.showAdminEmailAddress, adminEmail)
 
         binding.GoBackToLoginButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_adminFragment)
+            if(goto == "admin") {
+                findNavController().navigate(R.id.action_to_adminFragment)
+            } else {
+                findNavController().navigate(R.id.action_to_mainFragment)
+            }
         }
 
     }

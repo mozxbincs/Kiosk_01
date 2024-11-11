@@ -1,10 +1,9 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.databinding.ItemRestaurantBinding
-import com.naver.maps.geometry.LatLng
 
 class RestaurantListAdapter(private val onClick: (String) -> Unit): RecyclerView.Adapter<RestaurantListAdapter.ViewHolder>() {
 
@@ -12,7 +11,11 @@ class RestaurantListAdapter(private val onClick: (String) -> Unit): RecyclerView
 
     inner class ViewHolder(private val binding: ItemRestaurantBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(item: SearchItem) {
-            binding.titleTextView.text = item.title
+            val cleanTitle = item.title
+                .replace("<br>", "")
+                .replace("<b>", "")
+                .replace("</b>", "")
+            binding.titleTextView.text = cleanTitle
             binding.categoryTextView.text = item.category
             binding.locationTextView.text = item.roadAddress
 

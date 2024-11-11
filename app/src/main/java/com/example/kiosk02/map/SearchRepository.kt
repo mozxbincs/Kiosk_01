@@ -1,4 +1,4 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -28,7 +28,7 @@ object SearchRepository {
     private val service = retrofit.create(SearchService::class.java)
 
     fun getStore(query: String): Call<SearchResult> {
-        return service.getRestaurant(query = "$query 맛집", display = 15)
+        return service.getRestaurant(query = "$query 맛집", display = 5)
     }
 
     class AppInterceptor: Interceptor{

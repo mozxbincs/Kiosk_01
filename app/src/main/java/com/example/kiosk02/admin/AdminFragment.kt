@@ -18,6 +18,7 @@ import com.example.kiosk02.R
 import com.example.kiosk02.databinding.FragmentAdminBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class AdminFragment : Fragment(R.layout.fragment_admin) {
@@ -38,7 +39,8 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         binding.adminPasswordInput.addTextChangedListener(textWatcher)
 
         //sharedPreferences 초기화
-        sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+        sharedPreferences =
+            requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         ediotr = sharedPreferences.edit()
 
 
@@ -52,7 +54,10 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
                 .addOnCompleteListener { task ->
                     if(task.isSuccessful){
                         findNavController().navigate(R.id.action_to_admin_activity)
-                    }else{}
+                    }else{
+                        // 로그인 실패 시, 알림
+                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                    }
                 }
         }
 
@@ -62,28 +67,50 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
             val email = binding.adminEmailInput.text.toString()
             val password = binding.adminPasswordInput.text.toString()
 
-            Firebase.auth.signInWithEmailAndPassword(email,password)
-                .addOnCompleteListener { task ->
-                    if(task.isSuccessful){
-                        findNavController().navigate(R.id.action_to_admin_activity)
+            Firebase.firestore.collection("admin")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (!document.isEmpty) {
+                        Firebase.auth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    findNavController().navigate(R.id.action_to_admin_activity)
 
-                        //로그인 상태 유지 체크박스가 선택 되어 있을 시,
-                        if(binding.adminRememberMeCheckbox.isChecked){
-                            //로그인 성공 시, SharedPreferences에 로그인 상태 저장
-                            val sharedPreferences = requireContext().getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
-                            val editor = sharedPreferences.edit()
-                            editor.putBoolean("isLoggedIn", true)
-                            editor.putString("user_email", email)
-                            editor.putString("user_password", password)
-                            editor.apply()
-                        }
-                        Log.e("stayLoggedIn", "$email")
-                        Log.e("stayLoggedIn", "$password")
-                    }else{
-                        // 로그인 실패 시, 알림
-                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                                    //로그인 상태 유지 체크박스가 선택 되어 있을 시,
+                                    if (binding.adminRememberMeCheckbox.isChecked) {
+                                        //로그인 성공 시, SharedPreferences에 로그인 상태 저장
+                                        val sharedPreferences =
+                                            requireContext().getSharedPreferences(
+                                                "LoginPrefs",
+                                                Context.MODE_PRIVATE
+                                            )
+                                        val editor = sharedPreferences.edit()
+                                        editor.putBoolean("isLoggedIn", true)
+                                        editor.putString("user_email", email)
+                                        editor.putString("user_password", password)
+                                        editor.apply()
+                                    }
+                                    Log.e("stayLoggedIn", "$email")
+                                    Log.e("stayLoggedIn", "$password")
+                                } else {
+                                    // 로그인 실패 시, 알림
+                                    Snackbar.make(
+                                        binding.root,
+                                        "로그인에 실패했습니다.",
+                                        Snackbar.LENGTH_SHORT
+                                    )
+                                        .show()
+                                }
+                            }
+
+                    } else {
+                        Snackbar.make(binding.root, "이메일을 정확히 입력해주세요.", Snackbar.LENGTH_SHORT)
+                            .show()
                     }
-
+                }.addOnFailureListener {
+                    Snackbar.make(binding.root, "이메일을 정확히 입력해주세요.", Snackbar.LENGTH_SHORT)
+                        .show()
                 }
         }
 
