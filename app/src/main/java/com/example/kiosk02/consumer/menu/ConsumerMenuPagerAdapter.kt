@@ -1,9 +1,11 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
+import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class ConsumerMenuPagerAdapter(fragment: Fragment): FragmentStateAdapter(fragment) {
+class ConsumerMenuPagerAdapter(fragment: Fragment, private val bundle: Bundle?) :
+    FragmentStateAdapter(fragment) {
 
     private val categories = mutableListOf<String>()
 
@@ -17,7 +19,7 @@ class ConsumerMenuPagerAdapter(fragment: Fragment): FragmentStateAdapter(fragmen
 
     override fun createFragment(position: Int): Fragment {
         val category = categories[position]
-        return ConsumerMenuFragment.newInstance(category) // 카테고리별로 Fragment 생성
+        return ConsumerMenuFragment.newInstance(category, bundle) // 카테고리별로 Fragment 생성
     }
 
     fun getCategoryTitle(position: Int): String = categories[position]

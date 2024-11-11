@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import android.content.Context
 import android.os.Bundle
@@ -12,8 +12,6 @@ import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerOrderFragmentBinding
 import com.google.common.reflect.TypeToken
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import java.text.NumberFormat
 import java.util.Locale
@@ -22,10 +20,14 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
     private lateinit var binding: FragmentConsumerOrderFragmentBinding
     private var menuId: String? = null
     private var menuModel: MenuModel? = null
+    private var bundle: Bundle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        menuId = arguments?.getString("menuId")
+
+        bundle = arguments
+        menuId = bundle?.getString("menuId")
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -35,12 +37,16 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
 
         menuModel = arguments?.getParcelable("menuModel")
 
+        val newBundle = Bundle(bundle).apply {
+            remove("menuModel") // 전달받은 Bundle값 중 menuModel 삭제
+        }
+
         loadMenuData()
 
         setupSpinner()
 
         binding.cartImageButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_ConsumerCartFragment)
+            findNavController().navigate(R.id.action_to_ConsumerCartFragment, newBundle)
         }
 
         binding.toCartButton.setOnClickListener {
@@ -51,7 +57,6 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
             goToConsumerMenuList()
         }
     }
-
 
 
     private fun loadMenuData() {
@@ -124,7 +129,10 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
     }
 
     private fun goToConsumerMenuList() {
-        findNavController().navigate(R.id.action_to_ConsumerMenuList)
+        val newBundle = Bundle(bundle).apply {
+            remove("menuModel") // 전달받은 Bundle값 중 menuModel 삭제
+        }
+        findNavController().navigate(R.id.action_to_ConsumerMenuList, newBundle)
     }
 
 }

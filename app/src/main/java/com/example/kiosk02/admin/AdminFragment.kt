@@ -52,10 +52,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
                 .addOnCompleteListener { task ->
                     if(task.isSuccessful){
                         findNavController().navigate(R.id.action_to_admin_activity)
-                    }else{
-                        // 로그인 실패 시, 알림
-                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-                    }
+                    }else{}
                 }
         }
 
