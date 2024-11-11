@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import android.os.Bundle
 import android.util.Log
@@ -15,20 +15,18 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 
-class ConsumerMenuFragment : Fragment() {
+class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
 
     private lateinit var binding: FragmentConsumerMenuFragmentBinding
     private val firestore = FirebaseFirestore.getInstance()
     private var category: String? = null
-    // 소비자가 매장을 선택했을 때 해당 매장의 document명을 받아와야 함
-//    private val user = "cherrychoi35@gmail.com"
 
     companion object {
         private const val ARG_CATEGORY = "category"
 
-        fun newInstance(category: String): ConsumerMenuFragment {
-            return ConsumerMenuFragment().apply {
-                arguments = Bundle().apply {
+        fun newInstance(category: String, bundle: Bundle?): ConsumerMenuFragment {
+            return ConsumerMenuFragment(bundle).apply {
+                arguments = Bundle(bundle).apply { //카테고리와 충돌나지 않는지 확인해보기
                     putString(ARG_CATEGORY, category)
                 }
             }
@@ -55,17 +53,15 @@ class ConsumerMenuFragment : Fragment() {
     private fun setupRecyclerView() {
         val adapter = ConsumerMenuListAdapter { menuModel ->
             // 메뉴 클릭 시, ConsumerOrderFragment로 이동
-            val bundle = Bundle().apply {
+            val bundleWithMenuModel = Bundle(bundle).apply {
                 putParcelable("menuModel", menuModel)
             }
-            findNavController().navigate(R.id.action_to_ConsumerOrderFragment, bundle)
+            findNavController().navigate(R.id.action_to_ConsumerOrderFragment, bundleWithMenuModel)
         }
 
         val gridLayoutManager = GridLayoutManager(requireContext(), 1)
         binding.recyclerview.layoutManager = gridLayoutManager
         binding.recyclerview.adapter = adapter
-
-        Log.d("ConsumerMenuListFragment", "Adapter set for RecyclerView")
     }
 
     private fun loadMenuItemsForCategory(category: String?) {
@@ -82,7 +78,10 @@ class ConsumerMenuFragment : Fragment() {
                     // 아이템이 없는 경우 ProgressBar를 숨기고, RecyclerView도 숨김
                     binding.progressBarLayout.visibility = View.GONE
                     binding.recyclerview.visibility = View.GONE
-                    Snackbar.make(binding.root, "표시할 메뉴가 없습니다.", Snackbar.LENGTH_SHORT).show()
+                    binding.emptySpaceNoticeTextView.apply {
+                        text = "표시할 메뉴가 없습니다."
+                        visibility = View.VISIBLE
+                    }
                 } else {
                     // 아이템이 있는 경우 RecyclerView와 데이터 설정
                     (binding.recyclerview.adapter as ConsumerMenuListAdapter).submitList(menuItems)
@@ -102,14 +101,8 @@ class ConsumerMenuFragment : Fragment() {
 
     // 경로 지정 함수
     private fun getAdminDocument(): DocumentReference {
-//        val email = getUserEmail()
-        val email = "cherrychoi35@gmail.com"
+        val email = bundle?.getString("Aemail") ?: ""
         return firestore.collection("admin").document(email)
     }
 
-
-// 해당 매장의 document명 처리 함수
-//    private fun getUserEmail(): String {
-//        return user?.email.toString()
-//    }
 }

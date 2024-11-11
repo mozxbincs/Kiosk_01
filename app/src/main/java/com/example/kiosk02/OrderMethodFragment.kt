@@ -26,15 +26,17 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
+                putString("orderType","pickup")
             }
-            //findNavController().navigate()
-            //최용훈씨 여기에다가 메뉴창 추가하시면 되고요
+            findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle) // 메뉴판으로 이동
+
         }
 
         binding.forhereButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
+                putString("orderType","for_here")
             }
             findNavController().navigate(R.id.action_to_table_Select_Fragment,bundle) // 초기화면으로 이동
         }

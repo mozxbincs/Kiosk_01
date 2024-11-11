@@ -84,9 +84,10 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                     putString("selectedTableId", selectedTableId)
                     putString("Aemail", Aemail)
                     putString("Uemail", Uemail)
+                    putString("orderType", arguments?.getString("orderType"))
                 }
+                findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle)
 
-                //최용훈씨 여기서부터 작업하면됩니다.
             }
         }
 
