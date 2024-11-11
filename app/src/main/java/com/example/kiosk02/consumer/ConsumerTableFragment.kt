@@ -25,6 +25,8 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     private var Aemail: String? = null
     private var Uemail: String? = null
     private var selectedTableId: String? = null
+    private var isOrderConfirmed = false
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -80,6 +82,9 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                 )
                 saveOrderToFirestore(selectedTableId!!)
 
+                // 주문 완료 상태로 설정
+                isOrderConfirmed = true
+
                 val bundle = Bundle().apply {
                     putString("selectedTableId", selectedTableId)
                     putString("Aemail", Aemail)
@@ -87,7 +92,6 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                     putString("orderType", arguments?.getString("orderType"))
                 }
                 findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle)
-
             }
         }
 
@@ -100,11 +104,10 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
     override fun onPause() {
         super.onPause()
-        if (selectedTableId != null) {
+        if (!isOrderConfirmed && selectedTableId != null) {
             removeTableSelection(selectedTableId!!)
         }
     }
-
     private fun removeTableSelection(tableId: String) {
         firestore.collection("admin/$Aemail/floors/${floorSpinner.selectedItem}/tables/$tableId/select")
             .document(Uemail!!)
