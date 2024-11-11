@@ -304,7 +304,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     suspend fun getAddressFormLatLng(lat: Double, lng: Double): String? {
-        val apiKey = "AIzaSyB77AQD-C0eNPC8YEVqOrGU9y3L5BFiPUw"  // 여기에 유효한 Google Maps Geocoding API 키를 입력하세요
+        val apiKey = "AIzaSyC1so0FTzQDWI9x702fGjPdOojwhECSirw"  // 여기에 유효한 Google Maps Geocoding API 키를 입력하세요
         val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$apiKey&language=ko"
 
         return withContext(Dispatchers.IO) {
