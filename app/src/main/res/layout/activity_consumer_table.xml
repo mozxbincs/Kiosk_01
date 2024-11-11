@@ -117,12 +117,12 @@
 
 
         <Button
-            android:textColor="@color/black"
-            android:backgroundTint="@color/navy01"
             android:id="@+id/update_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="200dp"
-            android:text="주문하기"/>
+            android:backgroundTint="@color/navy01"
+            android:text="주문하기"
+            android:textColor="@color/black" />
     </LinearLayout>
 </LinearLayout>

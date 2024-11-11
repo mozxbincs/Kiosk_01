@@ -85,7 +85,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                     putString("Aemail", Aemail)
                     putString("Uemail", Uemail)
                 }
-//                findNavController().navigate()
+
                 //최용훈씨 여기서부터 작업하면됩니다.
             }
         }
