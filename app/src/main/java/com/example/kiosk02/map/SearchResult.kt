@@ -1,4 +1,4 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

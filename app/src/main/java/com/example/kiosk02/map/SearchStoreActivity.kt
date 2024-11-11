@@ -1,4 +1,4 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
 import android.os.Bundle
 import android.util.Log
@@ -23,37 +23,23 @@ import retrofit2.Response
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
-import com.example.kiosk02.admin.AdminActivity
-import com.example.kiosk02.admin.AdminSignFragment
-import com.google.firebase.Firebase
+import com.example.kiosk02.MainActivity
+import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.util.FusedLocationSource
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.Locale
-import kotlin.math.ln
-import kotlin.math.log
 
 
 class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -239,6 +225,9 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                     Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
                     Marker(latLng).apply {
                         captionText = it.title
+                            .replace("<br>", "")
+                            .replace("<b>", "")
+                            .replace("</b>", "")
                         map = naverMap
                     }
                 }
@@ -313,7 +302,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     suspend fun getAddressFormLatLng(lat: Double, lng: Double): String? {
-        val apiKey = "AIzaSyB77AQD-C0eNPC8YEVqOrGU9y3L5BFiPUw"  // 여기에 유효한 Google Maps Geocoding API 키를 입력하세요
+        val apiKey = "AIzaSyC1so0FTzQDWI9x702fGjPdOojwhECSirw"
         val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$apiKey&language=ko"
 
         return withContext(Dispatchers.IO) {
