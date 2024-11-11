@@ -1,4 +1,4 @@
-package com.example.kiosk02.customer.menu
+package com.example.kiosk02.consumer.menu
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.kiosk02.admin.menu.data.MenuDiffCallback
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.ItemConsumerMenuBinding
 import java.text.NumberFormat

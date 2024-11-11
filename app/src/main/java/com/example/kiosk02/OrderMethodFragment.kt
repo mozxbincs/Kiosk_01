@@ -36,16 +36,19 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
+                putString("orderType","pickup")
             }
-            //findNavController().navigate()
+            findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle) // 메뉴판으로 이동
+
         }
 
-        binding.forhearButton.setOnClickListener {
+        binding.forhereButton.setOnClickListener {
             val bundle = Bundle().apply {
                 putString("Aemail", Aemail)
                 putString("Uemail", Uemail)
+                putString("orderType","for_here")
             }
-            //findNavController().navigate()
+            findNavController().navigate(R.id.action_to_table_Select_Fragment,bundle) // 초기화면으로 이동
         }
 
     }

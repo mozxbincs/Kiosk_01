@@ -65,7 +65,6 @@ class MenuListFragment : Fragment() {
         binding.menuListRecyclerView.layoutManager = gridLayoutManager
         binding.menuListRecyclerView.adapter = adapter
 
-        Log.d("MenuListFragment", "Adapter set for RecyclerView")
     }
 
     private fun loadMenuItemsForCategory(category: String?) {
@@ -82,11 +81,15 @@ class MenuListFragment : Fragment() {
                     // 아이템이 없는 경우 ProgressBar를 숨기고, RecyclerView도 숨김
                     binding.progressBarLayout.visibility = View.GONE
                     binding.menuListRecyclerView.visibility = View.GONE
-                    Snackbar.make(binding.root, "표시할 메뉴가 없습니다.", Snackbar.LENGTH_SHORT).show()
+                    binding.emptySpaceNoticeTextView.apply {
+                        text = "표시할 메뉴가 없습니다."
+                        visibility = View.VISIBLE
+                    }
                 } else {
                     // 아이템이 있는 경우 RecyclerView와 데이터 설정
                     (binding.menuListRecyclerView.adapter as MenuListAdapter).submitList(menuItems)
                     binding.menuListRecyclerView.visibility = View.VISIBLE
+                    binding.emptySpaceNoticeTextView.visibility = View.GONE
                 }
 
             }

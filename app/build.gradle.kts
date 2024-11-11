@@ -48,7 +48,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
 
     implementation ("com.google.android.gms:play-services-base:17.6.0")
-    implementation ("com.google.android.gms:play-services-location:18.0.0")
+//    implementation ("com.google.android.gms:play-services-location:18.0.0")
 
     implementation ("com.google.firebase:firebase-database-ktx:20.3.0")// 버전은 최신으로 변경 가능
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")

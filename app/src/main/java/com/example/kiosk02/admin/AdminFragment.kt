@@ -46,17 +46,17 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
 
         // 로그인 상태 유지 선택 시, 자동 로그인
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-        if (isLoggedIn) {
-            val savedID = sharedPreferences.getString("user_email", null).toString()
+        if(isLoggedIn){
+            val savedID = sharedPreferences.getString("user_email",null).toString()
             val savedPW = sharedPreferences.getString("user_password", null).toString()
 
-            Firebase.auth.signInWithEmailAndPassword(savedID, savedPW)
+            Firebase.auth.signInWithEmailAndPassword(savedID,savedPW)
                 .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
+                    if(task.isSuccessful){
                         findNavController().navigate(R.id.action_to_admin_activity)
-                    } else {
+                    }else{
                         // 로그인 실패 시, 알림
-                        Snackbar.make(binding.root, "로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root,"로그인에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
                     }
                 }
         }
@@ -115,6 +115,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
         }
 
 
+
         // 이메일 찾기 버튼 클릭 리스너 설정
         view.findViewById<TextView>(R.id.admin_forgot_email_text).setOnClickListener {
             findNavController().navigate(R.id.action_to_find_email_admin) // 이메일 찾기 화면으로 이동
@@ -140,11 +141,12 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
     }
 
 
-    private fun isEmailValid(email: String): Boolean {
+
+        private fun isEmailValid(email:String):Boolean{
         return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    private val textWatcher = object : TextWatcher {
+    private val textWatcher = object: TextWatcher{
         override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
         }

@@ -74,7 +74,9 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
             val serviceType = serviceSpinner.selectedItem.toString()
             val pickUpType = pickUpSpinner.selectedItem.toString()
-            val totalFloorCount = floorSpinner.selectedItem.toString().toIntOrNull() ?: 0
+            val totalFloorCount = floorSpinner.selectedItem.toString()
+                .filter { it.isDigit() } // 숫자만 추출
+                .toIntOrNull() ?: 0 // 변환 후 기본값 0 설정
             val addressString = addressEditText.text.toString()
 
             if(email != null) {
@@ -103,6 +105,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
             .document(email)
             .update(storeInform)
             .addOnSuccessListener {
+                saveFloorData(email, totalFloorCount)
                 Snackbar.make(requireView(), "가게 정보 저장 완료", Snackbar.LENGTH_SHORT).show()
                 findNavController().navigate(R.id.adminActivity)
             }.addOnFailureListener { exception ->
