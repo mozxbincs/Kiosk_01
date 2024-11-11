@@ -78,7 +78,10 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
                     // 아이템이 없는 경우 ProgressBar를 숨기고, RecyclerView도 숨김
                     binding.progressBarLayout.visibility = View.GONE
                     binding.recyclerview.visibility = View.GONE
-                    Snackbar.make(binding.root, "표시할 메뉴가 없습니다.", Snackbar.LENGTH_SHORT).show()
+                    binding.emptySpaceNoticeTextView.apply {
+                        text = "표시할 메뉴가 없습니다."
+                        visibility = View.VISIBLE
+                    }
                 } else {
                     // 아이템이 있는 경우 RecyclerView와 데이터 설정
                     (binding.recyclerview.adapter as ConsumerMenuListAdapter).submitList(menuItems)

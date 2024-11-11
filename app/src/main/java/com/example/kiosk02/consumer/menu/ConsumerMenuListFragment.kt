@@ -22,7 +22,12 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
         binding = FragmentConsumerMenuListBinding.bind(view)
 
         val bundle = arguments
-        val Aemail = bundle?.getString("Aemail") ?:""
+        val Aemail = bundle?.getString("Aemail")
+
+        if(Aemail.isNullOrEmpty()){
+            Log.e("ConsumerMenuListFragment", "Aemail is missing or empty")
+            return
+        }
 
         loadCategoriesToTabs(Aemail)
 
@@ -38,12 +43,11 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
 
 
     private fun loadCategoriesToTabs(Aemail:String) {
-        val bundle = arguments
         getAdminDocument(Aemail).collection("category")
             .get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }
-                setupTabLayoutWithViewPager(categories,bundle)
+                setupTabLayoutWithViewPager(categories,arguments)
             }.addOnFailureListener {
                 Log.e("TabLayout", "탭 레이아웃 설정 실패")
             }
