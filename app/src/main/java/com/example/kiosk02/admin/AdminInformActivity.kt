@@ -106,6 +106,48 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
                 .document(email)
                 .get()
                 .addOnSuccessListener { document ->
+
+                    if (document != null && document.exists()) {
+                        val serviceType = document.getString("serviceType")
+                        val pickUpType = document.getString("pickUpType")
+
+                        val floorCount = when (val count = document.get("totalFloorCount")) {
+                            is Number -> count.toInt()  // 숫자 타입일 경우 Int로 변환
+                            is String -> count.toIntOrNull() ?: 0  // 문자열일 경우 Int로 변환 시도
+                            else -> 0  // 다른 타입이거나 null일 경우 0으로 설정
+                        }
+
+                        // totalFloorCount를 Long으로 받아온 후, null 체크 및 변환
+                        //val floorCount = document.getLong("totalFloorCount")?.toInt() ?: 0
+
+                        var hasPreSelectedValues = false
+                        serviceType?.let {
+                            val position = services.indexOf(it)
+                            if (position != -1) {
+                                serviceSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+                        pickUpType?.let {
+                            val position = pickUps.indexOf(it)
+                            if (position != -1) {
+                                pickUpSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+
+                        if (floorCount > 0) {
+                            val position = floors.indexOf(floorCount.toString())
+                            if (position > 0) { // 0번은 설명용 항목이므로 1부터 시작
+                                floorSpinner.setSelection(position)
+                                hasPreSelectedValues = true
+                            }
+                        }
+
+                        action = if (hasPreSelectedValues) R.id.action_to_admin_activity else R.id.action_to_admin_sign_fragment
+                    }
+
+                    /*
                     if (document != null && document.exists()) {
                         val serviceType = document.getString("serviceType")
                         val pickUpType = document.getString("pickUpType")
@@ -137,7 +179,8 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
                         }
 
                         action = if (hasPreSelectedValues) R.id.action_to_admin_activity else R.id.action_to_admin_sign_fragment
-                    }
+
+                    } */
 
                 }.addOnFailureListener {
                     Snackbar.make(requireView(), "사용자 정보 불러오기 실패", Snackbar.LENGTH_SHORT).show()
