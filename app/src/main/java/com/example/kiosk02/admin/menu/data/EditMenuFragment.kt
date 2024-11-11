@@ -72,9 +72,19 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             setupAddMode()
         }
 
-        // 작성하던 데이터 불러오기
-        val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        loadDataFromPreferences(sharedPreferences)
+        // 카테고리 뷰에서 돌아온 경우 데이터 로드
+        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("return_from_category")
+            ?.observe(viewLifecycleOwner) { fromCategory ->
+                if (fromCategory == true) {
+                    val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    loadDataFromPreferences(sharedPreferences)
+                    // 데이터를 불러온 후 SharedPreferences 초기화
+                    clearPreferences(sharedPreferences)
+
+                    // 플래그를 다시 false로 설정해 다음에 불러오지 않도록 설정
+                    findNavController().currentBackStackEntry?.savedStateHandle?.set("return_from_category", false)
+                }
+            }
 
         //이미지 추가 버튼 활성화, 제거 버튼 비활성화
         setupClearButton()
@@ -147,7 +157,7 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             putString(KEY_PRICE, binding.priceEditText.text.toString())
             putString(KEY_COMPOSITION, binding.compositionEditText.text.toString())
             putString(KEY_DETAIL, binding.menuDetailEditText.text.toString())
-            putString(KEY_SELECTED_URI, selectedUri?.toString())
+//            putString(KEY_SELECTED_URI, selectedUri?.toString())
             apply()
         }
     }
@@ -158,12 +168,25 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         binding.compositionEditText.setText(sharedPreferences.getString(KEY_COMPOSITION, ""))
         binding.menuDetailEditText.setText(sharedPreferences.getString(KEY_DETAIL, ""))
 
-        val savedUri = sharedPreferences.getString(KEY_SELECTED_URI, null)
-        savedUri?.let {
-            selectedUri = Uri.parse(it)
-            binding.menuImageView.setImageURI(selectedUri)
-            binding.clearImageButton.isVisible = true
-            binding.addImageButton.isVisible = false
+//        val savedUri = sharedPreferences.getString(KEY_SELECTED_URI, null)
+//        savedUri?.let {
+//            selectedUri = Uri.parse(it)
+//            binding.menuImageView.setImageURI(selectedUri)
+//            binding.clearImageButton.isVisible = true
+//            binding.addImageButton.isVisible = false
+//        }
+        // 데이터를 불러온 후 SharedPreferences 초기화
+        clearPreferences(sharedPreferences)
+    }
+
+    private fun clearPreferences(sharedPreferences: SharedPreferences) {
+        with(sharedPreferences.edit()) {
+            remove(KEY_MENU_NAME)
+            remove(KEY_PRICE)
+            remove(KEY_COMPOSITION)
+            remove(KEY_DETAIL)
+            remove(KEY_SELECTED_URI)
+            apply()
         }
     }
 
