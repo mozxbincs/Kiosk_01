@@ -137,7 +137,7 @@
         android:label="AdminInformActivity" />
     <activity
         android:id="@+id/searchStoreActivity"
-        android:name="com.example.kiosk02.SearchStoreActivity"
+        android:name="com.example.kiosk02.map.SearchStoreActivity"
         android:label="activity_search_store"
         tools:layout="@layout/activity_search_store"/>
 
@@ -208,8 +208,23 @@
     <action
         android:id="@+id/action_to_table_Select_Fragment"
         app:destination="@id/tableSelectFragment" />
+    <fragment
+        android:id="@+id/findEmailConsumerFragment"
+        android:name="com.example.kiosk02.FindEmailConsumerFragment"
+        android:label="FindEmailConsumerFragment" />
 
+    <action
+        android:id="@+id/action_to_findEmailConsumerFragment"
+        app:destination="@id/findEmailConsumerFragment" />
 
+    <fragment
+        android:id="@+id/findPasswordConsumerFragment"
+        android:name="com.example.kiosk02.FindPasswordConsumerFragment"
+        android:label="FindPasswordConsumerFragment" />
+
+    <action
+        android:id="@+id/action_to_findPasswordFragment"
+        app:destination="@id/findPasswordConsumerFragment" />
 
 
 

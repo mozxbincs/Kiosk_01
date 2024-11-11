@@ -1,4 +1,4 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
 import android.os.Bundle
 import android.util.Log
@@ -23,37 +23,23 @@ import retrofit2.Response
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Address
-import android.location.Geocoder
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.navigation.NavController
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
-import com.example.kiosk02.admin.AdminActivity
-import com.example.kiosk02.admin.AdminSignFragment
-import com.google.firebase.Firebase
+import com.example.kiosk02.MainActivity
+import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.naver.maps.map.LocationTrackingMode
 import com.naver.maps.map.MapFragment
 import com.naver.maps.map.util.FusedLocationSource
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.Locale
-import kotlin.math.ln
-import kotlin.math.log
 
 
 class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -114,6 +100,24 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
             adapter = restaurantListAdapter
         }
 
+        binding.myLocationButton.setOnClickListener {
+            val location = locationSource.lastLocation
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
+                val currentLatLng = LatLng(latitude, longitude)
+
+                val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
+                if (address != null) {
+                    Log.d("SearchStoreActivity", "현위치 주소: $address")
+                    search(address) {}
+                    moveCamera(currentLatLng)
+                }
+            } else {
+                Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
+            }
+        }
+
         binding.searchView.setOnQueryTextListener(object : OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return if (query?.isNotEmpty() == true) {
@@ -158,16 +162,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
 
 
     }
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startLocationUpdates()
-        }
-    }
+
     private fun checkStoreInFireStore (title : String) {
         Log.d("checkStoreInFireStore", "dd")
         val FireStore = FirebaseFirestore.getInstance()
@@ -230,6 +225,9 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
                     Log.d("SearchStoreActivity", "검색 결과 좌표: ${latLng}")
                     Marker(latLng).apply {
                         captionText = it.title
+                            .replace("<br>", "")
+                            .replace("<b>", "")
+                            .replace("</b>", "")
                         map = naverMap
                     }
                 }
@@ -304,7 +302,7 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     suspend fun getAddressFormLatLng(lat: Double, lng: Double): String? {
-        val apiKey = "AIzaSyC1so0FTzQDWI9x702fGjPdOojwhECSirw"  // 여기에 유효한 Google Maps Geocoding API 키를 입력하세요
+        val apiKey = "AIzaSyC1so0FTzQDWI9x702fGjPdOojwhECSirw"
         val url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$apiKey&language=ko"
 
         return withContext(Dispatchers.IO) {
@@ -403,6 +401,17 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         binding.mapView.onLowMemory()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startLocationUpdates()
+        }
+    }
+
     private fun startLocationUpdates() {
         Log.d("SearchStoreActivity", "위치 업데이트 요청 중...")
 
@@ -442,24 +451,6 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
         } else {
             Log.d("SearchStoreActivity", "위치 권한이 없음, 권한 요청")
             ActivityCompat.requestPermissions(this, PERMISSIONS, LOCATION_PERMISSION_REQUEST_CODE)
-        }
-
-        binding.myLocationButton.setOnClickListener {
-            val location = locationSource.lastLocation
-            if (location != null) {
-                val latitude = location.latitude
-                val longitude = location.longitude
-                val currentLatLng = LatLng(latitude, longitude)
-
-                val address = runBlocking { getAddressFormLatLng(latitude, longitude) }
-                if (address != null) {
-                    Log.d("SearchStoreActivity", "현위치 주소: $address")
-                    search(address) {}
-                    moveCamera(currentLatLng)
-                }
-            } else {
-                Log.d("SearchStoreActivity", "위치 정보를 가져올 수 없습니다.")
-            }
         }
 
     }

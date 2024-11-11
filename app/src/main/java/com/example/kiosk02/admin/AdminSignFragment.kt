@@ -217,6 +217,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
                 if (!document.isEmpty) {
                     Snackbar.make(binding.root, "이미 등록된 사업자번호 입니다.", Snackbar.LENGTH_SHORT).show()
                     Checkredundancy = false
+
                     isAllInputsCheckValid()
                 } else {
                     Snackbar.make(binding.root, "등록 가능한 사업자번호 입니다.", Snackbar.LENGTH_SHORT).show()

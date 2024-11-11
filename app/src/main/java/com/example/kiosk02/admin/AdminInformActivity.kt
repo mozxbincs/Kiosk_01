@@ -30,8 +30,8 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
         // Spinner 항목 데이터 (첫 번째 값은 설명)
         val services = arrayOf("서비스유형", "음식점", "카페", "제과점", "바")
         val pickUps = arrayOf("픽업", "to go", "for here")
-        val floors = arrayOf("층수") + (1..5).map { String.format("%d개", it) }.toTypedArray()
-        val tables = arrayOf("테이블 갯수") + (1..100).map { String.format("%d개", it) }.toTypedArray()
+        val floors = arrayOf("층수") + (1..5).map { String.format("%d", it) }.toTypedArray()
+        //val tables = arrayOf("테이블 갯수") + (1..100).map { String.format("%d개", it) }.toTypedArray()
         // val floors = arrayOf("층수", "1층", "2층", "3층","4층")
         // "테이블 갯수"를 포함하고, 1~100까지 숫자를 배열로 생성
 
@@ -42,7 +42,7 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
         val serviceAdapter = createAdapter(services)
         val pickUpAdapter = createAdapter(pickUps)
         val floorAdapter = createAdapter(floors)
-        val tableAdapter = createAdapter(tables)
+        //val tableAdapter = createAdapter(tables)
 
         // 각 Spinner에 어댑터 설정
         val serviceSpinner = view.findViewById<Spinner>(R.id.AddInformService)
@@ -78,11 +78,11 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
             val serviceType = serviceSpinner.selectedItem.toString()
             val pickUpType = pickUpSpinner.selectedItem.toString()
             val floorCount = floorSpinner.selectedItem.toString()
-            val addressString = addressEditText.text.toString()
+            //val addressString = addressEditText.text.toString()
             //val tableCount = tableSpinner.selectedItem.toString()
 
             if(email != null) {
-                updateFirestore(email, serviceType, pickUpType, floorCount, addressString )
+                updateFirestore(email, serviceType, pickUpType, floorCount)
             }
 
         }
@@ -106,46 +106,49 @@ class AdminInformActivity : Fragment(R.layout.fragment_admin_inform) {
                 .document(email)
                 .get()
                 .addOnSuccessListener { document ->
-                    if(document != null && document.exists()) {
+                    if (document != null && document.exists()) {
                         val serviceType = document.getString("serviceType")
                         val pickUpType = document.getString("pickUpType")
-                        val floorCount = document.getString("floorCount")
+                        val floorCountString = document.getString("totalFloorCount")
+                        val floorCount = floorCountString?.toIntOrNull() ?: 0
 
                         var hasPreSelectedValues = false
-                        serviceType.let {
+                        serviceType?.let {
                             val position = services.indexOf(it)
                             if (position != -1) {
                                 serviceSpinner.setSelection(position)
                                 hasPreSelectedValues = true
                             }
                         }
-                        pickUpType.let {
+                        pickUpType?.let {
                             val position = pickUps.indexOf(it)
-                            if(position != -1) {
+                            if (position != -1) {
                                 pickUpSpinner.setSelection(position)
                                 hasPreSelectedValues = true
                             }
                         }
-                        floorCount.let {
-                            val position = floors.indexOf(it)
-                            if(position != -1) {
+
+                        if (floorCount > 0) {
+                            val position = floors.indexOf(floorCount.toString())
+                            if (position > 0) { // 0번은 설명용 항목이므로 1부터 시작
                                 floorSpinner.setSelection(position)
                                 hasPreSelectedValues = true
                             }
                         }
 
-                        if(hasPreSelectedValues){action = R.id.action_to_admin_activity} else{action = R.id.action_to_admin_sign_fragment}
+                        action = if (hasPreSelectedValues) R.id.action_to_admin_activity else R.id.action_to_admin_sign_fragment
                     }
 
+                }.addOnFailureListener {
+                    Snackbar.make(requireView(), "사용자 정보 불러오기 실패", Snackbar.LENGTH_SHORT).show()
                 }
     }
 
-    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String, address: String) {
+    private fun updateFirestore(email: String, serviceType: String, pickUpType: String, floorCount: String) {
         val storeInform = hashMapOf<String, Any>(
             "serviceType" to serviceType,
             "pickUpType" to pickUpType,
-            "floorCount" to floorCount,
-            "address" to address
+            "totalFloorCount" to floorCount,
         )
 
         firestore.collection("admin")

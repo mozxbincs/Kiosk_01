@@ -1,6 +1,5 @@
-package com.example.kiosk02
+package com.example.kiosk02.map
 
-import android.view.Display
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
