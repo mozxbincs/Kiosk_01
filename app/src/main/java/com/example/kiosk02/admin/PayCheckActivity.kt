@@ -275,8 +275,6 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         val statusButton = view.findViewById<Button>(R.id.status_button)  // 미착석/착석 버튼
         val statusTextView = view.findViewById<TextView>(R.id.status_text) // 상태 표시 TextView
-        val confirmButton = builder.create().getButton(AlertDialog.BUTTON_POSITIVE) // "확인" 버튼 가져오기
-
         var isSeated = false  // 착석 여부 초기값
         var status = "미착석"  // 초기 상태: 미착석
 
@@ -344,15 +342,22 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                     // 착석 상태일 때 Firestore에 상태 저장
                     updateTableSelection(Aemail, floorId, tableId, email, isSeated)
                 } else {
-                    // 미착석 상태일 때 예약 삭제
-                    removeTableSelection(Aemail, floorId, tableId, email)
+                    // 미착석 상태일 때 예약 삭제(이메일 삭제)
+                    //비동기적으로 작동하므로 서로 충돌 발생-> 순서를 real->database로
+//                    removeOrderData(Aemail, tableId)
+//            removeTableSelection(Aemail, floorId, tableId, email)
+
+// 미착석 상태에서 확인 버튼 클릭 시 호출
+                    removeDataSequentially(Aemail, floorId, tableId, email)
+
+
                 }
 
                 // 확인 후 상태 변경 버튼 비활성화
                 updateConfirmationStatus(Aemail, floorId, tableId, email, true)  // 확인 상태를 true로 업데이트
                 statusButton.isEnabled = false  // 상태 변경 버튼 비활성화
             }
-            dialog.dismiss() //
+            dialog.dismiss() // 다이얼로그 종료
         }
 
         builder.setNegativeButton("취소") { dialog, _ ->
@@ -391,23 +396,8 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
 
 
-    private fun updateIsConfirmed(Aemail: String, floorId: String, tableId: String) {
-        val tableRef = firestore.collection("admin")
-            .document(Aemail)
-            .collection("floors")
-            .document(floorId)
-            .collection("tables")
-            .document(tableId)
 
-        // isConfirmed 필드를 true로 업데이트
-        tableRef.update("isConfirmed", true)
-            .addOnSuccessListener {
-                Log.d("PayCheckActivity", "isConfirmed updated successfully.")
-            }
-            .addOnFailureListener { e ->
-                Log.e("PayCheckActivity", "Error updating isConfirmed field.", e)
-            }
-    }
+
 
 
 
@@ -519,9 +509,37 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             callback(false)
         }
     }
+    fun sanitizeEmail(email: String): String {
+        return email.replace(".", "_")  // 점을 언더스코어로 변경 .이 안됌
+    }
 
 
+    private fun removeOrderData(Aemail: String, tableId: String, onComplete: () -> Unit) {
+        val sanitizedEmail = sanitizeEmail(Aemail)  // 이메일을 안전하게 변환
+        val dbRef = FirebaseDatabase.getInstance().getReference("admin_orders")
 
+        // 테이블 데이터를 삭제
+        dbRef.child(sanitizedEmail) // 이메일 경로
+            .child(tableId) //
+            .removeValue()  // 해당 테이블과 관련된 모든 데이터 삭제
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("Table Removal", "Table data removed successfully.")
+                    onComplete()  // 삭제 완료 후 콜백 호출
+                } else {
+                    Log.d("Table Removal", "Failed to remove table data.")
+                }
+            }
+    }
+
+
+    private fun removeDataSequentially(Aemail: String, floorId: String, tableId: String, consumerEmail: String) {
+        // 1. 리얼타임 데이터 삭제 (removeOrderData)
+        removeOrderData(Aemail, tableId) {
+            // 2. 리얼타임 데이터 삭제가 완료되면 Firestore 데이터 삭제 (removeTableSelection)
+            removeTableSelection(Aemail, floorId, tableId, consumerEmail)
+        }
+    }
 
 }
 
