@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment
 import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+
+
 class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
     private val firestore = FirebaseFirestore.getInstance()
     private lateinit var tableFrame: FrameLayout
@@ -129,34 +131,28 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
         tableNameTextView.text = tableType
 
+        // 테이블 색상 설정
         if (isSelected) {
             tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.blue01))  // 예약된 테이블 색상
-            consumerEmail?.let {
-                // 예약된 테이블의 소비자 이메일 표시
-                consumerTextView.text = "Reserved by: $it"
-            }
         } else {
             tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow))  // 예약되지 않은 테이블 색상
-            consumerTextView.text = ""  // 소비자 정보 초기화
         }
 
+        // 테이블 클릭 시 소비자 정보 표시
         tableView.setOnClickListener {
-            if (!isSelected) {
-                firestore.collection("admin/$Aemail/floors/$floorId/tables/$tableId/select")
-                    .document(Aemail!!)  // 선택한 소비자의 이메일을 추가
-                    .set(mapOf("select" to true))  // 테이블 예약
-                    .addOnSuccessListener {
-                        tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.blue01))
-                        Toast.makeText(context, "Table $tableId selected", Toast.LENGTH_SHORT).show()
-                        consumerTextView.text = "Reserved by: $Aemail"  // 선택된 테이블의 소비자 정보 표시
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("PaycheckActivity", "Error updating table selection", e)
-                    }
+            if (isSelected) {
+                // 예약된 테이블의 소비자 이메일을 표시
+                consumerEmail?.let {
+                    consumerTextView.text = "Reserved by: $it"
+                }
+            } else {
+                // 예약되지 않은 테이블일 경우
+                consumerTextView.text = ""  // 비워두기
             }
         }
 
         return tableView
     }
 }
+
 
