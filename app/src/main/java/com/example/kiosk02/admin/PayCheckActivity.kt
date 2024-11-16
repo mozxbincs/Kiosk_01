@@ -9,6 +9,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -25,10 +26,18 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
     private lateinit var consumerTextView: TextView  // 소비자 정보를 표시할 TextView
     private var Aemail: String? = null
     private val floorIds = mutableListOf<String>()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
+        // "back_activity_admins" TextView에 클릭 리스너 설정
+        view.findViewById<TextView>(R.id.back_activity_admins).setOnClickListener {
+            findNavController().navigate(R.id.action_to_admin_activity) // 관리자 초기 화면으로 이동
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
+
     ): View? {
         val rootView = inflater.inflate(R.layout.activity_paycheck, container, false)
         tableFrame = rootView.findViewById(R.id.table_frame)
@@ -44,6 +53,9 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         }
 
         return rootView
+
+
+
     }
 
     private fun loadFloorsFromFirestore(Aemail: String) {
@@ -85,7 +97,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                         val tableType = table.getString("tableType") ?: "Unknown"
                         val tableX = table.getDouble("x")?.toFloat() ?: 0f
                         val tableY = table.getDouble("y")?.toFloat() ?: 0f
-                        val isSelected = table.getBoolean("isSelected") ?: false
+                        val isSelected =  table.getBoolean("select") ?: false
 
                         // check if table is selected
                         checkIfTableIsSelected(Aemail, floorId, tableId) { isTableSelected, consumerEmail ->
@@ -145,20 +157,19 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow))  // 예약되지 않은 테이블 색상
         }
 
-        // 테이블 클릭 시 소비자 정보 표시
-        // 테이블 클릭 시 소비자 정보 표시
-        // 테이블 클릭 시 소비자 정보 표시
+
         tableView.setOnClickListener {
             if (isSelected) {
                 // 예약된 테이블의 소비자 이메일을 표시
                 consumerEmail?.let {
+                    // 예: 테이블 클릭 시에 Aemail, floorId, tableId를 모두 넘겨주기
                     consumerTextView.text = "Table ID: $tableId\n Number of People: $tableType\n Reserved by: $it"
-                    // Aemail이 null이 아니면 loadOrderDataForTable 호출
                     Aemail?.let { email ->
-                        loadOrderDataForTable(email, tableId)
+                        loadOrderDataForTable(email, tableId, floorId)  // 세 번째 인자 floorId 추가
                     } ?: run {
                         Log.e("PaycheckActivity", "Aemail is null")  // Aemail이 null일 때 로그 출력
                     }
+
                 }
             } else {
                 // 예약되지 않은 테이블일 경우
@@ -170,25 +181,25 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         return tableView
     }
-    //
-    // MenuItem 클래스 정의
+
+
     data class MenuItem(
         val menuName: String = "",
         val quantity: Int = 0,
         val totalPrice: Int = 0
     )
 
-    // OrderItem 클래스 정의 (items를 List<MenuItem>으로 변경)
+
     data class OrderItem(
         val consumerEmail: String = "",
-        val items: List<MenuItem> = listOf(),  // List<MenuItem>로 변경
+        val items: List<MenuItem> = listOf(),
         val orderTime: String = "",
         val orderType: String = "",
         val tableId: String = "",
         val totalAmount: Int = 0
     )
 
-    private fun loadOrderDataForTable(Aemail: String, tableId: String) {
+    private fun loadOrderDataForTable(Aemail: String, tableId: String,floorId: String) {
         // Firebase에서 이메일에 대한 특수 문자 처리
         val sanitizedEmail = Aemail.replace(".", "_").replace("#", "_")
             .replace("$", "_").replace("[", "_").replace("]", "_")
@@ -223,7 +234,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                             orderList.add(OrderItem(consumerEmail, items, orderTime, orderType, tableId, totalAmount))
                         }
                     }
-                    showOrderReceiptDialog(orderList)
+                    showOrderReceiptDialog(orderList, Aemail, floorId, tableId, orderList.firstOrNull()?.consumerEmail)
                 } else {
                     Toast.makeText(context, "이 테이블에 대한 주문 내역이 없습니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -235,8 +246,52 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         })
     }
 
-    private fun showOrderReceiptDialog(orderItems: List<OrderItem>) {
+    private fun showOrderReceiptDialog(orderItems: List<OrderItem>, Aemail: String, floorId: String, tableId: String, consumerEmail: String?) {
         val builder = AlertDialog.Builder(requireContext())
+
+        // 커스텀 레이아웃을 사용하는 다이얼로그 설정
+        val view = layoutInflater.inflate(R.layout.dialog_receipt, null)
+
+        val seatButton = view.findViewById<Button>(R.id.seat_button)  // 착석/미착석 버튼
+        val unseatButton = view.findViewById<Button>(R.id.unseat_button)
+        val statusTextView = view.findViewById<TextView>(R.id.status_text)  // 상태 표시 텍스트
+
+        var isSeated = false  // 착석 여부를 나타내는 변수
+
+        // 처음에는 "미착석" 상태로 시작
+        statusTextView.text = "미착석"
+
+        // Button 클릭 리스너
+        seatButton.setOnClickListener {
+            isSeated = !isSeated
+            if (isSeated) {
+                statusTextView.text = "착석"  // 착석으로 변경
+            } else {
+                statusTextView.text = "미착석"  // 미착석으로 변경
+            }
+
+            // Firebase에서 select 상태 업데이트
+            consumerEmail?.let { email ->
+                removeTableSelection(Aemail, floorId, tableId, email, isSeated)
+            }
+        }
+
+        unseatButton.setOnClickListener {
+            isSeated = !isSeated
+            if (isSeated) {
+                statusTextView.text = "착석"
+            } else {
+                statusTextView.text = "미착석"
+            }
+
+            // Firebase에서 select 상태 업데이트
+            consumerEmail?.let { email ->
+                removeTableSelection(Aemail, floorId, tableId, email, isSeated)
+            }
+        }
+
+
+        builder.setView(view)  // 다이얼로그의 커스텀 레이아웃 설정
         builder.setTitle("영수증")
 
         val stringBuilder = StringBuilder()
@@ -274,6 +329,35 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         builder.show() // 다이얼로그 표시
     }
+
+
+    // 소비자 이메일을 삭제하는 함수
+    private fun removeTableSelection(Aemail: String, floorId: String, tableId: String, consumerEmail: String, isSeated: Boolean) {
+        val tableRef = firestore.collection("admin/$Aemail/floors/$floorId/tables/$tableId/select")
+
+        if (isSeated) {
+            // 테이블이 착석 상태로 변경되면 select 값을 true로 설정하고, 소비자 이메일을 document id로 추가
+            tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
+                .set(hashMapOf("selected" to true))
+                .addOnSuccessListener {
+                    Log.d("PayCheckActivity", "Table selection updated successfully for $consumerEmail")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("PayCheckActivity", "Error updating selection for table $tableId", e)
+                }
+        } else {
+            // 테이블이 미착석 상태로 변경되면 select 컬렉션에서 해당 이메일 삭제
+            tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
+                .delete()
+                .addOnSuccessListener {
+                    Log.d("PayCheckActivity", "Selection for table $tableId removed successfully for $consumerEmail")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("PayCheckActivity", "Error removing selection for table $tableId", e)
+                }
+        }
+    }
+
 
 
 }
