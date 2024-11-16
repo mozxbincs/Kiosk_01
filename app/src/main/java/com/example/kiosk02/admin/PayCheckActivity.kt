@@ -6,10 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 
 
@@ -129,7 +134,9 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         tableView.y = y
 
         val tableNameTextView = tableView.findViewById<TextView>(R.id.table_name)
-        tableNameTextView.text = tableType
+        // 테이블 ID에서 "table_"을 제거하고 숫자만 표시
+        val tableNumber = tableId.replace("table_", "")
+        tableNameTextView.text = tableNumber
 
         // 테이블 색상 설정
         if (isSelected) {
@@ -139,11 +146,19 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         }
 
         // 테이블 클릭 시 소비자 정보 표시
+        // 테이블 클릭 시 소비자 정보 표시
+        // 테이블 클릭 시 소비자 정보 표시
         tableView.setOnClickListener {
             if (isSelected) {
                 // 예약된 테이블의 소비자 이메일을 표시
                 consumerEmail?.let {
-                    consumerTextView.text = "Reserved by: $it"
+                    consumerTextView.text = "Table ID: $tableId\n Number of People: $tableType\n Reserved by: $it"
+                    // Aemail이 null이 아니면 loadOrderDataForTable 호출
+                    Aemail?.let { email ->
+                        loadOrderDataForTable(email, tableId)
+                    } ?: run {
+                        Log.e("PaycheckActivity", "Aemail is null")  // Aemail이 null일 때 로그 출력
+                    }
                 }
             } else {
                 // 예약되지 않은 테이블일 경우
@@ -151,8 +166,116 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             }
         }
 
+
+
         return tableView
     }
+    //
+    // MenuItem 클래스 정의
+    data class MenuItem(
+        val menuName: String = "",
+        val quantity: Int = 0,
+        val totalPrice: Int = 0
+    )
+
+    // OrderItem 클래스 정의 (items를 List<MenuItem>으로 변경)
+    data class OrderItem(
+        val consumerEmail: String = "",
+        val items: List<MenuItem> = listOf(),  // List<MenuItem>로 변경
+        val orderTime: String = "",
+        val orderType: String = "",
+        val tableId: String = "",
+        val totalAmount: Int = 0
+    )
+
+    private fun loadOrderDataForTable(Aemail: String, tableId: String) {
+        // Firebase에서 이메일에 대한 특수 문자 처리
+        val sanitizedEmail = Aemail.replace(".", "_").replace("#", "_")
+            .replace("$", "_").replace("[", "_").replace("]", "_")
+
+        val database = FirebaseDatabase.getInstance().reference
+        val ordersRef = database.child("admin_orders").child(sanitizedEmail)
+
+        val query = ordersRef.orderByChild("tableId").equalTo(tableId)
+
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val orderList = mutableListOf<OrderItem>()
+                    for (orderSnapshot in snapshot.children) {
+                        val order = orderSnapshot.getValue(OrderItem::class.java)
+                        if (order != null) {
+                            orderList.add(order)  // 정상적으로 데이터가 매핑되면 추가
+                        } else {
+                            // 수동으로 값 매핑
+                            val consumerEmail = orderSnapshot.child("consumerEmail").value?.toString() ?: ""
+                            val items = orderSnapshot.child("items").children.map { itemSnapshot ->
+                                MenuItem(
+                                    menuName = itemSnapshot.child("menuName").getValue(String::class.java) ?: "",
+                                    quantity = itemSnapshot.child("quantity").getValue(Int::class.java) ?: 0,
+                                    totalPrice = itemSnapshot.child("totalPrice").getValue(Int::class.java) ?: 0
+                                )
+                            }
+
+                            val orderTime = orderSnapshot.child("orderTime").value?.toString() ?: ""
+                            val orderType = orderSnapshot.child("orderType").value?.toString() ?: ""
+                            val totalAmount = orderSnapshot.child("totalAmount").value?.toString()?.toIntOrNull() ?: 0
+                            orderList.add(OrderItem(consumerEmail, items, orderTime, orderType, tableId, totalAmount))
+                        }
+                    }
+                    showOrderReceiptDialog(orderList)
+                } else {
+                    Toast.makeText(context, "이 테이블에 대한 주문 내역이 없습니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("PayCheckActivity", "Error loading order data", error.toException())
+            }
+        })
+    }
+
+    private fun showOrderReceiptDialog(orderItems: List<OrderItem>) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("영수증")
+
+        val stringBuilder = StringBuilder()
+        var totalAmountSum = 0
+
+        // 각 주문에 대해 처리
+        for (order in orderItems) {
+            stringBuilder.append("주문 시간: ${order.orderTime}\n")
+            stringBuilder.append("주문 유형: ${order.orderType}\n")
+            stringBuilder.append("항목:\n")
+
+            // 각 항목을 MenuItem 객체로 처리
+            for (item in order.items) {
+                val menuName = item.menuName  // MenuItem 객체에서 값 가져오기
+                val quantity = item.quantity  // MenuItem 객체에서 값 가져오기
+                val totalPrice = item.totalPrice  // MenuItem 객체에서 값 가져오기
+                stringBuilder.append("- $menuName x $quantity = $totalPrice 원\n")
+            }
+
+            stringBuilder.append("총 금액: ${order.totalAmount}원\n\n")
+            totalAmountSum += order.totalAmount
+        }
+
+        stringBuilder.append("\n전체 총 금액: $totalAmountSum 원")
+
+        builder.setMessage(stringBuilder.toString())
+
+        builder.setPositiveButton("확인") { dialog, _ ->
+            dialog.dismiss() // 다이얼로그 닫기
+        }
+
+        builder.setNegativeButton("취소") { dialog, _ ->
+            dialog.dismiss() // 다이얼로그 닫기
+        }
+
+        builder.show() // 다이얼로그 표시
+    }
+
+
 }
 
 
