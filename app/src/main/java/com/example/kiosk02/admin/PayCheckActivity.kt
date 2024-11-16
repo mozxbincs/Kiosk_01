@@ -199,42 +199,62 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         val totalAmount: Int = 0
     )
 
-    private fun loadOrderDataForTable(Aemail: String, tableId: String,floorId: String) {
+    private fun loadOrderDataForTable(Aemail: String, tableId: String, floorId: String) {
         // Firebase에서 이메일에 대한 특수 문자 처리
         val sanitizedEmail = Aemail.replace(".", "_").replace("#", "_")
             .replace("$", "_").replace("[", "_").replace("]", "_")
 
         val database = FirebaseDatabase.getInstance().reference
-        val ordersRef = database.child("admin_orders").child(sanitizedEmail)
+        val tableRef = database.child("admin_orders").child(sanitizedEmail).child(tableId)
 
-        val query = ordersRef.orderByChild("tableId").equalTo(tableId)
-
-        query.addValueEventListener(object : ValueEventListener {
+        tableRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     val orderList = mutableListOf<OrderItem>()
                     for (orderSnapshot in snapshot.children) {
                         val order = orderSnapshot.getValue(OrderItem::class.java)
                         if (order != null) {
-                            orderList.add(order)  // 정상적으로 데이터가 매핑되면 추가
+                            orderList.add(order)
                         } else {
                             // 수동으로 값 매핑
-                            val consumerEmail = orderSnapshot.child("consumerEmail").value?.toString() ?: ""
+                            val consumerEmail =
+                                orderSnapshot.child("consumerEmail").value?.toString() ?: ""
                             val items = orderSnapshot.child("items").children.map { itemSnapshot ->
                                 MenuItem(
-                                    menuName = itemSnapshot.child("menuName").getValue(String::class.java) ?: "",
-                                    quantity = itemSnapshot.child("quantity").getValue(Int::class.java) ?: 0,
-                                    totalPrice = itemSnapshot.child("totalPrice").getValue(Int::class.java) ?: 0
+                                    menuName = itemSnapshot.child("menuName")
+                                        .getValue(String::class.java) ?: "",
+                                    quantity = itemSnapshot.child("quantity")
+                                        .getValue(Int::class.java) ?: 0,
+                                    totalPrice = itemSnapshot.child("totalPrice")
+                                        .getValue(Int::class.java) ?: 0
                                 )
                             }
-
-                            val orderTime = orderSnapshot.child("orderTime").value?.toString() ?: ""
-                            val orderType = orderSnapshot.child("orderType").value?.toString() ?: ""
-                            val totalAmount = orderSnapshot.child("totalAmount").value?.toString()?.toIntOrNull() ?: 0
-                            orderList.add(OrderItem(consumerEmail, items, orderTime, orderType, tableId, totalAmount))
+                            val orderTime =
+                                orderSnapshot.child("orderTime").value?.toString() ?: ""
+                            val orderType =
+                                orderSnapshot.child("orderType").value?.toString() ?: ""
+                            val totalAmount =
+                                orderSnapshot.child("totalAmount").value?.toString()?.toIntOrNull()
+                                    ?: 0
+                            orderList.add(
+                                OrderItem(
+                                    consumerEmail,
+                                    items,
+                                    orderTime,
+                                    orderType,
+                                    tableId,
+                                    totalAmount
+                                )
+                            )
                         }
                     }
-                    showOrderReceiptDialog(orderList, Aemail, floorId, tableId, orderList.firstOrNull()?.consumerEmail)
+                    showOrderReceiptDialog(
+                        orderList,
+                        Aemail,
+                        floorId,
+                        tableId,
+                        orderList.firstOrNull()?.consumerEmail
+                    )
                 } else {
                     Toast.makeText(context, "이 테이블에 대한 주문 내역이 없습니다.", Toast.LENGTH_SHORT).show()
                 }
@@ -245,6 +265,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             }
         })
     }
+
 
     private fun showOrderReceiptDialog(orderItems: List<OrderItem>, Aemail: String, floorId: String, tableId: String, consumerEmail: String?) {
         val builder = AlertDialog.Builder(requireContext())
@@ -276,7 +297,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             }
 
             // Firestore에서 확인 여부 상태 불러오기
-            checkIfConfirmed(Aemail, floorId, tableId) { isConfirmed ->
+            checkIfConfirmed(Aemail, floorId, tableId, it) { isConfirmed ->
                 if (isConfirmed) {
                     // 이미 확인을 눌렀으면 버튼 비활성화
                     statusButton.isEnabled = false
@@ -326,12 +347,12 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                     // 미착석 상태일 때 예약 삭제
                     removeTableSelection(Aemail, floorId, tableId, email)
                 }
-            }
 
-            // 확인 후 상태 변경 버튼 비활성화
-            updateConfirmationStatus(Aemail, floorId, tableId, true)  // 확인 상태를 true로 업데이트
-            statusButton.isEnabled = false  // 상태 변경 버튼 비활성화
-            dialog.dismiss() // 다이얼로그 종료
+                // 확인 후 상태 변경 버튼 비활성화
+                updateConfirmationStatus(Aemail, floorId, tableId, email, true)  // 확인 상태를 true로 업데이트
+                statusButton.isEnabled = false  // 상태 변경 버튼 비활성화
+            }
+            dialog.dismiss() //
         }
 
         builder.setNegativeButton("취소") { dialog, _ ->
@@ -458,14 +479,17 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         }
     }
 
-    private fun updateConfirmationStatus(Aemail: String, floorId: String, tableId: String, isConfirmed: Boolean) {
+    private fun updateConfirmationStatus(Aemail: String, floorId: String, tableId: String, consumerEmail: String, isConfirmed: Boolean) {
         val tableRef = firestore.collection("admin")
             .document(Aemail)
             .collection("floors")
             .document(floorId)
             .collection("tables")
             .document(tableId)
+            .collection("select")
+            .document(consumerEmail)
 
+        // Firestore에 isConfirmed 필드 값 업데이트
         tableRef.update("isConfirmed", isConfirmed)
             .addOnSuccessListener {
                 Log.d("Dialog", "Confirmation status updated successfully.")
@@ -476,19 +500,26 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
     }
 
 
-    private fun checkIfConfirmed(Aemail: String, floorId: String, tableId: String, callback: (Boolean) -> Unit) {
+
+    private fun checkIfConfirmed(Aemail: String, floorId: String, tableId: String, consumerEmail: String, callback: (Boolean) -> Unit) {
         val tableRef = firestore.collection("admin")
             .document(Aemail)
             .collection("floors")
             .document(floorId)
             .collection("tables")
             .document(tableId)
+            .collection("select")
+            .document(consumerEmail)
 
         tableRef.get().addOnSuccessListener { document ->
             val isConfirmed = document.getBoolean("isConfirmed") ?: false
             callback(isConfirmed)
+        }.addOnFailureListener { e ->
+            Log.e("Dialog", "Error fetching confirmation status.", e)
+            callback(false)
         }
     }
+
 
 
 
