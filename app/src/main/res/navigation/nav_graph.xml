@@ -225,7 +225,14 @@
     <action
         android:id="@+id/action_to_findPasswordFragment"
         app:destination="@id/findPasswordConsumerFragment" />
+    <fragment
+        android:id="@+id/paycheckFragment"
+        android:name="com.example.kiosk02.admin.PayCheckActivity"
+        android:label="PaycheckFragment" />
 
+    <action
+        android:id="@+id/action_to_paycheckFragment"
+        app:destination="@id/paycheckFragment" />
 
 
 </navigation>

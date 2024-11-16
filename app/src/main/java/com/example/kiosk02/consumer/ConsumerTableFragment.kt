@@ -329,7 +329,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
                 // 예약 정보를 consumer 문서 경로 아래 tableId 컬렉션에 저장
                 firestore.collection(consumerTablePath)
-                    .document("reservation_info") // 고정된 문서 ID로 설정
+                    .document("reservation_info") //에약 내역
                     .set(reservationData)
                     .addOnSuccessListener {
                         Log.d(
