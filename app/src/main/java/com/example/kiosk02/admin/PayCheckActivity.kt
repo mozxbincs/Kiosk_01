@@ -252,93 +252,180 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         // 커스텀 레이아웃을 사용하는 다이얼로그 설정
         val view = layoutInflater.inflate(R.layout.dialog_receipt, null)
 
-        val seatButton = view.findViewById<Button>(R.id.seat_button)  // 착석/미착석 버튼
-        val unseatButton = view.findViewById<Button>(R.id.unseat_button)
-        val statusTextView = view.findViewById<TextView>(R.id.status_text)  // 상태 표시 텍스트
+        val statusButton = view.findViewById<Button>(R.id.status_button)  // 미착석/착석 버튼
+        val statusTextView = view.findViewById<TextView>(R.id.status_text) // 상태 표시 TextView
+        val confirmButton = builder.create().getButton(AlertDialog.BUTTON_POSITIVE) // "확인" 버튼 가져오기
 
-        var isSeated = false  // 착석 여부를 나타내는 변수
+        var isSeated = false  // 착석 여부 초기값
+        var status = "미착석"  // 초기 상태: 미착석
 
-        // 처음에는 "미착석" 상태로 시작
-        statusTextView.text = "미착석"
+        statusTextView.text = status  // 상태 표시 초기값
 
-        // Button 클릭 리스너
-        seatButton.setOnClickListener {
-            isSeated = !isSeated
-            if (isSeated) {
-                statusTextView.text = "착석"  // 착석으로 변경
-            } else {
-                statusTextView.text = "미착석"  // 미착석으로 변경
+        // Firestore에서 기존 상태 불러오기
+        consumerEmail?.let {
+            checkIfTableIsSelected(Aemail, floorId, tableId) { isTableSelected, _ ->
+                if (isTableSelected) {
+                    status = "착석"
+                    isSeated = true
+                    statusTextView.text = status
+                } else {
+                    status = "미착석"
+                    isSeated = false
+                    statusTextView.text = status
+                }
             }
 
-            // Firebase에서 select 상태 업데이트
-            consumerEmail?.let { email ->
-                removeTableSelection(Aemail, floorId, tableId, email, isSeated)
-            }
-        }
-
-        unseatButton.setOnClickListener {
-            isSeated = !isSeated
-            if (isSeated) {
-                statusTextView.text = "착석"
-            } else {
-                statusTextView.text = "미착석"
-            }
-
-            // Firebase에서 select 상태 업데이트
-            consumerEmail?.let { email ->
-                removeTableSelection(Aemail, floorId, tableId, email, isSeated)
+            // Firestore에서 확인 여부 상태 불러오기
+            checkIfConfirmed(Aemail, floorId, tableId) { isConfirmed ->
+                if (isConfirmed) {
+                    // 이미 확인을 눌렀으면 버튼 비활성화
+                    statusButton.isEnabled = false
+                }
             }
         }
 
+        // 상태 변경 버튼 클릭 시
+        statusButton.setOnClickListener {
+            if (status == "미착석") {
+                status = "착석"  // 상태 변경
+                isSeated = true
+            } else {
+                status = "미착석"  // 상태 변경
+                isSeated = false
+            }
+            statusTextView.text = status  // 상태 텍스트 변경
+        }
 
-        builder.setView(view)  // 다이얼로그의 커스텀 레이아웃 설정
+        builder.setView(view)
         builder.setTitle("영수증")
 
+        // 주문 내역 처리
         val stringBuilder = StringBuilder()
         var totalAmountSum = 0
-
-        // 각 주문에 대해 처리
         for (order in orderItems) {
             stringBuilder.append("주문 시간: ${order.orderTime}\n")
             stringBuilder.append("주문 유형: ${order.orderType}\n")
             stringBuilder.append("항목:\n")
-
-            // 각 항목을 MenuItem 객체로 처리
             for (item in order.items) {
-                val menuName = item.menuName  // MenuItem 객체에서 값 가져오기
-                val quantity = item.quantity  // MenuItem 객체에서 값 가져오기
-                val totalPrice = item.totalPrice  // MenuItem 객체에서 값 가져오기
-                stringBuilder.append("- $menuName x $quantity = $totalPrice 원\n")
+                stringBuilder.append("- ${item.menuName} x ${item.quantity} = ${item.totalPrice} 원\n")
             }
-
             stringBuilder.append("총 금액: ${order.totalAmount}원\n\n")
             totalAmountSum += order.totalAmount
         }
-
         stringBuilder.append("\n전체 총 금액: $totalAmountSum 원")
 
         builder.setMessage(stringBuilder.toString())
 
         builder.setPositiveButton("확인") { dialog, _ ->
-            dialog.dismiss() // 다이얼로그 닫기
+            // 상태 변경 시
+            consumerEmail?.let { email ->
+                if (isSeated) {
+                    // 착석 상태일 때 Firestore에 상태 저장
+                    updateTableSelection(Aemail, floorId, tableId, email, isSeated)
+                } else {
+                    // 미착석 상태일 때 예약 삭제
+                    removeTableSelection(Aemail, floorId, tableId, email)
+                }
+            }
+
+            // 확인 후 상태 변경 버튼 비활성화
+            updateConfirmationStatus(Aemail, floorId, tableId, true)  // 확인 상태를 true로 업데이트
+            statusButton.isEnabled = false  // 상태 변경 버튼 비활성화
+            dialog.dismiss() // 다이얼로그 종료
         }
 
         builder.setNegativeButton("취소") { dialog, _ ->
-            dialog.dismiss() // 다이얼로그 닫기
+            dialog.dismiss() // 취소 버튼 클릭 시 다이얼로그 종료
         }
 
-        builder.show() // 다이얼로그 표시
+        builder.setNeutralButton("결제하기") { dialog, _ ->
+            // 결제하기 버튼 클릭 시 처리
+            handlePayment(Aemail, floorId, tableId, consumerEmail)
+            dialog.dismiss() // 결제 후 다이얼로그 종료
+        }
+
+        // 다이얼로그 생성 후 버튼 텍스트 변경
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            val neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+
+            // 상태에 따라 버튼 텍스트 변경
+            if (status == "착석") {
+                positiveButton.text = "결제하기"
+                neutralButton.visibility = View.GONE  // "결제하기" 버튼만 보이도록 설정
+                positiveButton.setOnClickListener {
+                    // 결제하기 처리
+                    handlePayment(Aemail, floorId, tableId, consumerEmail)
+                    dialog.dismiss()  // 결제 후 다이얼로그 닫기
+                }
+            }
+        }
+
+        dialog.show()
     }
 
 
+
+
+
+
+    private fun updateIsConfirmed(Aemail: String, floorId: String, tableId: String) {
+        val tableRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floorId)
+            .collection("tables")
+            .document(tableId)
+
+        // isConfirmed 필드를 true로 업데이트
+        tableRef.update("isConfirmed", true)
+            .addOnSuccessListener {
+                Log.d("PayCheckActivity", "isConfirmed updated successfully.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("PayCheckActivity", "Error updating isConfirmed field.", e)
+            }
+    }
+
+
+
+    // 결제 처리 함수
+    private fun handlePayment(Aemail: String, floorId: String, tableId: String, consumerEmail: String?) {
+        // 결제 처리 로직을 여기에 추가
+        // 예: Firebase에 결제 상태 업데이트, 알림 보내기 등
+        Log.d("PaycheckActivity", "Payment processed for table $tableId by $consumerEmail")
+    }
+
+
+
     // 소비자 이메일을 삭제하는 함수
-    private fun removeTableSelection(Aemail: String, floorId: String, tableId: String, consumerEmail: String, isSeated: Boolean) {
+    private fun removeTableSelection(Aemail: String, floorId: String, tableId: String, consumerEmail: String) {
         val tableRef = firestore.collection("admin/$Aemail/floors/$floorId/tables/$tableId/select")
 
+        // 미착석 상태에서 테이블 예약을 취소
+        tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
+            .delete()  // 예약 취소 -> 해당 이메일 문서 삭제
+            .addOnSuccessListener {
+                Log.d("PayCheckActivity", "Selection for table $tableId removed successfully for $consumerEmail")
+            }
+            .addOnFailureListener { e ->
+                Log.e("PayCheckActivity", "Error removing selection for table $tableId", e)
+            }
+    }
+
+
+    private fun updateTableSelection(Aemail: String, floorId: String, tableId: String, consumerEmail: String, isSeated: Boolean) {
+        val tableRef = firestore.collection("admin/$Aemail/floors/$floorId/tables/$tableId/select")
+
+        // 착석 상태에 따른 처리
         if (isSeated) {
-            // 테이블이 착석 상태로 변경되면 select 값을 true로 설정하고, 소비자 이메일을 document id로 추가
+            // 테이블이 착석 상태로 변경되면 select 값을 true로 설정하고, 소비자 이메일을 문서 ID로 추가
             tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
-                .set(hashMapOf("selected" to true))
+                .set(hashMapOf(
+                    "selected" to true,
+                    "seat" to "착석"  // 착석 상태로 저장
+                ))
                 .addOnSuccessListener {
                     Log.d("PayCheckActivity", "Table selection updated successfully for $consumerEmail")
                 }
@@ -346,15 +433,60 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                     Log.e("PayCheckActivity", "Error updating selection for table $tableId", e)
                 }
         } else {
-            // 테이블이 미착석 상태로 변경되면 select 컬렉션에서 해당 이메일 삭제
+            // 테이블이 미착석 상태로 변경되면 select 컬렉션에서 해당 이메일 삭제하고, seat 필드도 제거
             tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
-                .delete()
+                .delete()  // 소비자 이메일 문서 삭제
                 .addOnSuccessListener {
                     Log.d("PayCheckActivity", "Selection for table $tableId removed successfully for $consumerEmail")
                 }
                 .addOnFailureListener { e ->
                     Log.e("PayCheckActivity", "Error removing selection for table $tableId", e)
                 }
+
+            // Firestore의 seat 값도 "미착석"으로 변경
+            tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
+                .set(hashMapOf(
+                    "selected" to false,
+                    "seat" to "미착석"  // 미착석 상태로 저장
+                ))
+                .addOnSuccessListener {
+                    Log.d("PayCheckActivity", "Table selection updated to '미착석' for $consumerEmail")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("PayCheckActivity", "Error updating selection to '미착석' for table $tableId", e)
+                }
+        }
+    }
+
+    private fun updateConfirmationStatus(Aemail: String, floorId: String, tableId: String, isConfirmed: Boolean) {
+        val tableRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floorId)
+            .collection("tables")
+            .document(tableId)
+
+        tableRef.update("isConfirmed", isConfirmed)
+            .addOnSuccessListener {
+                Log.d("Dialog", "Confirmation status updated successfully.")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Dialog", "Error updating confirmation status.", e)
+            }
+    }
+
+
+    private fun checkIfConfirmed(Aemail: String, floorId: String, tableId: String, callback: (Boolean) -> Unit) {
+        val tableRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floorId)
+            .collection("tables")
+            .document(tableId)
+
+        tableRef.get().addOnSuccessListener { document ->
+            val isConfirmed = document.getBoolean("isConfirmed") ?: false
+            callback(isConfirmed)
         }
     }
 

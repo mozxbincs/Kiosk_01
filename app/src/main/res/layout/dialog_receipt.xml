@@ -1,45 +1,31 @@
-<!-- dialog_receipt.xml -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:layout_height="wrap_content">
 
-    <!-- 상태를 표시하는 TextView -->
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end|top"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/status_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="착석/미착석" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/status_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="미착석"
         android:textSize="18sp"
-        android:paddingBottom="16dp"
-        android:layout_gravity="start" />
+        android:layout_margin="16dp" />
 
-    <!-- 버튼들을 수평으로 배치하는 LinearLayout -->
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start"
-        android:layout_marginTop="8dp">
-
-        <!-- 착석 버튼 -->
-        <Button
-            android:id="@+id/seat_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="착석"
-            android:layout_weight="1" />
-
-        <!-- 미착석 버튼 -->
-        <Button
-            android:id="@+id/unseat_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="미착석"
-            android:layout_weight="1"
-            android:layout_marginStart="10dp" />
-
-    </LinearLayout>
 
 </LinearLayout>
