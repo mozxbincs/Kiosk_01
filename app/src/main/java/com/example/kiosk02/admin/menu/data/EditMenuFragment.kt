@@ -34,14 +34,6 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
     private val user = Firebase.auth.currentUser
     private val firestore = FirebaseFirestore.getInstance()
 
-    // SharedPreferences 키값 설정
-    private val PREFS_NAME = "EditMenuPrefs"
-    private val KEY_MENU_NAME = "menuName"
-    private val KEY_PRICE = "price"
-    private val KEY_COMPOSITION = "composition"
-    private val KEY_DETAIL = "detail"
-    private val KEY_SELECTED_URI = "selectedImageUri"
-
     //이미지 등록
     val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
@@ -72,20 +64,6 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             setupAddMode()
         }
 
-        // 카테고리 뷰에서 돌아온 경우 데이터 로드
-        findNavController().currentBackStackEntry?.savedStateHandle?.getLiveData<Boolean>("return_from_category")
-            ?.observe(viewLifecycleOwner) { fromCategory ->
-                if (fromCategory == true) {
-                    val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    loadDataFromPreferences(sharedPreferences)
-                    // 데이터를 불러온 후 SharedPreferences 초기화
-                    clearPreferences(sharedPreferences)
-
-                    // 플래그를 다시 false로 설정해 다음에 불러오지 않도록 설정
-                    findNavController().currentBackStackEntry?.savedStateHandle?.set("return_from_category", false)
-                }
-            }
-
         //이미지 추가 버튼 활성화, 제거 버튼 비활성화
         setupClearButton()
 
@@ -99,13 +77,30 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
         setupDeleteButton()
 
+        // ManageCategoriesFragment에서 돌아온 경우 번들 데이터 처리
+        findNavController().currentBackStackEntry?.savedStateHandle?.let { currentSavedStateHandle ->
+            findNavController().previousBackStackEntry?.savedStateHandle
+                ?.getLiveData<Boolean>("from_manage_categories")
+                ?.observe(viewLifecycleOwner) { fromManageCategories ->
+                    if (fromManageCategories == true) {
+                        handleReturnedBundle()
+                        // 플래그 초기화
+                        findNavController().previousBackStackEntry?.savedStateHandle?.set(
+                            "from_manage_categories",
+                            false
+                        )
+                    }
+                }
+        }
+
+        binding.addCategoryButton.setOnClickListener {
+            navigateToManageCategoriesFragment()
+        }
+
         binding.backButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_menu_list_fragment)
         }
 
-        binding.addCategoryButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_manage_categories_fragment)
-        }
 
     }
 
@@ -145,48 +140,19 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
         binding.menuDetailEditText.text = null
     }
 
-    override fun onPause() {
-        super.onPause()
-        saveDataToPreferences()
-    }
-
-    private fun saveDataToPreferences() {
-        val sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        with(sharedPreferences.edit()) {
-            putString(KEY_MENU_NAME, binding.menuNameEditText.text.toString())
-            putString(KEY_PRICE, binding.priceEditText.text.toString())
-            putString(KEY_COMPOSITION, binding.compositionEditText.text.toString())
-            putString(KEY_DETAIL, binding.menuDetailEditText.text.toString())
-//            putString(KEY_SELECTED_URI, selectedUri?.toString())
-            apply()
-        }
-    }
-
-    private fun loadDataFromPreferences(sharedPreferences: SharedPreferences) {
-        binding.menuNameEditText.setText(sharedPreferences.getString(KEY_MENU_NAME, ""))
-        binding.priceEditText.setText(sharedPreferences.getString(KEY_PRICE, ""))
-        binding.compositionEditText.setText(sharedPreferences.getString(KEY_COMPOSITION, ""))
-        binding.menuDetailEditText.setText(sharedPreferences.getString(KEY_DETAIL, ""))
-
-//        val savedUri = sharedPreferences.getString(KEY_SELECTED_URI, null)
-//        savedUri?.let {
-//            selectedUri = Uri.parse(it)
-//            binding.menuImageView.setImageURI(selectedUri)
-//            binding.clearImageButton.isVisible = true
-//            binding.addImageButton.isVisible = false
-//        }
-        // 데이터를 불러온 후 SharedPreferences 초기화
-        clearPreferences(sharedPreferences)
-    }
-
-    private fun clearPreferences(sharedPreferences: SharedPreferences) {
-        with(sharedPreferences.edit()) {
-            remove(KEY_MENU_NAME)
-            remove(KEY_PRICE)
-            remove(KEY_COMPOSITION)
-            remove(KEY_DETAIL)
-            remove(KEY_SELECTED_URI)
-            apply()
+    private fun handleReturnedBundle() {
+        findNavController().previousBackStackEntry?.savedStateHandle?.let { savedState ->
+            binding.menuNameEditText.setText(savedState.get<String>("menuName") ?: "")
+            binding.priceEditText.setText(savedState.get<String>("price") ?: "")
+            binding.compositionEditText.setText(savedState.get<String>("composition") ?: "")
+            binding.menuDetailEditText.setText(savedState.get<String>("detail") ?: "")
+            val imageUriString = savedState.get<String>("imageUri")
+            if (!imageUriString.isNullOrEmpty()) {
+                selectedUri = Uri.parse(imageUriString)
+                binding.menuImageView.setImageURI(selectedUri)
+                binding.addImageButton.isVisible = false
+                binding.clearImageButton.isVisible = true
+            }
         }
     }
 
@@ -283,7 +249,8 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
                         updateOrAddMenu(imageUrl, menuName, price, composition, detail, category)
                     },
                     errorHandler = {
-                        Snackbar.make(binding.root, "이미지 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+                        Snackbar.make(binding.root, "이미지 업로드에 실패했습니다.", Snackbar.LENGTH_SHORT)
+                            .show()
                         hideProgress()
                     }
                 )
@@ -357,11 +324,16 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
             category = category
         )
 
-        val menuDoc = getAdminDocument().collection("menu").document(menuData.menuId ?: UUID.randomUUID().toString())
+        val menuDoc = getAdminDocument().collection("menu")
+            .document(menuData.menuId ?: UUID.randomUUID().toString())
 
         menuDoc.set(menuData)
             .addOnSuccessListener {
-                Snackbar.make(binding.root, "메뉴가 성공적으로 ${if (menuModel != null) "수정" else "추가"}되었습니다.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(
+                    binding.root,
+                    "메뉴가 성공적으로 ${if (menuModel != null) "수정" else "추가"}되었습니다.",
+                    Snackbar.LENGTH_SHORT
+                ).show()
                 findNavController().navigate(R.id.adminMenuListFragment)
                 hideProgress()
             }
@@ -378,6 +350,17 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
     private fun getUserEmail(): String {
         return user?.email.toString()
+    }
+
+    private fun navigateToManageCategoriesFragment() {
+        val bundle = Bundle().apply {
+            putString("menuName", binding.menuNameEditText.text.toString())
+            putString("price", binding.priceEditText.text.toString())
+            putString("composition", binding.compositionEditText.text.toString())
+            putString("detail", binding.menuDetailEditText.text.toString())
+            putString("imageUri", selectedUri?.toString()) // 이미지 URI 문자열로 저장
+        }
+        findNavController().navigate(R.id.action_to_manage_categories_fragment, bundle)
     }
 
 }

@@ -1,5 +1,6 @@
 package com.example.kiosk02.admin.menu.data
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -46,7 +47,17 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
         }
 
         binding.backButton.setOnClickListener {
-            findNavController().navigate(R.id.action_to_edit_menu_fragment)
+            // 이전 BackStackEntry의 savedStateHandle에 데이터 설정
+            findNavController().previousBackStackEntry?.savedStateHandle?.apply {
+                // 현재 EditMenuFragment에서 입력한 데이터 가져오기
+                set("menuName", arguments?.getString("menuName") ?: "")
+                set("price", arguments?.getString("price") ?: "")
+                set("composition", arguments?.getString("composition") ?: "")
+                set("detail", arguments?.getString("detail") ?: "")
+                set("imageUri", arguments?.getString("imageUri") ?: "")
+                set("from_manage_categories", true)
+            }
+            findNavController().popBackStack() // 이전 화면으로 돌아가기
         }
     }
 
