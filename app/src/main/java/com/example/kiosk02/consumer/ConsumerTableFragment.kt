@@ -31,7 +31,6 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         Aemail = arguments?.getString("Aemail")
         Uemail = arguments?.getString("Uemail")
         Log.d("ConsumerTableFragment", "Aemail retrieved: $Aemail")
@@ -90,6 +89,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
                     putString("Aemail", Aemail)
                     putString("Uemail", Uemail)
                     putString("orderType", arguments?.getString("orderType"))
+                    putString("selectedFloor",floorSpinner.selectedItem as String)
                 }
                 findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle)
             }
@@ -99,7 +99,6 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
         view.findViewById<TextView>(R.id.back_activity_consumer).setOnClickListener {
             findNavController().navigate(R.id.action_to_mainFragment)
         }
-
     }
 
     override fun onPause() {

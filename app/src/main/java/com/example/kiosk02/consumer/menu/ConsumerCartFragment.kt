@@ -2,6 +2,7 @@ package com.example.kiosk02.consumer.menu
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerCartBinding
+import com.google.android.gms.tasks.Task
 import com.google.common.reflect.TypeToken
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,6 +30,12 @@ class ConsumerCartFragment : Fragment() {
     private val cartItems = mutableListOf<MenuModel>()
     private val gson = Gson()
 
+    private var isOrderPlaced = false // 주문 여부를 나타내는 플래그 추가
+    private var Aemail: String? = null
+    private var Uemail: String? = null
+    private var selectedTableId: String? = null
+    private var selectedFloor: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,6 +47,11 @@ class ConsumerCartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Aemail = arguments?.getString("Aemail")
+        Uemail = arguments?.getString("Uemail")
+        selectedTableId = arguments?.getString("selectedTableId")
+        selectedFloor = arguments?.getString("selectedFloor")
+
         loadCartData()
         setupRecyclerView()
 
@@ -49,6 +62,64 @@ class ConsumerCartFragment : Fragment() {
         binding.toOrderButton.setOnClickListener {
             placeOrder()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Fragment로 돌아올 때 select 생성
+        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerCartFragment", "select 재생성 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
+                }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 화면을 벗어날 때 select 삭제 (단, 주문하기 버튼으로 이동한 경우 제외)
+        if (!isOrderPlaced &&
+            !Aemail.isNullOrEmpty() &&
+            !selectedTableId.isNullOrEmpty() &&
+            !selectedFloor.isNullOrEmpty()
+        ) {
+            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerCartFragment", "select 삭제 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerCartFragment", "select 삭제 실패", e)
+                }
+        }
+    }
+
+    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+        val selectDocRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floor)
+            .collection("tables")
+            .document(tableId)
+            .collection("select")
+            .document(Uemail!!)
+
+        return selectDocRef.set(mapOf("select" to true))
+    }
+
+    private fun deleteSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+        val selectDocRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floor)
+            .collection("tables")
+            .document(tableId)
+            .collection("select")
+            .document(Uemail!!)
+
+        return selectDocRef.delete()
     }
 
 
@@ -70,6 +141,7 @@ class ConsumerCartFragment : Fragment() {
             adapter = cartAdapter
         }
     }
+
 
     private fun onQuantityChanged() {
         updateTotalPrice()
@@ -96,6 +168,10 @@ class ConsumerCartFragment : Fragment() {
     }
 
     private fun placeOrder() {
+        if (cartItems.isEmpty()) {
+            Toast.makeText(requireContext(), "장바구니가 비어 있습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
         val adminEmail = arguments?.getString("Aemail") ?: ""
         val consumerEmail = arguments?.getString("Uemail") ?: ""
         val tableId = arguments?.getString("selectedTableId") ?: ""
@@ -238,10 +314,7 @@ class ConsumerCartFragment : Fragment() {
 
         orderRef.setValue(orderMap)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "관리자 주문이 등록되었습니다.", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "관리자 주문 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "주문이 완료 되었습니다.", Toast.LENGTH_SHORT).show()
             }
     }
 
