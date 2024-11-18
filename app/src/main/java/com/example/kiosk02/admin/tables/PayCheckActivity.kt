@@ -371,15 +371,15 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         builder.setNeutralButton("결제하기") { dialog, _ ->
             // 결제하기 버튼 클릭 시 처리
             if(!statusButton.isEnabled){
-                saveTableDataToFirestore(Aemail, tableId, consumerEmail!!)
-                handlePayment(Aemail, floorId, tableId, consumerEmail)
+                saveTableDataToFirestore(Aemail, tableId, consumerEmail!!,floorId)
+
                 dialog.dismiss() // 결제 후 다이얼로그 종료
             }
         else{
                 Toast.makeText(requireContext(), "착석 상태를 확인해야 결제 가능합니다.", Toast.LENGTH_SHORT).show()
             }
         }
-
+//  removeDataSequentially(Aemail, floorId, tableId, email)
         // 다이얼로그 생성 후 버튼 텍스트 변경
         val dialog = builder.create()
         dialog.setOnShowListener {
@@ -391,9 +391,9 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
                 positiveButton.text = "결제하기"
                 neutralButton.visibility = View.GONE  // "결제하기" 버튼만 보이도록 설정
                 positiveButton.setOnClickListener {
-                    // 결제하기 처리
-                    handlePayment(Aemail, floorId, tableId, consumerEmail)
-                    dialog.dismiss()  // 결제 후 다이얼로그 닫기
+
+
+                    dialog.dismiss()
                 }
             }
         }
@@ -404,12 +404,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
 
 
-    // 결제 처리 함수
-    private fun handlePayment(Aemail: String, floorId: String, tableId: String, consumerEmail: String?) {
-        // 결제 처리 로직을 여기에 추가
-        // 예: Firebase에 결제 상태 업데이트, 알림 보내기 등
-        Log.d("PaycheckActivity", "Payment processed for table $tableId by $consumerEmail")
-    }
+
 
 
 
@@ -547,7 +542,12 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
     }
 //
-fun saveTableDataToFirestore(Aemail: String, tableId: String, consumerEmail: String) {
+fun saveTableDataToFirestore(
+    Aemail: String,
+    tableId: String,
+    consumerEmail: String,
+    floorId: String // 추가: removeDataSequentially에서 필요한 매개변수
+) {
     val database = FirebaseDatabase.getInstance().getReference("admin_orders")
     val firestore = FirebaseFirestore.getInstance()
 
@@ -556,11 +556,9 @@ fun saveTableDataToFirestore(Aemail: String, tableId: String, consumerEmail: Str
     val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) // 오늘 날짜
     val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date()) // 현재 시간
 
-
     database.child(sanitizedEmail).child(tableId).get().addOnSuccessListener { snapshot ->
         if (snapshot.exists()) {
             val tableData = snapshot.value
-
 
             firestore.collection("checksales")
                 .document(currentDate)
@@ -569,6 +567,9 @@ fun saveTableDataToFirestore(Aemail: String, tableId: String, consumerEmail: Str
                 .set(tableData!!)
                 .addOnSuccessListener {
                     Log.d("CheckSales", "Table data saved to Firestore successfully.")
+
+                    // Firestore 저장이 성공한 이후 데이터 삭제 실행
+                    removeDataSequentially(Aemail, floorId, tableId, consumerEmail)
                 }
                 .addOnFailureListener { e ->
                     Log.e("CheckSales", "Error saving table data to Firestore.", e)
