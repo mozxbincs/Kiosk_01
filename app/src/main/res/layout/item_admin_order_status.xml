@@ -3,12 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginHorizontal="10dp">
+    android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/orderDateTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="105dp"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
@@ -27,8 +26,9 @@
         app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
 
     <TextView
+        android:textAlignment="center"
         android:id="@+id/orderTimeTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="5dp"
         android:textSize="20sp"
@@ -49,7 +49,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/menuStatusRecyclerView"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@id/timeVerticalDivider"
         app:layout_constraintTop_toTopOf="parent"
@@ -67,7 +67,8 @@
 
     <TextView
         android:id="@+id/tableIdTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
+        android:textAlignment="center"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:paddingHorizontal="15dp"
@@ -89,10 +90,11 @@
 
     <TextView
         android:id="@+id/priceTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="140dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:paddingHorizontal="15dp"
+        android:textAlignment="center"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
         app:layout_constraintStart_toEndOf="@id/tableVerticalDivider"
@@ -119,7 +121,7 @@
         app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
         app:layout_constraintStart_toEndOf="@id/priceVerticalDivider"
         app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView"
-        tools:text="O" />
+        tools:text="결제 전" />
 
     <View
         android:id="@+id/paymentVerticalDivider"
@@ -133,8 +135,9 @@
 
     <CheckBox
         android:id="@+id/completeCheckBox"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
+        android:text="조리 완료"
         app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/paymentTextView"

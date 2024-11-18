@@ -31,21 +31,12 @@
         android:id="@+id/menuNumberTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
+        android:paddingHorizontal="10dp"
+        android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/nameVerticalDivider"
         app:layout_constraintTop_toTopOf="@id/menuNameTextView"
         tools:text="5개" />
-
-    <View
-        android:id="@+id/underLine"
-        android:layout_width="0dp"
-        android:layout_height="2dp"
-        android:layout_marginLeft="5dp"
-        android:background="@color/gray01"
-        app:layout_constraintEnd_toEndOf="@id/menuNumberTextView"
-        app:layout_constraintStart_toStartOf="@id/menuNameTextView"
-        app:layout_constraintTop_toBottomOf="@id/menuNameTextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
