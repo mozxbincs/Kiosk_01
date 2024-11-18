@@ -543,7 +543,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
     }
 //
 fun saveTableDataToFirestore(
-    Aemail: String,
+    Aemail: String, // 현재 로그인한 관리자 이메일
     tableId: String,
     consumerEmail: String,
     floorId: String // 추가: removeDataSequentially에서 필요한 매개변수
@@ -551,8 +551,11 @@ fun saveTableDataToFirestore(
     val database = FirebaseDatabase.getInstance().getReference("admin_orders")
     val firestore = FirebaseFirestore.getInstance()
 
-    val sanitizedEmail = sanitizeEmail(Aemail)
-    val sanitizedConsumerEmail = sanitizeEmail(consumerEmail)
+
+    val sanitizedEmail = sanitizeEmail(Aemail) // '.' -> '_' 변환
+
+    val originalEmail = Aemail
+
     val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) // 오늘 날짜
     val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date()) // 현재 시간
 
@@ -560,15 +563,18 @@ fun saveTableDataToFirestore(
         if (snapshot.exists()) {
             val tableData = snapshot.value
 
-            firestore.collection("checksales")
+
+            firestore.collection("admin")
+                .document(originalEmail)
+                .collection("checksales")
                 .document(currentDate)
-                .collection(currentTime)
-                .document(sanitizedConsumerEmail)
+                .collection("orders")
+                .document(currentTime)
                 .set(tableData!!)
                 .addOnSuccessListener {
                     Log.d("CheckSales", "Table data saved to Firestore successfully.")
 
-                    // Firestore 저장이 성공한 이후 데이터 삭제 실행
+
                     removeDataSequentially(Aemail, floorId, tableId, consumerEmail)
                 }
                 .addOnFailureListener { e ->
@@ -581,6 +587,11 @@ fun saveTableDataToFirestore(
         Log.e("CheckSales", "Error fetching table data from Realtime Database.", e)
     }
 }
+
+
+
+
+
 
 
 
