@@ -1,9 +1,11 @@
 package com.example.kiosk02.admin.orderStatus
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.orderStatus.data.Order
@@ -12,7 +14,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) {
-    private lateinit var binding: FragmentAdminOrderStatusBinding
+    private var _binding: FragmentAdminOrderStatusBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var ordersAdapter: OrderStatusAdapter
     private val ordersList = mutableListOf<Order>()
 
@@ -23,13 +27,12 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = FragmentAdminOrderStatusBinding.bind(view)
+        _binding = FragmentAdminOrderStatusBinding.bind(view)
 
-        // Firebase 초기화
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-        // 현재 로그인한 관리자 이메일 가져오기
+
         val currentUser = auth.currentUser
         if (currentUser == null) {
             Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
@@ -58,8 +61,25 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
 
         // 백 버튼 클릭 리스너 설정
         binding.backButton.setOnClickListener {
-
+            findNavController().navigate(R.id.adminActivity)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 화면 방향을 가로로 고정
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 화면 방향 고정 해제
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun loadOrderStatus() {
@@ -75,7 +95,7 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
                     }
                 }
                 // 날짜 및 시간 기준으로 정렬 (최신 주문이 상단)
-                ordersList.sortWith(compareByDescending<Order> { it.orderTime })
+                ordersList.sortWith(compareByDescending { it.orderTime })
                 ordersAdapter.notifyDataSetChanged()
             }
 
