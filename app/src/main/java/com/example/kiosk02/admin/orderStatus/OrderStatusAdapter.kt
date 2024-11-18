@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.orderStatus.data.Order
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -37,6 +38,8 @@ class OrderStatusAdapter(private val orders: List<Order>) :
 
         // 주문 시간 포맷팅
         val (formattedDate, formattedTime) = formatOrderTime(order.orderTime)
+        // 가격 포맷팅
+        val formattedPrice = NumberFormat.getNumberInstance(Locale.KOREA).format(order.totalAmount)
 
         holder.orderDateTextView.text = formattedDate
         holder.orderTimeTextView.text = formattedTime
@@ -48,7 +51,7 @@ class OrderStatusAdapter(private val orders: List<Order>) :
                 order.tableId
             }
 
-        holder.priceTextView.text = "${order.totalAmount}원"
+        holder.priceTextView.text = "${formattedPrice}원"
         holder.paymentTextView.text = "X" //경로 설정 필요
 
         // 메뉴 리스트 RecyclerView 설정
