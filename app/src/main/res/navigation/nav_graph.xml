@@ -195,7 +195,7 @@
 
     <fragment
         android:id="@+id/tableEditFragment"
-        android:name="com.example.kiosk02.admin.TableManagementEditFragment"
+        android:name="com.example.kiosk02.admin.tables.TableManagementEditFragment"
         android:label="ShowEmailAdminFragment" />
     <action
         android:id="@+id/action_to_table_Edit_Fragment"
@@ -227,7 +227,7 @@
         app:destination="@id/findPasswordConsumerFragment" />
     <fragment
         android:id="@+id/paycheckFragment"
-        android:name="com.example.kiosk02.admin.PayCheckActivity"
+        android:name="com.example.kiosk02.admin.tables.PayCheckActivity"
         android:label="PaycheckFragment" />
 
     <action

@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin
+package com.example.kiosk02.admin.tables
 
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +17,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
@@ -366,8 +370,14 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         builder.setNeutralButton("결제하기") { dialog, _ ->
             // 결제하기 버튼 클릭 시 처리
-            handlePayment(Aemail, floorId, tableId, consumerEmail)
-            dialog.dismiss() // 결제 후 다이얼로그 종료
+            if(!statusButton.isEnabled){
+                saveTableDataToFirestore(Aemail, tableId, consumerEmail!!)
+                handlePayment(Aemail, floorId, tableId, consumerEmail)
+                dialog.dismiss() // 결제 후 다이얼로그 종료
+            }
+        else{
+                Toast.makeText(requireContext(), "착석 상태를 확인해야 결제 가능합니다.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // 다이얼로그 생성 후 버튼 텍스트 변경
@@ -390,13 +400,6 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         dialog.show()
     }
-
-
-
-
-
-
-
 
 
 
@@ -433,8 +436,8 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         if (isSeated) {
             // 테이블이 착석 상태로 변경되면 select 값을 true로 설정하고, 소비자 이메일을 문서 ID로 추가
             tableRef.document(consumerEmail)  // 소비자 이메일을 문서 ID로 사용
-                .set(hashMapOf(
-                    "selected" to true,
+                .update(mapOf(
+//                    "selected" to true, -> update로 바꿔줌 새로 갱신되니까 자리 선택이 가능하게 되어버림
                     "seat" to "착석"  // 착석 상태로 저장
                 ))
                 .addOnSuccessListener {
@@ -509,6 +512,7 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
             callback(false)
         }
     }
+
     fun sanitizeEmail(email: String): String {
         return email.replace(".", "_")  // 점을 언더스코어로 변경 .이 안됌
     }
@@ -536,10 +540,49 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
     private fun removeDataSequentially(Aemail: String, floorId: String, tableId: String, consumerEmail: String) {
         // 1. 리얼타임 데이터 삭제 (removeOrderData)
         removeOrderData(Aemail, tableId) {
-            // 2. 리얼타임 데이터 삭제가 완료되면 Firestore 데이터 삭제 (removeTableSelection)
+            // 2. 리얼타임 데이터 삭제가 완료되면 Firestore 데이터 삭제
             removeTableSelection(Aemail, floorId, tableId, consumerEmail)
+            //비동기적 삭제 처리 문제 해결했음
         }
+
     }
+//
+fun saveTableDataToFirestore(Aemail: String, tableId: String, consumerEmail: String) {
+    val database = FirebaseDatabase.getInstance().getReference("admin_orders")
+    val firestore = FirebaseFirestore.getInstance()
+
+    val sanitizedEmail = sanitizeEmail(Aemail)
+    val sanitizedConsumerEmail = sanitizeEmail(consumerEmail)
+    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) // 오늘 날짜
+    val currentTime = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date()) // 현재 시간
+
+
+    database.child(sanitizedEmail).child(tableId).get().addOnSuccessListener { snapshot ->
+        if (snapshot.exists()) {
+            val tableData = snapshot.value
+
+
+            firestore.collection("checksales")
+                .document(currentDate)
+                .collection(currentTime)
+                .document(sanitizedConsumerEmail)
+                .set(tableData!!)
+                .addOnSuccessListener {
+                    Log.d("CheckSales", "Table data saved to Firestore successfully.")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("CheckSales", "Error saving table data to Firestore.", e)
+                }
+        } else {
+            Log.d("CheckSales", "No data found for table $tableId in Realtime Database.")
+        }
+    }.addOnFailureListener { e ->
+        Log.e("CheckSales", "Error fetching table data from Realtime Database.", e)
+    }
+}
+
+
+
 
 }
 
