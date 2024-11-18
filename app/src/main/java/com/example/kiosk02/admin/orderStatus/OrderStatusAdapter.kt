@@ -21,7 +21,8 @@ class OrderStatusAdapter(private val orders: List<Order>) :
         val tableIdTextView: TextView = itemView.findViewById(R.id.tableIdTextView)
         val priceTextView: TextView = itemView.findViewById(R.id.priceTextView)
         val paymentTextView: TextView = itemView.findViewById(R.id.paymentTextView)
-        val menuStatusRecyclerView: RecyclerView = itemView.findViewById(R.id.menuStatusRecyclerView)
+        val menuStatusRecyclerView: RecyclerView =
+            itemView.findViewById(R.id.menuStatusRecyclerView)
         val checkBox: CheckBox = itemView.findViewById(R.id.completeCheckBox)
     }
 
@@ -39,10 +40,16 @@ class OrderStatusAdapter(private val orders: List<Order>) :
 
         holder.orderDateTextView.text = formattedDate
         holder.orderTimeTextView.text = formattedTime
-        holder.tableIdTextView.text = order.tableId
+        // orderType이 "pickup"인 경우 "픽업" 텍스트 표시
+        holder.tableIdTextView.text =
+            if (order.orderType.lowercase(Locale.getDefault()) == "pickup") {
+                "픽업"
+            } else {
+                order.tableId
+            }
 
         holder.priceTextView.text = "${order.totalAmount}원"
-        holder.paymentTextView.text = order.orderType
+        holder.paymentTextView.text = "X" //경로 설정 필요
 
         // 메뉴 리스트 RecyclerView 설정
         holder.menuStatusRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
