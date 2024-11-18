@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- 백 버튼 -->
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#FEF7FF"
+        android:paddingLeft="20dp"
+        android:src="@drawable/baseline_arrow_back_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/titleTextview" />
+
+    <!-- 타이틀 -->
+    <TextView
+        android:id="@+id/titleTextview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="주문 현황"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/topUnderLine"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleTextview"
+        app:layout_constraintBottom_toTopOf="@id/headerLayout"/>
+
+    <!-- 헤더 레이아웃 -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleTextview">
+
+        <!-- 날짜 헤더 -->
+        <TextView
+            android:id="@+id/headerDateTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="날짜"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerTimeTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/dateVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerTimeTextView"
+            app:layout_constraintStart_toStartOf="@id/headerDateTextView"
+            app:layout_constraintTop_toTopOf="@id/headerDateTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerDateTextView"/>
+
+        <!-- 시간 헤더 -->
+        <TextView
+            android:id="@+id/headerTimeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="시간"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerMenuNameTextView"
+            app:layout_constraintStart_toEndOf="@id/headerDateTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/timeVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerMenuNameTextView"
+            app:layout_constraintStart_toStartOf="@id/headerTimeTextView"
+            app:layout_constraintTop_toTopOf="@id/headerTimeTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerTimeTextView"/>
+
+        <!-- 메뉴명 헤더 -->
+        <TextView
+            android:id="@+id/headerMenuNameTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="메뉴명"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerQuantityTextView"
+            app:layout_constraintStart_toEndOf="@id/headerTimeTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="2" />
+
+        <View
+            android:id="@+id/numberVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerQuantityTextView"
+            app:layout_constraintStart_toStartOf="@id/headerMenuNameTextView"
+            app:layout_constraintTop_toTopOf="@id/headerMenuNameTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerMenuNameTextView"/>
+
+        <!-- 수량 헤더 -->
+        <TextView
+            android:id="@+id/headerQuantityTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="수량"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerTableIdTextView"
+            app:layout_constraintStart_toEndOf="@id/headerMenuNameTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/quantityVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerTableIdTextView"
+            app:layout_constraintStart_toStartOf="@id/headerQuantityTextView"
+            app:layout_constraintTop_toTopOf="@id/headerQuantityTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerQuantityTextView"/>
+
+        <!-- 테이블 번호 헤더 -->
+        <TextView
+            android:id="@+id/headerTableIdTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="테이블 번호"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerPriceTextView"
+            app:layout_constraintStart_toEndOf="@id/headerQuantityTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/idVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerPriceTextView"
+            app:layout_constraintStart_toStartOf="@id/headerTableIdTextView"
+            app:layout_constraintTop_toTopOf="@id/headerTableIdTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerTableIdTextView"/>
+
+        <!-- 가격 헤더 -->
+        <TextView
+            android:id="@+id/headerPriceTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="가격"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerPaymentTypeTextView"
+            app:layout_constraintStart_toEndOf="@id/headerTableIdTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/priceVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerPaymentTypeTextView"
+            app:layout_constraintStart_toStartOf="@id/headerPriceTextView"
+            app:layout_constraintTop_toTopOf="@id/headerPriceTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerPriceTextView"/>
+
+        <!-- 결제 유형 헤더 -->
+        <TextView
+            android:id="@+id/headerPaymentTypeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="결제 유형"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toStartOf="@id/headerCompleteCheckBox"
+            app:layout_constraintStart_toEndOf="@id/headerPriceTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+        <View
+            android:id="@+id/paymentVerticalDivider"
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginLeft="5dp"
+            android:background="@color/gray01"
+            app:layout_constraintEnd_toEndOf="@id/headerCompleteCheckBox"
+            app:layout_constraintStart_toStartOf="@id/headerPaymentTypeTextView"
+            app:layout_constraintTop_toTopOf="@id/headerPaymentTypeTextView"
+            app:layout_constraintBottom_toBottomOf="@id/headerPaymentTypeTextView"/>
+
+        <!-- 완료 헤더 -->
+        <TextView
+            android:id="@+id/headerCompleteCheckBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="완료"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:gravity="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/headerPaymentTypeTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontalWeight="1" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/underLine"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/orderStatusRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/underLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_admin_order_status"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

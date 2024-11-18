@@ -93,8 +93,14 @@
     <fragment
         android:id="@+id/ConsumerCartFragment"
         android:name="com.example.kiosk02.consumer.menu.ConsumerCartFragment"
-        android:label="ConsumerOrderFragment"
+        android:label="ConsumerCartFragment"
         tools:layout="@layout/fragment_consumer_cart"/>
+
+    <fragment
+        android:id="@+id/AdminOrderStatusFragment"
+        android:name="com.example.kiosk02.admin.orderStatus.AdminOrderStatusFragment"
+        android:label="AdminOrderStatusFragment"
+        tools:layout="@layout/item_admin_order_status"/>
 
 
     <action
@@ -104,8 +110,6 @@
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
-
-
 
     <action
         android:id="@+id/action_to_find_email_admin"
@@ -225,6 +229,10 @@
     <action
         android:id="@+id/action_to_findPasswordFragment"
         app:destination="@id/findPasswordConsumerFragment" />
+
+    <action
+        android:id="@+id/action_to_admin_order_StatusFragment"
+        app:destination="@id/AdminOrderStatusFragment"/>
 
 
 
