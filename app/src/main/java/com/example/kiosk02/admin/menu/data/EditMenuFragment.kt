@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
@@ -234,11 +235,36 @@ class EditMenuFragment : Fragment(R.layout.fragment_edit_menu) {
 
     private fun setupConfirmButton() {
         binding.confirmButton.setOnClickListener {
+            val menuName = binding.menuNameEditText.text.toString().trim()
+            val priceText = binding.priceEditText.text.toString().trim()
+            val detail = binding.menuDetailEditText.text.toString().trim()
+
+            // 빈 값 예외처리 / 구성은 제외
+            if (menuName.isEmpty()) {
+                Toast.makeText(requireContext(), "메뉴 이름을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (priceText.isEmpty()) {
+                Toast.makeText(requireContext(), "가격을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (detail.isEmpty()) {
+                Toast.makeText(requireContext(), "메뉴 상세를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (selectedUri == null && menuModel == null) { // 이미지가 없을 경우
+                Toast.makeText(requireContext(), "이미지를 추가해주세요.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             showProgress()
-            val menuName = binding.menuNameEditText.text.toString()
-            val price = binding.priceEditText.text.toString().toIntOrNull() ?: 0
-            val composition = binding.compositionEditText.text.toString()
-            val detail = binding.menuDetailEditText.text.toString()
+
+            // 예외 처리 후 진행
+            val price = priceText.toIntOrNull() ?: 0
+            val composition = binding.compositionEditText.text.toString().trim() // 선택 사항이므로 값만 가져옴
             val category = binding.categorySpinner.selectedItem.toString()
 
             if (selectedUri != null) {
