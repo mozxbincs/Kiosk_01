@@ -6,5 +6,6 @@ data class Order(
     val orderType: String = "",
     val tableId: String = "",
     val totalAmount: Int = 0,
-    val items: List<OrderItem> = emptyList()
+    val items: List<OrderItem> = emptyList(),
+    val adminEmail: String = ""
 )

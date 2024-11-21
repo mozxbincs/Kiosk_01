@@ -1,10 +1,14 @@
 package com.example.kiosk02.admin.orderStatus
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.core.text.isDigitsOnly
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.R
@@ -12,6 +16,7 @@ import com.example.kiosk02.admin.orderStatus.data.Order
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.google.firebase.database.FirebaseDatabase
 
 class OrderStatusAdapter(private val orders: MutableList<Order>) :
     RecyclerView.Adapter<OrderStatusAdapter.OrderViewHolder>() {
@@ -23,7 +28,7 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         val orderTimeTextView: TextView = itemView.findViewById(R.id.orderTimeTextView)
         val tableIdTextView: TextView = itemView.findViewById(R.id.tableIdTextView)
         val priceTextView: TextView = itemView.findViewById(R.id.priceTextView)
-        val paymentTextView: TextView = itemView.findViewById(R.id.paymentTextView)
+        val cancelButton: TextView = itemView.findViewById(R.id.cancelButton)
         val menuStatusRecyclerView: RecyclerView =
             itemView.findViewById(R.id.menuStatusRecyclerView)
         val checkBox: CheckBox = itemView.findViewById(R.id.completeCheckBox)
@@ -44,6 +49,10 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         // 가격 포맷팅
         val formattedPrice = NumberFormat.getNumberInstance(Locale.KOREA).format(order.totalAmount)
 
+        // 테이블 번호 포맷팅
+        val formattedTableId = formatTableId(order.tableId)
+
+
         holder.orderDateTextView.text = formattedDate
         holder.orderTimeTextView.text = formattedTime
 
@@ -52,13 +61,10 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
             if (order.orderType.lowercase(Locale.getDefault()) == "pickup") {
                 "픽업"
             } else {
-                order.tableId
+                formattedTableId
             }
         // 총 가격 표시
         holder.priceTextView.text = "${formattedPrice}원"
-
-        // 결제 여부 표시
-        holder.paymentTextView.text = "x" //주문 경로 설정 필요
 
         // 메뉴 리스트 RecyclerView 설정
         holder.menuStatusRecyclerView.layoutManager = LinearLayoutManager(holder.itemView.context)
@@ -80,9 +86,15 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
 
         // 체크된 항목 배경색 변경
         if (completedOrders.contains(order.orderId)) {
-            holder.itemView.setBackgroundColor(holder.itemView.context.getColor(R.color.gray01)) // 원하는 색상으로 변경
+            holder.itemView.setBackgroundColor(holder.itemView.context.getColor(R.color.gray01))
+            holder.cancelButton.setBackgroundColor(holder.cancelButton.context.getColor(R.color.gray01))
         } else {
             holder.itemView.setBackgroundColor(holder.itemView.context.getColor(R.color.defaultBackground))
+            holder.cancelButton.setBackgroundColor(holder.cancelButton.context.getColor(R.color.defaultBackground))
+        }
+
+        holder.cancelButton.setOnClickListener {
+            showCancelDialog(holder.itemView.context, order.orderTime, position)
         }
     }
 
@@ -106,6 +118,13 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         }
     }
 
+    // 테이블 번호 포맷팅 함수
+    private fun formatTableId(tableId: String): String {
+        return tableId.replace("table_", "").let { id ->
+            if (id.isDigitsOnly()) "${id}번 테이블" else tableId
+        }
+    }
+
     // 리스트를 재정렬하여 체크된 항목을 아래로 이동
     private fun reorderList() {
         orders.sortWith(
@@ -113,5 +132,52 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
                 .thenByDescending { it.orderTime }
         )
         notifyDataSetChanged()
+    }
+
+    private fun showCancelDialog(context: Context, orderTime: String, position: Int) {
+        AlertDialog.Builder(context)
+            .setTitle("주문 취소")
+            .setMessage("주문을 취소하겠습니까?")
+            .setPositiveButton("예") { _, _ ->
+                deleteOrderFromRealtimeDatabase(orderTime, position)
+            }
+            .setNegativeButton("아니오", null)
+            .show()
+    }
+
+    private fun deleteOrderFromRealtimeDatabase(orderTime: String, position: Int) {
+        val database = FirebaseDatabase.getInstance()
+        val adminOrdersRef = database.getReference("admin_orders")
+
+        adminOrdersRef.get()
+            .addOnSuccessListener { snapshot ->
+                var adminEmail: String? = null
+
+                // admin_orders 하위 경로를 탐색하여 adminEmail을 찾음
+                for (childSnapshot in snapshot.children) {
+                    if (childSnapshot.hasChild(orderTime)) {
+                        adminEmail = childSnapshot.key?.replace("_", ".") // Realtime DB는 '.'를 '_'로 저장
+                        break
+                    }
+                }
+                if (adminEmail != null) {
+                    // adminEmail과 orderTime으로 삭제 경로 구성
+                    val orderRef = adminOrdersRef.child(adminEmail.replace(".", "_")).child(orderTime)
+                    orderRef.removeValue()
+                        .addOnSuccessListener {
+                            orders.removeAt(position)
+                            notifyItemRemoved(position)
+                            notifyItemRangeChanged(position, orders.size)
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("OrderStatusAdapter", "주문 삭제 실패: ${exception.message}")
+                        }
+                } else {
+                    Log.e("OrderStatusAdapter", "adminEmail을 찾을 수 없습니다.")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("OrderStatusAdapter", "데이터 가져오기 실패: ${exception.message}")
+            }
     }
 }
