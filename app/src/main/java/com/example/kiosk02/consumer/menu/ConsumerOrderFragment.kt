@@ -12,6 +12,7 @@ import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerOrderFragmentBinding
 import com.google.common.reflect.TypeToken
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import java.text.NumberFormat
 import java.util.Locale
@@ -21,6 +22,9 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
     private var menuId: String? = null
     private var menuModel: MenuModel? = null
     private var bundle: Bundle? = null
+
+    private val firestore = FirebaseFirestore.getInstance()
+    private var isNavigated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +48,7 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         setupQuantityButtons()
 
         binding.cartImageButton.setOnClickListener {
+            isNavigated = true
             findNavController().navigate(R.id.action_to_ConsumerCartFragment, newBundle)
         }
 
@@ -52,7 +57,21 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         }
 
         binding.backButton.setOnClickListener {
+            isNavigated = true
             goToConsumerMenuList()
+        }
+    }
+    override fun onResume() {
+        super.onResume()
+        // Fragment로 돌아올 때 select 생성
+        createSelectCollection()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 화면을 벗어날 때 select 삭제 (뒤로 가기 또는 장바구니 버튼 제외)
+        if (!isNavigated) {
+            deleteSelectCollection()
         }
     }
 
@@ -134,5 +153,45 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
             remove("menuModel") // 전달받은 Bundle값 중 menuModel 삭제
         }
         findNavController().navigate(R.id.action_to_ConsumerMenuList, newBundle)
+    }
+
+    private fun createSelectCollection() {
+        val Aemail = bundle?.getString("Aemail")
+        val floor = bundle?.getString("selectedFloor")
+        val tableId = bundle?.getString("selectedTableId")
+        val Uemail = arguments?.getString("Uemail")
+
+        if (!Aemail.isNullOrEmpty() && !floor.isNullOrEmpty() && !tableId.isNullOrEmpty() && !Uemail.isNullOrEmpty()) {
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail)
+                .collection("floors")
+                .document(floor)
+                .collection("tables")
+                .document(tableId)
+                .collection("select")
+                .document(Uemail)
+
+            selectDocRef.set(mapOf("select" to true))
+        }
+    }
+
+    private fun deleteSelectCollection() {
+        val Aemail = bundle?.getString("Aemail")
+        val floor = bundle?.getString("selectedFloor")
+        val tableId = bundle?.getString("selectedTableId")
+        val Uemail = arguments?.getString("Uemail")
+
+        if (!Aemail.isNullOrEmpty() && !floor.isNullOrEmpty() && !tableId.isNullOrEmpty() && !Uemail.isNullOrEmpty()) {
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail)
+                .collection("floors")
+                .document(floor)
+                .collection("tables")
+                .document(tableId)
+                .collection("select")
+                .document(Uemail)
+
+            selectDocRef.delete()
+        }
     }
 }

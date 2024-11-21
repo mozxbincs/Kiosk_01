@@ -25,7 +25,9 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     private var Aemail: String? = null
     private var orderType: String? = null
     private var selectedTableId: String? = null
-    private var selectedFloor: String? = null // floor 값 추가
+    private var selectedFloor: String? = null
+
+    private var isNavigated = false // 장바구니 버튼이나 아이템 클릭 여부 플래그
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,15 +48,12 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
             return
         }
 
-        if (selectedFloor.isNullOrEmpty()) {
-            Log.e("ConsumerMenuListFragment", "selectedFloor is missing or empty")
-            Toast.makeText(requireContext(), "층 정보가 누락되었습니다.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
         loadCategoriesToTabs(Aemail!!)
 
+        setupRecyclerView()
+
         binding.cartImageButton.setOnClickListener {
+            isNavigated = true
             findNavController().navigate(R.id.action_to_ConsumerCartFragment, bundle)
         }
 
@@ -115,14 +114,19 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
 
     override fun onPause() {
         super.onPause()
-
-        // Fragment가 화면에서 제거되거나 Activity가 종료되는 경우에만 select 삭제
-        if ((isRemoving || requireActivity().isFinishing) &&
+        // 화면을 벗어났을 때 select 삭제(to 장바구니, 메뉴 아이템 제외)
+        if (!isNavigated &&
             !Aemail.isNullOrEmpty() &&
             !selectedTableId.isNullOrEmpty() &&
-            !selectedFloor.isNullOrEmpty()) {
-
+            !selectedFloor.isNullOrEmpty()
+        ) {
             deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerMenuListFragment", "select 삭제 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerMenuListFragment", "select 삭제 실패", e)
+                }
         }
     }
 
@@ -146,6 +150,17 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = viewPagerAdapter.getCategoryTitle(position)
         }.attach()
+    }
+    // 메뉴 아이템 클릭 시 select 삭제 되지 않도록
+    private fun setupRecyclerView() {
+        val adapter = ConsumerMenuListAdapter { menuModel ->
+            isNavigated = true
+            val bundle = Bundle(arguments).apply {
+                putParcelable("menuModel", menuModel)
+            }
+            findNavController().navigate(R.id.action_to_ConsumerOrderFragment, bundle)
+        }
+        binding.viewPager.adapter = adapter // RecyclerView에 어댑터 설정
     }
 
     // 경로 지정 함수
