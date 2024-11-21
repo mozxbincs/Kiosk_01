@@ -27,7 +27,6 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
 
         bundle = arguments
         menuId = bundle?.getString("menuId")
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,8 +41,7 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         }
 
         loadMenuData()
-
-        setupSpinner()
+        setupQuantityButtons()
 
         binding.cartImageButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_ConsumerCartFragment, newBundle)
@@ -58,39 +56,42 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         }
     }
 
-
     private fun loadMenuData() {
         menuModel?.let { menu ->
             Glide.with(binding.menuImageView.context)
                 .load(menu.imageUrl)
                 .into(binding.menuImageView)
 
-            binding.menuNameTextView.setText(menu.menuName)
+            binding.menuNameTextView.text = menu.menuName
 
             val formattedPrice =
                 NumberFormat.getNumberInstance(Locale.KOREA).format(menu.price ?: 0)
-            binding.priceTextView.setText("${formattedPrice}원")
+            binding.priceTextView.text = "${formattedPrice}원"
 
-            binding.compositionTextView.setText(menu.composition)
-            binding.menuDetailTextView.setText(menu.detail)
+            binding.compositionTextView.text = menu.composition
+            binding.menuDetailTextView.text = menu.detail
         }
-
     }
 
-    private fun setupSpinner() {
-        val quantityList = (1..10).toList()
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            quantityList
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.numberSpinner.adapter = adapter
+    private fun setupQuantityButtons() {
+        binding.menuNumberTextView.text = "1" // 초기 수량 설정
+
+        binding.removeButton.setOnClickListener {
+            val currentQuantity = binding.menuNumberTextView.text.toString().toInt()
+            if (currentQuantity > 1) {
+                binding.menuNumberTextView.text = (currentQuantity - 1).toString()
+            }
+        }
+
+        binding.addButton.setOnClickListener {
+            val currentQuantity = binding.menuNumberTextView.text.toString().toInt()
+            binding.menuNumberTextView.text = (currentQuantity + 1).toString()
+        }
     }
 
     private fun setupCartButton() {
         binding.toCartButton.setOnClickListener {
-            val selectedQuantity = binding.numberSpinner.selectedItem as Int
+            val selectedQuantity = binding.menuNumberTextView.text.toString().toInt()
             addToCart(menuId, selectedQuantity)
         }
     }
@@ -134,5 +135,4 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         }
         findNavController().navigate(R.id.action_to_ConsumerMenuList, newBundle)
     }
-
 }
