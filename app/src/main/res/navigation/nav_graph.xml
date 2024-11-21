@@ -161,7 +161,9 @@
         android:id="@+id/action_to_fragment_consumer_sig"
         app:destination="@id/consumerSignFragment" />
 
-
+    <action
+        android:id="@+id/action_to_activity_search_store"
+        app:destination="@id/searchStoreActivity" />
     <fragment
         android:id="@+id/orderMethodFragment"
         android:name="com.example.kiosk02.OrderMethodFragment"
@@ -197,7 +199,7 @@
 
     <fragment
         android:id="@+id/tableEditFragment"
-        android:name="com.example.kiosk02.admin.TableManagementEditFragment"
+        android:name="com.example.kiosk02.admin.tables.TableManagementEditFragment"
         android:label="ShowEmailAdminFragment" />
     <action
         android:id="@+id/action_to_table_Edit_Fragment"
@@ -231,7 +233,23 @@
         android:id="@+id/accountFragment"
         android:name="com.example.kiosk02.accountFragment"
         android:label="accountFragment" />
+    <fragment
+        android:id="@+id/paycheckFragment"
+        android:name="com.example.kiosk02.admin.tables.PayCheckActivity"
+        android:label="PaycheckFragment" />
 
+    <action
+        android:id="@+id/action_to_paycheckFragment"
+        app:destination="@id/paycheckFragment" />
+
+    <fragment
+        android:id="@+id/pickupFragment"
+        android:name="com.example.kiosk02.OrderMethodFragment"
+        android:label="pickup" />
+
+    <action
+        android:id="@+id/action_to_pickupFragment"
+        app:destination="@id/pickupFragment" />
 
 
 </navigation>

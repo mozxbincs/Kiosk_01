@@ -29,6 +29,9 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<Button>(R.id.settlementCheckButton).setOnClickListener {
             findNavController().navigate(R.id.action_adminActivity_to_accountFragment2)
         }
+        view.findViewById<Button>(R.id. paymentCheckButton).setOnClickListener {
+            findNavController().navigate(R.id.action_to_paycheckFragment)
+        }
     }
 
 
