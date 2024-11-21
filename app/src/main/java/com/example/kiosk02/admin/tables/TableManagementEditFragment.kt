@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -30,7 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout
     private lateinit var tableFrame: FrameLayout
-    private lateinit var removeTableButton: Button
+    private lateinit var removeTableButton: LinearLayout
     private var addedTables: MutableList<View> = mutableListOf() // 추가된 테이블 목록
     private var droppedTables: MutableList<View> = mutableListOf() // 드롭된 테이블 목록
     private var maxTablesInList = 6 // tableList에 추가될 수 있는 최대 테이블 수
@@ -93,22 +94,22 @@ class TableManagementEditFragment : Fragment(R.layout.activity_table_management_
             findNavController().navigate(R.id.action_to_admin_activity) // 관리자 초기 화면으로 이동
         }
         // 기타 테이블 클릭 리스너
-        view.findViewById<TextView>(R.id.other_seater_text).setOnClickListener {
+        view.findViewById<LinearLayout>(R.id.other_seater_text).setOnClickListener {
             showQuantityPeopleInputDialog()
         }
 
         // 층수 추가 및 제거 버튼에 대한 클릭 리스너 설정
-        view.findViewById<Button>(R.id.add_floor_button).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.add_floor_button).setOnClickListener {
             addFloor() // 층 추가
         }
-        view.findViewById<Button>(R.id.remove_floor_button).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.remove_floor_button).setOnClickListener {
             removeFloor() // 층 제거
         }
 
 
 
         // 삭제 버튼 클릭 이벤트
-        view.findViewById<Button>(R.id.delete_table_button).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.delete_table_button).setOnClickListener {
             if (addedTables.isEmpty()) {
                 Toast.makeText(requireContext(), "삭제할 테이블이 없습니다.", Toast.LENGTH_SHORT).show()
             } else {

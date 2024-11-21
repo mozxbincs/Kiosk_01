@@ -11,12 +11,11 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp">
-        <!-- 선택한 층수 표시 TextView -->
-        <TextView
+        <ImageView
             android:id="@+id/selected_floor_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="[층 선택]"
+            android:src="@drawable/baseline_stairs_24"
             android:layout_gravity="center_vertical"/>
 
         <Spinner
@@ -36,11 +35,9 @@
             android:id="@+id/other_seater_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
             android:padding="7dp"
             android:text="자리 및 결제 확인"
-            android:onClick="onCheckReservationClick"/>
+           />
         <TextView
             android:id="@+id/consumer_info"
             android:layout_width="wrap_content"

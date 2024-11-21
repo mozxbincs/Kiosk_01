@@ -1,149 +1,219 @@
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
 
-    <TextView
-        android:id="@+id/adminTitle"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="관리자 인터페이스"
-        android:textSize="24sp"
-        android:layout_marginTop="50dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
 
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/baseline_admin_panel_settings_24" />
+
+        <TextView
+            android:id="@+id/adminTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="관리자"
+            android:textSize="24sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:layout_marginTop="10dp"
+       >
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+
+    android:layout_marginBottom="24dp">
+
+        <ImageButton
+            android:id="@+id/orderCheckButton"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            android:background="@drawable/button_shape"
+            android:backgroundTint="#C3D0D9"
+
+            android:src="@drawable/baseline_fact_check_24"
+            android:textColor="@color/black" />
     <TextView
-        android:id="@+id/confirmTextView"
+
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="172dp"
-        android:layout_marginTop="76dp"
-        android:text="확인"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/adminTitle" />
+        android:text="주문확인"
+        android:textSize="18sp" />
+</LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
 
+            android:layout_marginBottom="24dp">
 
-    <Button
-        android:id="@+id/orderCheckButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="주문 확인"
-        android:layout_margin="4dp"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toStartOf="@id/paymentCheckButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/confirmTextView"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"
-        />
+            <ImageButton
+                android:id="@+id/paymentCheckButton"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape"
+                android:backgroundTint="#C3D0D9"
 
-    <Button
-        android:id="@+id/paymentCheckButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="자리 + 결제\n 확인"
-        android:layout_margin="4dp"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        android:textColor="@color/black"
-        app:layout_constraintEnd_toStartOf="@id/settlementCheckButton"
-        app:layout_constraintStart_toEndOf="@id/orderCheckButton"
-        app:layout_constraintTop_toBottomOf="@id/confirmTextView"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"/> <!-- 버튼 너비 비율 33%로 동일하게 설정 -->
+                android:src="@drawable/baseline_price_check_24"
+                android:textColor="@color/black" />
 
-    <Button
-        android:id="@+id/settlementCheckButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="정산 확인"
-        android:layout_margin="4dp"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toEndOf="@id/paymentCheckButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/confirmTextView"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"/>
+            <TextView
 
-    <TextView
-        android:id="@+id/editTextView"
-        android:layout_width="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="자리 + 결제확인"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+
+            android:layout_marginBottom="24dp">
+
+        <ImageButton
+            android:id="@+id/settlementCheckButton"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_weight="1"
+            android:layout_margin="8dp"
+            android:background="@drawable/button_shape"
+            android:backgroundTint="#C3D0D9"
+            android:src="@drawable/baseline_receipt_long_24"
+            android:textColor="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정산 확인"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="172dp"
-        android:layout_marginTop="128dp"
-        android:layout_marginBottom="16dp"
-        android:text="편집"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/settlementCheckButton" />
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="20dp"
 
-    <Button
-        android:id="@+id/menuCustomizationButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:textColor="@color/black"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        android:text="메뉴판 커스텀"
-        android:layout_margin="4dp"
-        app:layout_constraintTop_toBottomOf="@id/editTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tableLayoutButton"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"/> <!-- 정사각형 모양을 위한 비율 설정 -->
+        android:layout_marginBottom="16dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
 
-    <Button
-        android:id="@+id/tableLayoutButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="테이블\n레이아웃"
-        android:textColor="@color/black"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        android:layout_margin="4dp"
-        app:layout_constraintTop_toBottomOf="@id/editTextView"
-        app:layout_constraintStart_toEndOf="@id/menuCustomizationButton"
-        app:layout_constraintEnd_toStartOf="@id/additionalRegistrationButton"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"/> <!-- 정사각형 모양을 위한 비율 설정 -->
+            android:layout_marginBottom="24dp">
 
-    <Button
-        android:id="@+id/additionalRegistrationButton"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:text="추가 등록사항"
-        android:layout_margin="4dp"
-        android:textColor="@color/black"
-        android:background="@drawable/button_shape"
-        android:backgroundTint="#C3D0D9"
-        app:layout_constraintTop_toBottomOf="@id/editTextView"
-        app:layout_constraintStart_toEndOf="@id/tableLayoutButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintWidth_percent="0.25"
-        app:layout_constraintDimensionRatio="1:1"/>
+            <ImageButton
+                android:id="@+id/menuCustomizationButton"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape"
+                android:backgroundTint="#C3D0D9"
+
+                android:src="@drawable/baseline_restaurant_menu_24"
+                android:textColor="@color/black" />
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="메뉴판 커스텀"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/tableLayoutButton"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:background="@drawable/button_shape"
+                android:backgroundTint="#C3D0D9"
+
+                android:src="@drawable/baseline_table_restaurant_24"
+                android:textColor="@color/black" />
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="테이블 관리"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+
+            android:layout_marginBottom="24dp">
+
+            <ImageButton
+                android:id="@+id/additionalRegistrationButton"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_shape"
+                android:backgroundTint="#C3D0D9"
+                android:src="@drawable/baseline_format_list_bulleted_add_24"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="추가등록사항"
+                android:textSize="18sp" />
+        </LinearLayout>
+    </LinearLayout>
     <Button
         android:id="@+id/logoutButton"
-        android:layout_width="0dp"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="로그아웃"
         android:textColor="@color/black"
         android:backgroundTint="@color/gray01"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+     android:layout_marginLeft="120dp"
         android:layout_marginTop="30dp"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
