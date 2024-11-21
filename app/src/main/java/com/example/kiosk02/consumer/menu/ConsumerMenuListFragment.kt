@@ -132,6 +132,7 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
 
     private fun loadCategoriesToTabs(Aemail: String) {
         getAdminDocument(Aemail).collection("category")
+            .orderBy("order")
             .get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }

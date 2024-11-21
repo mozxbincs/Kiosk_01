@@ -52,6 +52,7 @@ class AdminMenuListFragment : Fragment(R.layout.fragment_admin_menu_list) {
 
     private fun loadCategoriesToTabs() {
         getAdminDocument().collection("category")
+            .orderBy("order")
             .get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }
