@@ -51,5 +51,10 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
             findNavController().navigate(R.id.action_to_table_Select_Fragment,bundle) // 초기화면으로 이동
         }
 
+        binding.backButton.setOnClickListener {
+            val intent = Intent(requireContext(), SearchStoreActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 }
