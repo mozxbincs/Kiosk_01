@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.databinding.FragmentAccountBinding
@@ -41,6 +42,10 @@ class accountFragment: Fragment(R.layout.fragment_account) {
 
         binding.buttonPickDate.setOnClickListener {
             showDatePicker()
+        }
+
+        binding.backButton.setOnClickListener {
+            findNavController().navigate(R.id.action_to_admin_activity)
         }
 
     }
