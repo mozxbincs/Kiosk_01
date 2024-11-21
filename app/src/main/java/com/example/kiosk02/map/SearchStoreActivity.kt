@@ -166,9 +166,13 @@ class SearchStoreActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun checkStoreInFireStore (title : String) {
         Log.d("checkStoreInFireStore", "dd")
         val FireStore = FirebaseFirestore.getInstance()
-
+        Log.d("title", "$title")
+        val captionTitle = title
+            .replace("<br>", "")
+            .replace("<b>", "")
+            .replace("</b>", "")
         FireStore.collection("admin")
-            .whereEqualTo("tradeName", title)
+            .whereEqualTo("tradeName", captionTitle)
             .get()
             .addOnSuccessListener { docuemts ->
                 if (!docuemts.isEmpty) {

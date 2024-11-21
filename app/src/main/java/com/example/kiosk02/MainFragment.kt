@@ -2,7 +2,7 @@ package com.example.kiosk02
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
+//import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -23,8 +23,8 @@ class MainFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var fireStore: FirebaseFirestore
-    private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var editor: SharedPreferences.Editor
+    //private lateinit var sharedPreferences: SharedPreferences
+    //private lateinit var editor: SharedPreferences.Editor
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,15 +34,16 @@ class MainFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
         fireStore = FirebaseFirestore.getInstance()
 
-        sharedPreferences = requireContext().getSharedPreferences("ConsumerLoginPrefs", Context.MODE_PRIVATE)
-        editor = sharedPreferences.edit()
+        //sharedPreferences = requireContext().getSharedPreferences("ConsumerLoginPrefs", Context.MODE_PRIVATE)
+        //editor = sharedPreferences.edit()
 
+        /*
         val isLoggedIn = sharedPreferences.getBoolean("consumerLoggedIn", false)
         if (isLoggedIn) {
             val savedEmail = sharedPreferences.getString("consumer_email", null).orEmpty()
             val savedPassword = sharedPreferences.getString("consumer_password", null).orEmpty()
             LoginToFirebase(savedEmail, savedPassword)
-        }
+        }*/
 
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         val adminButton = view.findViewById<Button>(R.id.admin_button)
@@ -56,14 +57,14 @@ class MainFragment : Fragment() {
             val email = view.findViewById<EditText>(R.id.email_input).text.toString()
             val password = view.findViewById<EditText>(R.id.password_input).text.toString()
             LoginToFirebase(email, password)
-
+            /*
             val rememberMeCheckbox = view.findViewById<CheckBox>(R.id.remember_me_checkbox)
             if (rememberMeCheckbox.isChecked) {
                 editor.putBoolean("consumerLoggedIn", true)
                 editor.putString("consumer_email", email)
                 editor.putString("consumer_password", password)
                 editor.apply()
-            }
+            }*/
         }
 
         view.findViewById<Button>(R.id.sign_up_button).setOnClickListener {
@@ -105,5 +106,4 @@ class MainFragment : Fragment() {
                 }
             }
     }
-
 }

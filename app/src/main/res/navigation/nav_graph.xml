@@ -27,7 +27,11 @@
     <fragment
         android:id="@+id/adminActivity"
         android:name="com.example.kiosk02.admin.AdminActivity"
-        android:label="관리자 로그인" />
+        android:label="관리자 로그인">
+        <action
+            android:id="@+id/action_adminActivity_to_accountFragment2"
+            app:destination="@id/accountFragment" />
+    </fragment>
     <fragment
         android:id="@+id/adminSignFragment"
         android:name="com.example.kiosk02.admin.AdminSignFragment"
@@ -157,9 +161,7 @@
         android:id="@+id/action_to_fragment_consumer_sig"
         app:destination="@id/consumerSignFragment" />
 
-    <action
-        android:id="@+id/action_to_activity_search_store"
-        app:destination="@id/searchStoreActivity" />
+
     <fragment
         android:id="@+id/orderMethodFragment"
         android:name="com.example.kiosk02.OrderMethodFragment"
@@ -225,6 +227,10 @@
     <action
         android:id="@+id/action_to_findPasswordFragment"
         app:destination="@id/findPasswordConsumerFragment" />
+    <fragment
+        android:id="@+id/accountFragment"
+        android:name="com.example.kiosk02.accountFragment"
+        android:label="accountFragment" />
 
 
 
