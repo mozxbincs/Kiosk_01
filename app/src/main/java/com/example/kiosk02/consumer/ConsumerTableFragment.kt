@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -20,7 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     private lateinit var tableFrame: FrameLayout
     private lateinit var floorSpinner: Spinner
-    private lateinit var orderButton: Button
+    private lateinit var orderButton: LinearLayout
     private val firestore = FirebaseFirestore.getInstance()
     private var Aemail: String? = null
     private var Uemail: String? = null
@@ -97,7 +98,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
 
         view.findViewById<TextView>(R.id.back_activity_consumer).setOnClickListener {
-            findNavController().navigate(R.id.action_to_mainFragment)
+            findNavController().navigate(R.id.action_to_pickupFragment)
         }
 
     }

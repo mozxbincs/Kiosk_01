@@ -234,5 +234,14 @@
         android:id="@+id/action_to_paycheckFragment"
         app:destination="@id/paycheckFragment" />
 
+    <fragment
+        android:id="@+id/pickupFragment"
+        android:name="com.example.kiosk02.OrderMethodFragment"
+        android:label="pickup" />
+
+    <action
+        android:id="@+id/action_to_pickupFragment"
+        app:destination="@id/pickupFragment" />
+
 
 </navigation>
