@@ -8,13 +8,17 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.R
+import com.example.kiosk02.consumer.menu.NavigationViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -22,11 +26,15 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     private lateinit var tableFrame: FrameLayout
     private lateinit var floorSpinner: Spinner
     private lateinit var orderButton: LinearLayout
+    private lateinit var goBackButton: LinearLayout
     private val firestore = FirebaseFirestore.getInstance()
     private var Aemail: String? = null
     private var Uemail: String? = null
     private var selectedTableId: String? = null
+    private var backToselectedTableId: String? = null
     private var isOrderConfirmed = false
+
+    private lateinit var navigationViewModel: NavigationViewModel
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,6 +47,10 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
         tableFrame = view.findViewById(R.id.table_frame)
         floorSpinner = view.findViewById(R.id.floor_spinner)
         orderButton = view.findViewById(R.id.update_button)
+        goBackButton = view.findViewById(R.id.goBackButton)
+
+        // Shared ViewModel 초기화
+        navigationViewModel = ViewModelProvider(requireActivity()).get(NavigationViewModel::class.java)
 
 
         if (Aemail != null) {
@@ -100,10 +112,31 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
         view.findViewById<TextView>(R.id.back_activity_consumer).setOnClickListener {
             findNavController().navigate(R.id.action_to_pickupFragment,arguments)
         }
+
+        // 주문 완료 후 테이블 선택 뷰 -> 메뉴판으로 돌아가기 활성화
+        navigationViewModel.isOrderPlaced.observe(viewLifecycleOwner, Observer { isOrderPlaced ->
+            if (isOrderPlaced) {
+                backToselectedTableId = arguments?.getString("selectedTableId")
+                goBackButton.visibility = View.VISIBLE
+                goBackButton.setOnClickListener {
+                    val bundle = Bundle().apply {
+                        putString("selectedTableId", backToselectedTableId)
+                        putString("Aemail", Aemail)
+                        putString("Uemail", Uemail)
+                        putString("orderType", arguments?.getString("orderType"))
+                        putString("selectedFloor", floorSpinner.selectedItem as String)
+                    }
+                    findNavController().navigate(R.id.action_to_ConsumerMenuList, bundle)
+                }
+            } else {
+                goBackButton.visibility = View.GONE
+            }
+        })
     }
 
     override fun onPause() {
         super.onPause()
+
         if (!isOrderConfirmed && selectedTableId != null) {
             removeTableSelection(selectedTableId!!)
         }
