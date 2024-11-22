@@ -27,7 +27,11 @@
     <fragment
         android:id="@+id/adminActivity"
         android:name="com.example.kiosk02.admin.AdminActivity"
-        android:label="관리자 로그인" />
+        android:label="관리자 로그인">
+        <action
+            android:id="@+id/action_adminActivity_to_accountFragment2"
+            app:destination="@id/accountFragment" />
+    </fragment>
     <fragment
         android:id="@+id/adminSignFragment"
         android:name="com.example.kiosk02.admin.AdminSignFragment"
@@ -110,6 +114,8 @@
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
+
+
 
     <action
         android:id="@+id/action_to_find_email_admin"
@@ -199,7 +205,7 @@
 
     <fragment
         android:id="@+id/tableEditFragment"
-        android:name="com.example.kiosk02.admin.TableManagementEditFragment"
+        android:name="com.example.kiosk02.admin.tables.TableManagementEditFragment"
         android:label="ShowEmailAdminFragment" />
     <action
         android:id="@+id/action_to_table_Edit_Fragment"
@@ -229,11 +235,31 @@
     <action
         android:id="@+id/action_to_findPasswordFragment"
         app:destination="@id/findPasswordConsumerFragment" />
+    <fragment
+        android:id="@+id/accountFragment"
+        android:name="com.example.kiosk02.accountFragment"
+        android:label="accountFragment" />
+    <fragment
+        android:id="@+id/paycheckFragment"
+        android:name="com.example.kiosk02.admin.tables.PayCheckActivity"
+        android:label="PaycheckFragment" />
+
+    <action
+        android:id="@+id/action_to_paycheckFragment"
+        app:destination="@id/paycheckFragment" />
 
     <action
         android:id="@+id/action_to_admin_order_StatusFragment"
         app:destination="@id/AdminOrderStatusFragment"/>
 
+    <fragment
+        android:id="@+id/pickupFragment"
+        android:name="com.example.kiosk02.OrderMethodFragment"
+        android:label="pickup" />
+
+    <action
+        android:id="@+id/action_to_pickupFragment"
+        app:destination="@id/pickupFragment" />
 
 
 </navigation>
