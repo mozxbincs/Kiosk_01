@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.kiosk02.R
@@ -28,12 +29,15 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
     private var selectedTableId: String? = null
     private var selectedFloor: String? = null
 
+    // Shared ViewModel
+    private lateinit var navigationViewModel: NavigationViewModel
+
     companion object {
         private const val ARG_CATEGORY = "category"
 
         fun newInstance(category: String, bundle: Bundle?): ConsumerMenuFragment {
             return ConsumerMenuFragment(bundle).apply {
-                arguments = Bundle(bundle).apply { //카테고리와 충돌나지 않는지 확인해보기
+                arguments = Bundle(bundle).apply {
                     putString(ARG_CATEGORY, category)
                 }
             }
@@ -52,6 +56,9 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Shared ViewModel 초기화
+        navigationViewModel = ViewModelProvider(requireActivity()).get(NavigationViewModel::class.java)
+
         setupRecyclerView()
 
         loadMenuItemsForCategory(category)
@@ -62,37 +69,42 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
         selectedFloor = arguments?.getString("selectedFloor")
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Fragment로 돌아올 때 select 생성
-        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
-            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
-                .addOnSuccessListener {
-                    Log.d("ConsumerCartFragment", "select 재생성 완료")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
-                }
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        // Fragment로 돌아올 때 select 생성
+//        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+//            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+//                .addOnSuccessListener {
+//                    Log.d("ConsumerMenuFragment", "select 재생성 완료")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("ConsumerMenuFragment", "select 재생성 실패", e)
+//                }
+//        }
+//    }
 
-    override fun onPause() {
-        super.onPause()
-        // 화면을 벗어날 때 select 삭제 (단, 주문하기 버튼으로 이동한 경우 제외)
-        if (!isOrderPlaced &&
-            !Aemail.isNullOrEmpty() &&
-            !selectedTableId.isNullOrEmpty() &&
-            !selectedFloor.isNullOrEmpty()
-        ) {
-            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
-                .addOnSuccessListener {
-                    Log.d("ConsumerCartFragment", "select 삭제 완료")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("ConsumerCartFragment", "select 삭제 실패", e)
-                }
-        }
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        // 주문 완료 상태에서는 onPause 동작 방지
+//        if (navigationViewModel.isOrderPlaced.value == true) {
+//            Log.d("ConsumerOrderFragment", "Order placed - Skipping onPause actions")
+//            return
+//        }
+//
+//        if (!isOrderPlaced &&
+//            !Aemail.isNullOrEmpty() &&
+//            !selectedTableId.isNullOrEmpty() &&
+//            !selectedFloor.isNullOrEmpty()
+//        ) {
+//            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+//                .addOnSuccessListener {
+//                    Log.d("ConsumerMenuFragment", "select 삭제 완료")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("ConsumerMenuFragment", "select 삭제 실패", e)
+//                }
+//        }
+//    }
 
     private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
         val selectDocRef = firestore.collection("admin")
@@ -122,6 +134,8 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
 
     private fun setupRecyclerView() {
         val adapter = ConsumerMenuListAdapter { menuModel ->
+            // 메뉴 클릭 시, NavigationViewModel을 통해 isNavigated 설정
+            navigationViewModel.setNavigated(true)
             // 메뉴 클릭 시, ConsumerOrderFragment로 이동
             val bundleWithMenuModel = Bundle(bundle).apply {
                 putParcelable("menuModel", menuModel)
@@ -174,5 +188,4 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
         val email = bundle?.getString("Aemail") ?: ""
         return firestore.collection("admin").document(email)
     }
-
 }

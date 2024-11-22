@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kiosk02.R
@@ -30,11 +31,12 @@ class ConsumerCartFragment : Fragment() {
     private val cartItems = mutableListOf<MenuModel>()
     private val gson = Gson()
 
-    private var isOrderPlaced = false // 주문 여부를 나타내는 플래그 추가
     private var Aemail: String? = null
     private var Uemail: String? = null
     private var selectedTableId: String? = null
     private var selectedFloor: String? = null
+
+    private lateinit var navigationViewModel: NavigationViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,74 +54,111 @@ class ConsumerCartFragment : Fragment() {
         selectedTableId = arguments?.getString("selectedTableId")
         selectedFloor = arguments?.getString("selectedFloor")
 
+        // Shared ViewModel 초기화
+        navigationViewModel = ViewModelProvider(requireActivity()).get(NavigationViewModel::class.java)
+
         loadCartData()
         setupRecyclerView()
 
         binding.backButton.setOnClickListener {
             goToConsumerMenuList()
+            navigationViewModel.setNavigated(true)
         }
 
         binding.toOrderButton.setOnClickListener {
-            placeOrder()
+            // Firestore에서 해당 테이블의 select 컬렉션 존재 여부 확인
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail!!)
+                .collection("floors")
+                .document(selectedFloor!!)
+                .collection("tables")
+                .document(selectedTableId!!)
+                .collection("select")
+                .document(Uemail!!)
+
+            selectDocRef.get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // select 컬렉션이 존재하면 주문 진행
+                        placeOrder()
+                        navigationViewModel.setNavigated(true)
+                    } else {
+                        // select 컬렉션이 없으면 ConsumerTableFragment로 이동
+                        Toast.makeText(requireContext(), "테이블 정보가 없습니다. 테이블을 다시 선택해주세요.", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("ConsumerCartFragment", "Firestore 조회 중 오류 발생", exception)
+                    Toast.makeText(requireContext(), "테이블 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Fragment로 돌아올 때 select 생성
-        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
-            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
-                .addOnSuccessListener {
-                    Log.d("ConsumerCartFragment", "select 재생성 완료")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
-                }
-        }
-    }
+//    override fun onResume() {
+//        super.onResume()
+//        // Fragment로 돌아올 때 select 생성
+//        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+//            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+//                .addOnSuccessListener {
+//                    Log.d("ConsumerCartFragment", "select 재생성 완료")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
+//                }
+//        }
+//    }
 
     override fun onPause() {
         super.onPause()
-        // 화면을 벗어날 때 select 삭제 (단, 주문하기 버튼으로 이동한 경우 제외)
-        if (!isOrderPlaced &&
-            !Aemail.isNullOrEmpty() &&
-            !selectedTableId.isNullOrEmpty() &&
-            !selectedFloor.isNullOrEmpty()
-        ) {
-            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
-                .addOnSuccessListener {
-                    Log.d("ConsumerCartFragment", "select 삭제 완료")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("ConsumerCartFragment", "select 삭제 실패", e)
-                }
+
+        // 주문 완료 상태에서는 onPause 동작 방지
+        if (navigationViewModel.isOrderPlaced.value == true) {
+            Log.d("ConsumerOrderFragment", "Order placed - Skipping onPause actions")
+            return
         }
+
+        if (!navigationViewModel.isNavigated.value!! &&
+            !navigationViewModel.isOrderPlaced.value!!
+        ) {
+            findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
+            deleteSelectCollection()
+        }
+        // onPause 후 isNavigated 플래그 초기화
+        navigationViewModel.setNavigated(false)
     }
 
-    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
-        val selectDocRef = firestore.collection("admin")
-            .document(Aemail)
-            .collection("floors")
-            .document(floor)
-            .collection("tables")
-            .document(tableId)
-            .collection("select")
-            .document(Uemail!!)
+//    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+//        val selectDocRef = firestore.collection("admin")
+//            .document(Aemail)
+//            .collection("floors")
+//            .document(floor)
+//            .collection("tables")
+//            .document(tableId)
+//            .collection("select")
+//            .document(Uemail!!)
+//
+//        return selectDocRef.set(mapOf("select" to true))
+//    }
 
-        return selectDocRef.set(mapOf("select" to true))
-    }
+    private fun deleteSelectCollection() {
+        val Aemail = arguments?.getString("Aemail")
+        val floor = arguments?.getString("selectedFloor")
+        val tableId = arguments?.getString("selectedTableId")
+        val Uemail = arguments?.getString("Uemail")
 
-    private fun deleteSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
-        val selectDocRef = firestore.collection("admin")
-            .document(Aemail)
-            .collection("floors")
-            .document(floor)
-            .collection("tables")
-            .document(tableId)
-            .collection("select")
-            .document(Uemail!!)
+        if (!Aemail.isNullOrEmpty() && !floor.isNullOrEmpty() && !tableId.isNullOrEmpty() && !Uemail.isNullOrEmpty()) {
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail)
+                .collection("floors")
+                .document(floor)
+                .collection("tables")
+                .document(tableId)
+                .collection("select")
+                .document(Uemail)
 
-        return selectDocRef.delete()
+            selectDocRef.delete()
+        }
     }
 
 
@@ -210,6 +249,9 @@ class ConsumerCartFragment : Fragment() {
             orderType,
             formattedTime
         )
+
+        // 주문 완료 상태 업데이트
+        navigationViewModel.setOrderPlaced(true)
     }
 
     private fun saveOrderToFirestore(
