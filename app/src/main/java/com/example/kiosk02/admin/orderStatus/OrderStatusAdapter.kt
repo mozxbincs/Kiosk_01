@@ -52,7 +52,6 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         // 테이블 번호 포맷팅
         val formattedTableId = formatTableId(order.tableId)
 
-
         holder.orderDateTextView.text = formattedDate
         holder.orderTimeTextView.text = formattedTime
 
@@ -94,7 +93,7 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         }
 
         holder.cancelButton.setOnClickListener {
-            showCancelDialog(holder.itemView.context, order.orderTime, position)
+            showCancelDialog(holder.itemView.context, order, position)
         }
     }
 
@@ -134,50 +133,40 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         notifyDataSetChanged()
     }
 
-    private fun showCancelDialog(context: Context, orderTime: String, position: Int) {
+    private fun showCancelDialog(context: Context, order: Order, position: Int) {
         AlertDialog.Builder(context)
             .setTitle("주문 취소")
             .setMessage("주문을 취소하겠습니까?")
             .setPositiveButton("예") { _, _ ->
-                deleteOrderFromRealtimeDatabase(orderTime, position)
+                deleteOrderFromRealtimeDatabase(order, position)
             }
             .setNegativeButton("아니오", null)
             .show()
     }
 
-    private fun deleteOrderFromRealtimeDatabase(orderTime: String, position: Int) {
+    private fun deleteOrderFromRealtimeDatabase(order: Order, position: Int) {
         val database = FirebaseDatabase.getInstance()
         val adminOrdersRef = database.getReference("admin_orders")
 
-        adminOrdersRef.get()
-            .addOnSuccessListener { snapshot ->
-                var adminEmail: String? = null
+        // $tableId 포함 경로를 명확히 지정
+        val safeAdminEmail = order.adminEmail.replace(".", "_")
+        val tableId = order.tableId // 주문 객체에서 테이블 ID를 가져옴
+        val orderId = order.orderId
 
-                // admin_orders 하위 경로를 탐색하여 adminEmail을 찾음
-                for (childSnapshot in snapshot.children) {
-                    if (childSnapshot.hasChild(orderTime)) {
-                        adminEmail = childSnapshot.key?.replace("_", ".") // Realtime DB는 '.'를 '_'로 저장
-                        break
-                    }
-                }
-                if (adminEmail != null) {
-                    // adminEmail과 orderTime으로 삭제 경로 구성
-                    val orderRef = adminOrdersRef.child(adminEmail.replace(".", "_")).child(orderTime)
-                    orderRef.removeValue()
-                        .addOnSuccessListener {
-                            orders.removeAt(position)
-                            notifyItemRemoved(position)
-                            notifyItemRangeChanged(position, orders.size)
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e("OrderStatusAdapter", "주문 삭제 실패: ${exception.message}")
-                        }
-                } else {
-                    Log.e("OrderStatusAdapter", "adminEmail을 찾을 수 없습니다.")
-                }
+        val orderRef = adminOrdersRef.child(safeAdminEmail).child(tableId).child(orderId)
+
+        // 로그 추가
+        Log.d("OrderStatusAdapter", "Attempting to delete order at: admin_orders/$safeAdminEmail/$tableId/$orderId")
+
+        orderRef.removeValue()
+            .addOnSuccessListener {
+                Log.d("OrderStatusAdapter", "주문 삭제 성공: orderId=$orderId")
+                orders.removeAt(position)
+                notifyItemRemoved(position)
+                notifyItemRangeChanged(position, orders.size)
             }
             .addOnFailureListener { exception ->
-                Log.e("OrderStatusAdapter", "데이터 가져오기 실패: ${exception.message}")
+                Log.e("OrderStatusAdapter", "주문 삭제 실패: ${exception.message}")
             }
     }
 }

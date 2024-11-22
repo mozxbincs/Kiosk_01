@@ -24,6 +24,9 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
     private lateinit var ordersReference: DatabaseReference
     private lateinit var auth: FirebaseAuth
 
+    private lateinit var adminEmail: String
+    private lateinit var safeAdminEmail: String
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -32,20 +35,19 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
-
         val currentUser = auth.currentUser
         if (currentUser == null) {
             Toast.makeText(requireContext(), "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val adminEmail = currentUser.email
-        if (adminEmail.isNullOrEmpty()) {
+        adminEmail = currentUser.email ?: ""
+        if (adminEmail.isEmpty()) {
             Toast.makeText(requireContext(), "관리자 이메일을 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val safeAdminEmail = adminEmail.replace(".", "_") // Realtime Database에서는 '.' 사용 불가
+        safeAdminEmail = adminEmail.replace(".", "_") // Realtime Database에서 '.' 사용 불가
 
         // 주문 데이터 경로 설정
         ordersReference = database.getReference("admin_orders/$safeAdminEmail")
@@ -83,24 +85,31 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
     }
 
     private fun loadOrderStatus() {
-        // 실시간 데이터 리스너 설정
-        ordersReference.addValueEventListener(object : ValueEventListener {
+        // 테이블 ID를 순회하며 데이터를 가져옴
+        ordersReference.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                ordersList.clear()
-                for (orderSnapshot in snapshot.children) {
-                    val order = orderSnapshot.getValue(Order::class.java)
-                    order?.orderId = orderSnapshot.key ?: ""
-                    if (order != null) {
-                        ordersList.add(order)
+                ordersList.clear() // 기존 주문 리스트 초기화
+
+                for (tableSnapshot in snapshot.children) {
+                    val tableId = tableSnapshot.key ?: continue
+                    for (orderSnapshot in tableSnapshot.children) {
+                        val order = orderSnapshot.getValue(Order::class.java)
+                        order?.let {
+                            it.orderId = orderSnapshot.key ?: ""
+                            it.tableId = tableId
+                            it.adminEmail = adminEmail // 설정된 adminEmail 사용
+                            ordersList.add(it)
+                        }
                     }
                 }
+
                 // 날짜 및 시간 기준으로 정렬 (최신 주문이 상단)
                 ordersList.sortWith(compareByDescending { it.orderTime })
                 ordersAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // 오류 처리 (예: Toast, Snackbar 등)
+                // 오류 처리
                 Toast.makeText(requireContext(), "데이터 로드 실패: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })

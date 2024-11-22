@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.R
-import com.example.kiosk02.admin.orderStatus.data.OrderItem
+import com.example.kiosk02.admin.orderStatus.data.MenuItem
 
-class MenuItemsAdapter(private val menuItems: List<OrderItem>) :
+class MenuItemsAdapter(private val menuItems: List<MenuItem>) :
     RecyclerView.Adapter<MenuItemsAdapter.MenuItemViewHolder>() {
 
     inner class MenuItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
