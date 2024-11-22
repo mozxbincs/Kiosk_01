@@ -1,4 +1,4 @@
-package com.example.kiosk02.admin
+package com.example.kiosk02.admin.tables
 
 import android.annotation.SuppressLint
 import android.content.ClipData
@@ -26,7 +26,6 @@ import com.example.kiosk02.R
 import com.google.firebase.auth.FirebaseAuth
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 
 class TableManagementEditFragment : Fragment(R.layout.activity_table_management_edit) {
     private lateinit var tableList: LinearLayout

@@ -280,6 +280,9 @@ class ConsumerCartFragment : Fragment() {
             consumerOrderRef.set(updatedOrderMap)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "주문이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    arguments = arguments?.apply {
+                        putBoolean("isOrderd", true)
+                    }
                     goToConsumerMenuList()
                     clearCart()
                 }
@@ -301,7 +304,7 @@ class ConsumerCartFragment : Fragment() {
         formattedTime: String
     ) {
         val safeAdminEmail = adminEmail.replace(".", "_") //realtime datebase에서는 . 사용 불가
-        val orderRef = database.getReference("admin_orders/$safeAdminEmail/$formattedTime")
+        val orderRef = database.getReference("admin_orders/$safeAdminEmail/$tableId/$formattedTime")
 
         val orderMap = mapOf(
             "consumerEmail" to consumerEmail,

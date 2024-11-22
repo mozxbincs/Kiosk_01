@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerMenuFragmentBinding
+import com.google.android.gms.tasks.Task
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,6 +21,12 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
     private lateinit var binding: FragmentConsumerMenuFragmentBinding
     private val firestore = FirebaseFirestore.getInstance()
     private var category: String? = null
+
+    private var isOrderPlaced = false // 주문 여부를 나타내는 플래그 추가
+    private var Aemail: String? = null
+    private var Uemail: String? = null
+    private var selectedTableId: String? = null
+    private var selectedFloor: String? = null
 
     companion object {
         private const val ARG_CATEGORY = "category"
@@ -48,6 +55,69 @@ class ConsumerMenuFragment(private val bundle: Bundle?) : Fragment() {
         setupRecyclerView()
 
         loadMenuItemsForCategory(category)
+
+        Aemail = arguments?.getString("Aemail")
+        Uemail = arguments?.getString("Uemail")
+        selectedTableId = arguments?.getString("selectedTableId")
+        selectedFloor = arguments?.getString("selectedFloor")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Fragment로 돌아올 때 select 생성
+        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerCartFragment", "select 재생성 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
+                }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 화면을 벗어날 때 select 삭제 (단, 주문하기 버튼으로 이동한 경우 제외)
+        if (!isOrderPlaced &&
+            !Aemail.isNullOrEmpty() &&
+            !selectedTableId.isNullOrEmpty() &&
+            !selectedFloor.isNullOrEmpty()
+        ) {
+            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerCartFragment", "select 삭제 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerCartFragment", "select 삭제 실패", e)
+                }
+        }
+    }
+
+    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+        val selectDocRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floor)
+            .collection("tables")
+            .document(tableId)
+            .collection("select")
+            .document(Uemail!!)
+
+        return selectDocRef.set(mapOf("select" to true))
+    }
+
+    private fun deleteSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+        val selectDocRef = firestore.collection("admin")
+            .document(Aemail)
+            .collection("floors")
+            .document(floor)
+            .collection("tables")
+            .document(tableId)
+            .collection("select")
+            .document(Uemail!!)
+
+        return selectDocRef.delete()
     }
 
     private fun setupRecyclerView() {

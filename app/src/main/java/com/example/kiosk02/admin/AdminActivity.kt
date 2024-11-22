@@ -25,6 +25,13 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<Button>(R.id.tableLayoutButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_table_Edit_Fragment) // 테이블 편집창으로 이동
         }
+
+        view.findViewById<Button>(R.id.settlementCheckButton).setOnClickListener {
+            findNavController().navigate(R.id.action_adminActivity_to_accountFragment2)
+        }
+        view.findViewById<Button>(R.id. paymentCheckButton).setOnClickListener {
+            findNavController().navigate(R.id.action_to_paycheckFragment)
+        }
         view.findViewById<Button>(R.id.orderCheckButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_admin_order_StatusFragment)
         }

@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
@@ -20,7 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
     private lateinit var tableFrame: FrameLayout
     private lateinit var floorSpinner: Spinner
-    private lateinit var orderButton: Button
+    private lateinit var orderButton: LinearLayout
     private val firestore = FirebaseFirestore.getInstance()
     private var Aemail: String? = null
     private var Uemail: String? = null
@@ -97,7 +98,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
 
         view.findViewById<TextView>(R.id.back_activity_consumer).setOnClickListener {
-            findNavController().navigate(R.id.action_to_mainFragment)
+            findNavController().navigate(R.id.action_to_pickupFragment,arguments)
         }
     }
 
@@ -328,7 +329,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
 
                 // 예약 정보를 consumer 문서 경로 아래 tableId 컬렉션에 저장
                 firestore.collection(consumerTablePath)
-                    .document("reservation_info") // 고정된 문서 ID로 설정
+                    .document("reservation_info") //에약 내역
                     .set(reservationData)
                     .addOnSuccessListener {
                         Log.d(

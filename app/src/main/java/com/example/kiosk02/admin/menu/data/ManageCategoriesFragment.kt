@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.Callback.makeMovementFlags
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kiosk02.R
@@ -72,63 +70,65 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
         binding.categoriesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.categoriesRecyclerView.adapter = categoriesAdapter
 
-        // ItemTouchHelper 연결
-        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
-            override fun getMovementFlags(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder
-            ): Int {
-                val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-                val swipeFlags = 0 // 스와이프 동작 비활성화
-                return makeMovementFlags(dragFlags, swipeFlags)
-            }
-
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
-                // 아이템 이동 처리
-                val fromPosition = viewHolder.adapterPosition
-                val toPosition = target.adapterPosition
-                categoriesAdapter.notifyItemMoved(fromPosition, toPosition)
-
-                // Firestore에서 `order` 업데이트
-                updateCategoryOrder(fromPosition, toPosition)
-
-                return true
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
-        })
-
-        itemTouchHelper.attachToRecyclerView(binding.categoriesRecyclerView)
-    }
-    private fun updateCategoryOrder(fromPosition: Int, toPosition: Int) {
-        val currentList = categoriesAdapter.currentList.toMutableList()
-
-        // 리스트에서 순서 변경
-        val movedItem = currentList.removeAt(fromPosition)
-        currentList.add(toPosition, movedItem)
-
-        // Firestore 업데이트
-        val batch = firestore.batch()
-        currentList.forEachIndexed { index, category ->
-            val categoryDoc = getAdminDocument().collection("category").document(category)
-            batch.update(categoryDoc, "order", index)
-        }
-
-        batch.commit()
-            .addOnSuccessListener {
-                Snackbar.make(binding.root, "카테고리 순서가 업데이트되었습니다.", Snackbar.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Snackbar.make(binding.root, "순서 업데이트에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-            }
+//        // ItemTouchHelper 연결
+//        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
+//            override fun getMovementFlags(
+//                recyclerView: RecyclerView,
+//                viewHolder: RecyclerView.ViewHolder
+//            ): Int {
+//                val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+//                val swipeFlags = 0 // 스와이프 동작 비활성화
+//                return makeMovementFlags(dragFlags, swipeFlags)
+//            }
+//
+//            override fun onMove(
+//                recyclerView: RecyclerView,
+//                viewHolder: RecyclerView.ViewHolder,
+//                target: RecyclerView.ViewHolder
+//            ): Boolean {
+//                // 아이템 이동 처리
+//                val fromPosition = viewHolder.adapterPosition
+//                val toPosition = target.adapterPosition
+//                categoriesAdapter.notifyItemMoved(fromPosition, toPosition)
+//
+//                // Firestore에서 `order` 업데이트
+//                updateCategoryOrder(fromPosition, toPosition)
+//
+//                return true
+//            }
+//
+//            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+//        })
+//
+//        itemTouchHelper.attachToRecyclerView(binding.categoriesRecyclerView)
+//    }
+//    private fun updateCategoryOrder(fromPosition: Int, toPosition: Int) {
+//        val currentList = categoriesAdapter.currentList.toMutableList()
+//
+//        // 리스트에서 순서 변경
+//        val movedItem = currentList.removeAt(fromPosition)
+//        currentList.add(toPosition, movedItem)
+//
+//        // Firestore 업데이트
+//        val batch = firestore.batch()
+//        currentList.forEachIndexed { index, category ->
+//            val categoryDoc = getAdminDocument().collection("category").document(category)
+//            batch.update(categoryDoc, "order", index)
+//        }
+//
+//        batch.commit()
+//            .addOnSuccessListener {
+//                Snackbar.make(binding.root, "카테고리 순서가 업데이트되었습니다.", Snackbar.LENGTH_SHORT).show()
+//            }
+//            .addOnFailureListener {
+//                Snackbar.make(binding.root, "순서 업데이트에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
+//            }
     }
 
     private fun loadCategories() {
-        getAdminDocument().collection("category").orderBy("order").get()
+        getAdminDocument().collection("category")
+//            .orderBy("order")
+            .get()
             .addOnSuccessListener { documents ->
                 val categories = documents.map { it.getString("name") ?: "" }
                 categoriesAdapter.submitList(categories)
@@ -161,28 +161,16 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
         getAdminDocument().collection("category").whereEqualTo("name", categoryName).get()
             .addOnSuccessListener { documents ->
                 if (documents.isEmpty) {
-                    // Firestore에서 현재 카테고리 개수를 확인
-                    getAdminDocument().collection("category").get()
-                        .addOnSuccessListener { existingCategories ->
-                            val orderValue = existingCategories.size() // 카테고리 개수로 order 설정
+                    val cateDoc = getAdminDocument().collection("category").document(categoryName)
+                    val category = hashMapOf("name" to categoryName)
 
-                            val cateDoc = getAdminDocument().collection("category").document(categoryName)
-                            val category = hashMapOf(
-                                "name" to categoryName,
-                                "order" to orderValue // order 값 추가
-                            )
-
-                            cateDoc.set(category) // 문서에 데이터 추가
-                                .addOnSuccessListener {
-                                    Snackbar.make(binding.root, "카테고리가 추가되었습니다.", Snackbar.LENGTH_SHORT).show()
-                                    loadCategories() // 카테고리 리스트 업데이트
-                                }
-                                .addOnFailureListener {
-                                    Snackbar.make(binding.root, "카테고리 추가에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
-                                }
+                    cateDoc.set(category)  // 문서에 데이터 추가
+                        .addOnSuccessListener {
+                            Snackbar.make(binding.root, "카테고리가 추가되었습니다.", Snackbar.LENGTH_SHORT).show()
+                            loadCategories() // 카테고리 리스트 업데이트
                         }
                         .addOnFailureListener {
-                            Snackbar.make(binding.root, "카테고리 개수를 확인하는 중 오류가 발생했습니다.", Snackbar.LENGTH_SHORT).show()
+                            Snackbar.make(binding.root, "카테고리 추가에 실패했습니다.", Snackbar.LENGTH_SHORT).show()
                         }
                 } else {
                     Snackbar.make(binding.root, "이미 존재하는 카테고리입니다.", Snackbar.LENGTH_SHORT).show()

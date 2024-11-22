@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -49,8 +50,8 @@ class FindEmailAdminFragment : Fragment(R.layout.activity_find_email_admin) {
 
 
         // 이메일 찾기 뒤로가기 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.BackAdminFindEmailButton).setOnClickListener {
-            findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기 화면으로 이동
+        view.findViewById<ImageButton>(R.id.AddInformBack).setOnClickListener{
+            findNavController().navigate(R.id.action_to_adminFragment)
         }
         // 비밀번호 찾기 버튼 클릭 리스너 설정
         view.findViewById<TextView>(R.id.AdminPasswordFindTextView).setOnClickListener {

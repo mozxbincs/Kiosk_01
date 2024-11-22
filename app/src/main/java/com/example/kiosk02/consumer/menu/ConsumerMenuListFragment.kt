@@ -28,6 +28,7 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     private var selectedFloor: String? = null
 
     private var isNavigated = false // 장바구니 버튼이나 아이템 클릭 여부 플래그
+    private var isOrdered = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,6 +42,8 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
         orderType = bundle?.getString("orderType")
         selectedTableId = bundle?.getString("selectedTableId")
         selectedFloor = bundle?.getString("selectedFloor") // floor 값 받아오기
+        isOrdered = arguments?.getBoolean("isOrderd", false) ?: false
+
 
         if (Aemail.isNullOrEmpty()) {
             Log.e("ConsumerMenuListFragment", "Aemail is missing or empty")
@@ -112,29 +115,15 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        // 화면을 벗어났을 때 select 삭제(to 장바구니, 메뉴 아이템 제외)
-        if (!isNavigated &&
-            !Aemail.isNullOrEmpty() &&
-            !selectedTableId.isNullOrEmpty() &&
-            !selectedFloor.isNullOrEmpty()
-        ) {
-            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
-                .addOnSuccessListener {
-                    Log.d("ConsumerMenuListFragment", "select 삭제 완료")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("ConsumerMenuListFragment", "select 삭제 실패", e)
-                }
-        }
-    }
+
+
 
     private fun loadCategoriesToTabs(Aemail: String) {
         getAdminDocument(Aemail).collection("category")
-            .orderBy("order")
+//            .orderBy("order")
             .get()
             .addOnSuccessListener { documents ->
+                Log.e("TabLayout", "탭 레이아웃 설정 성공")
                 val categories = documents.map { it.getString("name") ?: "" }
                 setupTabLayoutWithViewPager(categories, arguments)
             }.addOnFailureListener {
@@ -155,13 +144,34 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
     // 메뉴 아이템 클릭 시 select 삭제 되지 않도록
     private fun setupRecyclerView() {
         val adapter = ConsumerMenuListAdapter { menuModel ->
-            isNavigated = true
-            val bundle = Bundle(arguments).apply {
-                putParcelable("menuModel", menuModel)
-            }
-            findNavController().navigate(R.id.action_to_ConsumerOrderFragment, bundle)
+                isNavigated = true
+                val bundle = Bundle(arguments).apply {
+                    putParcelable("menuModel", menuModel)
+                }
+                findNavController().navigate(R.id.action_to_ConsumerOrderFragment, bundle)
         }
         binding.viewPager.adapter = adapter // RecyclerView에 어댑터 설정
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 화면을 벗어났을 때 select 삭제(to 장바구니, 메뉴 아이템 제외)
+        if (!isNavigated &&
+            !isOrdered &&
+            !Aemail.isNullOrEmpty() &&
+            !selectedTableId.isNullOrEmpty() &&
+            !selectedFloor.isNullOrEmpty()
+        ) {
+//            findNavController().navigate(R.id.action_to_table_Select_Fragment,arguments)
+            deleteSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+                .addOnSuccessListener {
+                    Log.d("ConsumerMenuListFragment", "select 삭제 완료")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("ConsumerMenuListFragment", "select 삭제 실패", e)
+                }
+        }
+        isNavigated = false
     }
 
     // 경로 지정 함수
@@ -195,7 +205,7 @@ class ConsumerMenuListFragment : Fragment(R.layout.fragment_consumer_menu_list) 
         if (orderType == "pickup") {
             findNavController().navigate(R.id.action_to_OderMethod, bundle)
         } else {
-            findNavController().navigate(R.id.action_to_table_Select_Fragment, bundle)
+            findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
         }
     }
 
