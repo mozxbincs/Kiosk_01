@@ -1,68 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageButton
+        android:id="@+id/AddInformBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/defaultBackground"
+        android:src="@drawable/baseline_arrow_back_24"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="@id/AddInformTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/AddInformTitle" />
     <!-- 추가 등록 사항 -->
     <TextView
         android:id="@+id/AddInformTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="32dp"
         android:text="추가 등록 사항"
         android:textSize="24sp"
-        android:layout_marginTop="50dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 서비스 유형 선택 -->
     <Spinner
-        android:layout_marginTop="50dp"
         android:id="@+id/AddInformService"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:layout_below="@id/AddInformTitle"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/spinner_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/AddInformTitle"
+        app:layout_constraintVertical_bias="0.15" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_arrow_drop_down_24"
+        app:layout_constraintBottom_toBottomOf="@id/AddInformService"
+        app:layout_constraintEnd_toEndOf="@id/AddInformService"
+        app:layout_constraintTop_toTopOf="@id/AddInformService" />
 
     <!-- 픽업 종류 선택 -->
     <Spinner
-        android:layout_marginTop="20dp"
         android:id="@+id/AddInformPickUp"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:layout_below="@id/AddInformService"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/spinner_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/AddInformService"
+        app:layout_constraintVertical_bias="0.08" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_arrow_drop_down_24"
+        app:layout_constraintBottom_toBottomOf="@id/AddInformPickUp"
+        app:layout_constraintEnd_toEndOf="@id/AddInformService"
+        app:layout_constraintTop_toTopOf="@id/AddInformPickUp" />
 
     <!-- 층수 선택 -->
     <Spinner
-        android:layout_marginTop="20dp"
         android:id="@+id/AddInformFloor"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:layout_below="@id/AddInformPickUp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/spinner_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/AddInformPickUp"
+        app:layout_constraintVertical_bias="0.1" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_arrow_drop_down_24"
+        app:layout_constraintBottom_toBottomOf="@id/AddInformFloor"
+        app:layout_constraintEnd_toEndOf="@id/AddInformService"
+        app:layout_constraintTop_toTopOf="@id/AddInformFloor" />
 
     <!-- 회원가입 버튼 -->
     <Button
-        android:layout_marginTop="50dp"
         android:id="@+id/AddInformFinish"
-        android:enabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/button_shape"
+        android:backgroundTint="#FF9F32"
+        android:enabled="false"
         android:text="추가등록완료"
         android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/AddInformFloor"
+        app:layout_constraintVertical_bias="0.195"
+        tools:layout_editor_absoluteX="30dp" />
 
-        android:backgroundTint="@color/navy01"
-        android:layout_below="@id/AddInformFloor"/>
-    <!--    뒤로가기-->
-    <Button
-        android:id="@+id/AddInformBack"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/AddInformFinish"
-        android:layout_marginTop="7dp"
-        android:textColor="@color/black"
-        android:backgroundTint="@color/navy02"
 
-        android:text="뒤로가기" />
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

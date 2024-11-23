@@ -16,5 +16,6 @@
     <color name="lightGray">#A1A3A5</color>
 
     <color name="gray02" >#FFDDDDDD</color>
+    <color name="defaultBackground">#FEF7FF</color>
 
 </resources>

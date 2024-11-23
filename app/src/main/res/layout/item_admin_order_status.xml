@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/topUnderLine"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/orderDateTextView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/orderDateTextView"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView"
+        tools:text="2024.11.16" />
+
+    <View
+        android:id="@+id/dateVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/orderDateTextView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <TextView
+        android:id="@+id/orderTimeTextView"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/dateVerticalDivider"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView"
+        tools:text="04:30" />
+
+    <View
+        android:id="@+id/timeVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/orderTimeTextView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/menuStatusRecyclerView"
+        android:layout_width="260dp"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        app:layout_constraintStart_toEndOf="@id/timeVerticalDivider"
+        app:layout_constraintTop_toBottomOf="@id/topUnderLine"
+        tools:listitem="@layout/item_admin_menu_status" />
+
+    <View
+        android:id="@+id/numberVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/menuStatusRecyclerView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <TextView
+        android:id="@+id/tableIdTextView"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:paddingHorizontal="15dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/menuStatusRecyclerView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView"
+        tools:text="1번" />
+
+    <View
+        android:id="@+id/tableVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/tableIdTextView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <TextView
+        android:id="@+id/priceTextView"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:paddingHorizontal="15dp"
+        android:textAlignment="center"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/tableVerticalDivider"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView"
+        tools:text="50,000원" />
+
+    <View
+        android:id="@+id/paymentVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/priceTextView"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <CheckBox
+        android:id="@+id/completeCheckBox"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="조리 완료"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/paymentVerticalDivider"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <View
+        android:id="@+id/priceVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintStart_toEndOf="@id/completeCheckBox"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <Button
+        android:id="@+id/cancelButton"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_marginLeft="10dp"
+        android:backgroundTint="@color/defaultBackground"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="10dp"
+        android:text="주문 취소"
+        android:textColor="#FF0000"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@id/menuStatusRecyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/priceVerticalDivider"
+        app:layout_constraintTop_toTopOf="@id/menuStatusRecyclerView" />
+
+    <View
+        android:id="@+id/underLine"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/orderDateTextView"
+        app:layout_constraintTop_toBottomOf="@id/menuStatusRecyclerView" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

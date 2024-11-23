@@ -48,9 +48,11 @@
             android:textStyle="bold" />
 
         <Button
+            android:background="@drawable/button_shape"
             android:id="@+id/buttonPickDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="#FF9F32"
             android:text="날짜 선택" />
     </LinearLayout>
 

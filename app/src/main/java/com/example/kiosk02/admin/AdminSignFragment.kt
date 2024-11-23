@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -75,7 +76,7 @@ class AdminSignFragment : Fragment(R.layout.activity_admin_sign) {
         }
 
         // 관리자 회원가입 전 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.registerBackButton).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.registerBackButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_adminFragment) // 관리자 초기화면으로 이동
         }
 
