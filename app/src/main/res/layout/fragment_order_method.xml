@@ -87,5 +87,16 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
     </LinearLayout>
-
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="로그아웃"
+        android:textStyle="bold"
+        android:background="@drawable/button_shape"
+        android:textColor="@color/black"
+        android:backgroundTint="#FF9F32"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="30dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
