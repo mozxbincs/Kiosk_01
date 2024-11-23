@@ -2,16 +2,20 @@ package com.example.kiosk02.consumer.menu
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerOrderFragmentBinding
+import com.google.android.gms.tasks.Task
 import com.google.common.reflect.TypeToken
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.Gson
 import java.text.NumberFormat
 import java.util.Locale
@@ -22,12 +26,21 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
     private var menuModel: MenuModel? = null
     private var bundle: Bundle? = null
 
+    private var Aemail: String? = null
+    private var Uemail: String? = null
+    private var selectedTableId: String? = null
+    private var selectedFloor: String? = null
+
+    private val firestore = FirebaseFirestore.getInstance()
+
+    // Shared ViewModel
+    private lateinit var navigationViewModel: NavigationViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         bundle = arguments
         menuId = bundle?.getString("menuId")
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -37,27 +50,81 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
 
         menuModel = arguments?.getParcelable("menuModel")
 
+        Aemail = arguments?.getString("Aemail")
+        Uemail = arguments?.getString("Uemail")
+        selectedTableId = arguments?.getString("selectedTableId")
+        selectedFloor = arguments?.getString("selectedFloor")
+
         val newBundle = Bundle(bundle).apply {
             remove("menuModel") // 전달받은 Bundle값 중 menuModel 삭제
         }
 
-        loadMenuData()
+        // Shared ViewModel 초기화
+        navigationViewModel =
+            ViewModelProvider(requireActivity()).get(NavigationViewModel::class.java)
 
-        setupSpinner()
+        loadMenuData()
+        setupQuantityButtons()
 
         binding.cartImageButton.setOnClickListener {
+            navigationViewModel.setNavigated(true) // ViewModel 업데이트
             findNavController().navigate(R.id.action_to_ConsumerCartFragment, newBundle)
         }
 
         binding.toCartButton.setOnClickListener {
             setupCartButton()
+            navigationViewModel.setNavigated(true) // ViewModel 업데이트
         }
 
         binding.backButton.setOnClickListener {
+            navigationViewModel.setNavigated(true) // ViewModel 업데이트
             goToConsumerMenuList()
+        }
+
+        // ViewModel 관찰
+        navigationViewModel.isNavigated.observe(viewLifecycleOwner) { navigated ->
+            if (navigated) {
+            }
+        }
+
+        navigationViewModel.isOrderPlaced.observe(viewLifecycleOwner) { orderPlaced ->
+
         }
     }
 
+//    override fun onResume() {
+//        super.onResume()
+//        // Fragment로 돌아올 때 select 생성
+//        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+//            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+//                .addOnSuccessListener {
+//                    Log.d("ConsumerOrderFragment", "select 재생성 완료")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("ConsumerOrderFragment", "select 재생성 실패", e)
+//                }
+//        }
+//    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // 주문 완료 상태에서는 onPause 동작 방지
+        if (navigationViewModel.isOrderPlaced.value == true) {
+            Log.d("ConsumerOrderFragment", "Order placed - Skipping onPause actions")
+            return
+        }
+
+        // 화면을 벗어날 때 select 삭제 (뒤로 가기, 장바구니, 담기 버튼 제외)
+        if (!navigationViewModel.isNavigated.value!! &&
+            !navigationViewModel.isOrderPlaced.value!!
+        ) {
+            findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
+            deleteSelectCollection()
+        }
+        // onPause 후 isNavigated 플래그 초기화
+        navigationViewModel.setNavigated(false)
+    }
 
     private fun loadMenuData() {
         menuModel?.let { menu ->
@@ -65,32 +132,36 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
                 .load(menu.imageUrl)
                 .into(binding.menuImageView)
 
-            binding.menuNameTextView.setText(menu.menuName)
+            binding.menuNameTextView.text = menu.menuName
 
             val formattedPrice =
                 NumberFormat.getNumberInstance(Locale.KOREA).format(menu.price ?: 0)
-            binding.priceTextView.setText("${formattedPrice}원")
+            binding.priceTextView.text = "${formattedPrice}원"
 
-            binding.compositionTextView.setText(menu.composition)
-            binding.menuDetailTextView.setText(menu.detail)
+            binding.compositionTextView.text = menu.composition
+            binding.menuDetailTextView.text = menu.detail
         }
-
     }
 
-    private fun setupSpinner() {
-        val quantityList = (1..10).toList()
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            quantityList
-        )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.numberSpinner.adapter = adapter
+    private fun setupQuantityButtons() {
+        binding.menuNumberTextView.text = "1" // 초기 수량 설정
+
+        binding.removeButton.setOnClickListener {
+            val currentQuantity = binding.menuNumberTextView.text.toString().toInt()
+            if (currentQuantity > 1) {
+                binding.menuNumberTextView.text = (currentQuantity - 1).toString()
+            }
+        }
+
+        binding.addButton.setOnClickListener {
+            val currentQuantity = binding.menuNumberTextView.text.toString().toInt()
+            binding.menuNumberTextView.text = (currentQuantity + 1).toString()
+        }
     }
 
     private fun setupCartButton() {
         binding.toCartButton.setOnClickListener {
-            val selectedQuantity = binding.numberSpinner.selectedItem as Int
+            val selectedQuantity = binding.menuNumberTextView.text.toString().toInt()
             addToCart(menuId, selectedQuantity)
         }
     }
@@ -135,4 +206,36 @@ class ConsumerOrderFragment : Fragment(R.layout.fragment_consumer_order_fragment
         findNavController().navigate(R.id.action_to_ConsumerMenuList, newBundle)
     }
 
+//    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+//        val selectDocRef = firestore.collection("admin")
+//            .document(Aemail)
+//            .collection("floors")
+//            .document(floor)
+//            .collection("tables")
+//            .document(tableId)
+//            .collection("select")
+//            .document(Uemail!!)
+//
+//        return selectDocRef.set(mapOf("select" to true))
+//    }
+
+    private fun deleteSelectCollection() {
+        val Aemail = bundle?.getString("Aemail")
+        val floor = bundle?.getString("selectedFloor")
+        val tableId = bundle?.getString("selectedTableId")
+        val Uemail = arguments?.getString("Uemail")
+
+        if (!Aemail.isNullOrEmpty() && !floor.isNullOrEmpty() && !tableId.isNullOrEmpty() && !Uemail.isNullOrEmpty()) {
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail)
+                .collection("floors")
+                .document(floor)
+                .collection("tables")
+                .document(tableId)
+                .collection("select")
+                .document(Uemail)
+
+            selectDocRef.delete()
+        }
+    }
 }

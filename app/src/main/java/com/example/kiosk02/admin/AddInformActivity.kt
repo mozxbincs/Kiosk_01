@@ -85,7 +85,7 @@ class AddInformActivity : Fragment(R.layout.activity_add_inform) {
 
         }
 
-        view.findViewById<Button>(R.id.AddInformBack).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.AddInformBack).setOnClickListener {
             findNavController().navigate(action) // 추가등록 전으로 이동
         }
     }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/menuNameTextView"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textAlignment="center"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="민트치킨" />
+
+    <View
+        android:id="@+id/nameVerticalDivider"
+        android:layout_width="2dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="5dp"
+        android:background="@color/gray01"
+        app:layout_constraintBottom_toBottomOf="@id/menuNameTextView"
+        app:layout_constraintStart_toEndOf="@id/menuNameTextView"
+        app:layout_constraintTop_toTopOf="@id/menuNameTextView" />
+
+    <TextView
+        android:id="@+id/menuNumberTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="10dp"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@id/nameVerticalDivider"
+        app:layout_constraintTop_toTopOf="@id/menuNameTextView"
+        tools:text="5개" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -107,7 +107,7 @@
         android:layout_marginTop="20dp"
         android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.9"
+        app:layout_constraintHorizontal_bias="0.85"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/menuUnderLineView"
         tools:text="10,000원" />
@@ -124,15 +124,36 @@
         app:layout_constraintStart_toStartOf="@id/menuNameTextView"
         app:layout_constraintTop_toBottomOf="@id/priceTextView" />
 
-    <Spinner
-        android:id="@+id/numberSpinner"
+    <ImageButton
+        android:id="@+id/removeButton"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="20dp"
+        android:backgroundTint="@color/defaultBackground"
+        android:src="@drawable/baseline_remove_24"
+        app:layout_constraintEnd_toStartOf="@id/menuNumberTextView"
+        app:layout_constraintTop_toTopOf="@id/menuNumberTextView" />
+
+    <TextView
+        android:id="@+id/menuNumberTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="@id/numberTextview"
+        app:layout_constraintEnd_toEndOf="@id/priceTextView"
         app:layout_constraintStart_toStartOf="@id/priceTextView"
         app:layout_constraintTop_toTopOf="@id/numberTextview"
-        app:layout_constraintVertical_bias="0.9" />
+        tools:text="1개" />
+
+    <ImageButton
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:backgroundTint="@color/defaultBackground"
+        android:src="@drawable/baseline_add_24"
+        app:layout_constraintStart_toEndOf="@id/menuNumberTextView"
+        app:layout_constraintTop_toTopOf="@id/menuNumberTextView" />
 
     <Button
         android:id="@+id/toCartButton"
@@ -141,7 +162,6 @@
         android:background="@color/black"
         android:text="카트에 담기"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -16,19 +15,18 @@
             android:id="@+id/selected_floor_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="[층 선택]"
-            android:layout_gravity="center_vertical"/>
+            android:layout_gravity="center_vertical"
+            android:text="[층 선택]" />
 
 
         <Spinner
             android:id="@+id/floor_spinner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
 
     </LinearLayout>
-
 
 
     <LinearLayout
@@ -36,7 +34,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp">
-
 
 
         <TextView
@@ -64,7 +61,6 @@
             android:orientation="horizontal">
 
 
-
         </LinearLayout>
     </LinearLayout>
 
@@ -73,7 +69,7 @@
         android:id="@+id/table_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"/>
+        android:orientation="horizontal" />
 
     <!-- 테이블 그리드 레이아웃 -->
     <FrameLayout
@@ -81,34 +77,34 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp"
-        android:background="#f0f0f0">
-    </FrameLayout>
+        android:background="#f0f0f0"
+        android:padding="8dp"></FrameLayout>
 
     <!-- 업데이트 버튼 -->
     <LinearLayout
 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="start"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="start">
+        android:padding="16dp">
+
         <TextView
-            android:textColor="@color/black"
-            android:backgroundTint="@color/navy01"
             android:id="@+id/back_activity_consumer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/baseline_arrow_back_24"/>
+            android:backgroundTint="@color/navy01"
+            android:drawableLeft="@drawable/baseline_arrow_back_24"
+            android:textColor="@color/black" />
 
 
         <LinearLayout
-            android:orientation="vertical"
+            android:id="@+id/update_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="200dp"
             android:gravity="center"
-           android:id="@+id/update_button"
+            android:orientation="vertical"
             android:padding="16dp">
 
             <ImageView
@@ -117,14 +113,39 @@
                 android:src="@drawable/baseline_shopping_cart_checkout_24" /> <!-- 이미지 추가 -->
 
             <TextView
-                android:text="주문하기"
-                android:textColor="@color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:paddingTop="8dp" />
+                android:paddingTop="8dp"
+                android:text="주문하기"
+                android:textColor="@color/black" />
 
         </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/goBackButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_u_turn_right_24" /> <!-- 이미지 추가 -->
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:text="돌아가기"
+                android:textColor="@color/black" />
+
+        </LinearLayout>
+
 
     </LinearLayout>
 </LinearLayout>
