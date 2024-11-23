@@ -357,7 +357,9 @@ class ConsumerCartFragment : Fragment() {
         formattedTime: String
     ) {
         val safeAdminEmail = adminEmail.replace(".", "_") //realtime datebase에서는 . 사용 불가
-        val orderRef = database.getReference("admin_orders/$safeAdminEmail/$tableId/$formattedTime")
+        val tablePath = if(orderType == "pickup") "table_0" else tableId
+
+        val orderRef = database.getReference("admin_orders/$safeAdminEmail/$tablePath/$formattedTime")
 
         val orderMap = mapOf(
             "consumerEmail" to consumerEmail,
