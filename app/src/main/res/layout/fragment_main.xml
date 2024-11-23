@@ -93,7 +93,7 @@
         android:layout_height="wrap_content"
         android:text="로그인"
         android:textColor="@color/white"
-        android:backgroundTint="#0B4874"
+        android:backgroundTint="#FF5722"
         app:layout_constraintTop_toBottomOf="@id/forgot_email_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

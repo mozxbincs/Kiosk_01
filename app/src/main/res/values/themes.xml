@@ -4,6 +4,7 @@
         <!-- Customize your light theme here. -->
         <!-- 기본 배경색 -->
         <item name="android:windowBackground">@color/white</item>
+        <item name="android:statusBarColor">@color/beige02</item>
         <!-- 상태바 색상 및 아이콘 -->
         <item name="android:windowLightStatusBar">true</item>
         <!-- 기본 텍스트 색상 -->
