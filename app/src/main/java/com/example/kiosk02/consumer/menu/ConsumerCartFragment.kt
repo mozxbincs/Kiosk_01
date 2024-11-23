@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -67,7 +68,7 @@ class ConsumerCartFragment : Fragment() {
 
         binding.toOrderButton.setOnClickListener {
             val orderType = arguments?.getString("orderType") ?: "unknown"
-
+            showProgress()
             if (orderType == "for_here") {
                 // Firestore에서 해당 테이블의 select 컬렉션 존재 여부 확인
                 val selectDocRef = firestore.collection("admin")
@@ -372,6 +373,7 @@ class ConsumerCartFragment : Fragment() {
 
         orderRef.setValue(orderMap)
             .addOnSuccessListener {
+                hideProgress()
                 Toast.makeText(requireContext(), "주문이 완료 되었습니다.", Toast.LENGTH_SHORT).show()
             }
     }
@@ -381,6 +383,25 @@ class ConsumerCartFragment : Fragment() {
         saveCartData()
         cartAdapter.notifyDataSetChanged()
         updateTotalPrice()
+    }
+
+    private fun showProgress() {
+        binding.progressBarLayout.apply {
+            isVisible = true
+            isClickable = true
+            isFocusable = true
+            setOnTouchListener { _, _ -> true }
+        }
+        binding.toOrderButton.isEnabled = false
+    }
+
+    private fun hideProgress() {
+        binding.progressBarLayout.apply {
+            isVisible = false
+            isClickable = false
+            setOnTouchListener(null) // 터치 이벤트 차단 해제
+        }
+        binding.toOrderButton.isEnabled = true
     }
 
     private fun goToConsumerMenuList() {
