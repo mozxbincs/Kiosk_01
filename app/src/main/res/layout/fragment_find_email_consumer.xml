@@ -80,7 +80,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
+
         android:backgroundTint="#35609F"
+
         android:text="이메일 찾기"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
