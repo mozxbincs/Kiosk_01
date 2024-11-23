@@ -13,7 +13,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="#F9CF9F" />
+        android:background="#FFE4C5" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -159,9 +159,11 @@
         android:id="@+id/toCartButton"
         android:layout_width="match_parent"
         android:layout_height="80dp"
-        android:background="@color/black"
+        android:background="#FF9F32"
         android:text="카트에 담기"
+        android:textColor="@color/white"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -100,7 +100,7 @@
             android:layout_weight="1"
             android:backgroundTint="#FF9F32"
             android:text="회원가입"
-            android:textColor="@color/black" />
+            android:textColor="@color/white" />
     </LinearLayout>
 
 </LinearLayout>

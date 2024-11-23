@@ -23,11 +23,17 @@
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="#FF9F32"
+            android:textColor="@color/white"
+            android:background="@drawable/button_shape"
             android:text="Cancel" />
 
         <Button
             android:id="@+id/deleteButton"
             android:layout_width="wrap_content"
+            android:textColor="@color/white"
+            android:backgroundTint="#FF9F32"
+            android:background="@drawable/button_shape"
             android:layout_height="wrap_content"
             android:text="Delete"
             android:layout_marginStart="8dp" />
