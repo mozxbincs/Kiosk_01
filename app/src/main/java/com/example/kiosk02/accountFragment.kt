@@ -32,9 +32,10 @@ class accountFragment: Fragment(R.layout.fragment_account) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentAccountBinding.bind(view)
 
-        accountAdapter = accountAdapter(orderList) { tableId ->
-            showOrderDetails(tableId)
+        accountAdapter = accountAdapter(orderList) { order ->
+            showOrderDetails(order.tableId, order.consumerEmail)
         }
+
         binding.recyclerViewOrders.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = accountAdapter
@@ -65,10 +66,10 @@ class accountFragment: Fragment(R.layout.fragment_account) {
         ).show()
     }
 
-    private fun fetchAccountData (selectedDate: String) {
+    private fun fetchAccountData(selectedDate: String) {
         val firestore = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
-        val ordersMap = mutableMapOf<String, MutableList<Order>>() // tableId를 키로 하는 Map
+        val ordersGroupedByEmailAndTable = mutableMapOf<Pair<String, String>, MutableList<Order>>() // consumerEmail과 tableId로 그룹화
         val adminEmail = auth.currentUser?.email ?: ""
 
         if (adminEmail.isEmpty()) {
@@ -102,7 +103,12 @@ class accountFragment: Fragment(R.layout.fragment_account) {
                                 val orderJson = gson.toJson(value)
                                 val order = gson.fromJson(orderJson, Order::class.java)
                                 if (order != null) {
-                                    ordersMap.getOrPut(order.tableId) { mutableListOf() }.add(order)
+                                    // consumerEmail과 tableId를 키로 그룹화
+                                    val groupKey = Pair(order.consumerEmail, order.tableId)
+                                    ordersGroupedByEmailAndTable
+                                        .getOrPut(groupKey) { mutableListOf() }
+                                        .add(order)
+
                                     totalAmount += order.totalAmount
                                     Log.d("AccountFragment", "Order fetched: $order")
                                 } else {
@@ -116,19 +122,22 @@ class accountFragment: Fragment(R.layout.fragment_account) {
                 }
 
                 orderList.clear()
-                ordersMap.forEach { (tableId, orders) ->
-                    val totalAmount = orders.sumOf { it.totalAmount }
+                ordersGroupedByEmailAndTable.forEach { (groupKey, orders) ->
+                    val (consumerEmail, tableId) = groupKey
+                    val groupTotalAmount = orders.sumOf { it.totalAmount }
                     val combinedOrder = orders.first().copy(
-                        totalAmount = totalAmount,
-                        items = orders.flatMap { it.items } // 아이템 리스트 병합
+                        totalAmount = groupTotalAmount,
+                        items = orders.flatMap { it.items } // 같은 그룹의 아이템 병합
                     )
                     orderList.add(combinedOrder)
                 }
 
+                
                 binding.textViewTotalAmount.text = "${String.format("%,d", totalAmount)} 원"
 
+
                 accountAdapter.notifyDataSetChanged()
-                Log.d("AccountFragment", "Orders successfully loaded and grouped by tableId.")
+                Log.d("AccountFragment", "Orders successfully loaded and grouped by consumerEmail and tableId.")
             }
             .addOnFailureListener { e ->
                 Log.e("FirestoreError", "Failed to fetch orders: ", e)
@@ -136,12 +145,11 @@ class accountFragment: Fragment(R.layout.fragment_account) {
             }
     }
 
-
-    private fun showOrderDetails(tableId: String) {
-        val filteredOrders = orderList.filter { it.tableId == tableId }
+    private fun showOrderDetails(tableId: String, consumerEmail: String) {
+        val filteredOrders = orderList.filter { it.tableId == tableId && it.consumerEmail == consumerEmail }
 
         if (filteredOrders.isEmpty()) {
-            Toast.makeText(requireContext(), "해당 테이블에 대한 주문이 없습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "해당 테이블과 이메일에 대한 주문이 없습니다.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -161,7 +169,6 @@ class accountFragment: Fragment(R.layout.fragment_account) {
             }
         }
 
-        // 통합된 메뉴 아이템 리스트
         val consolidatedMenuItems = menuMap.values.toList()
 
         // 상세 정보를 다이얼로그로 표시
@@ -174,7 +181,7 @@ class accountFragment: Fragment(R.layout.fragment_account) {
             adapter = MenuAdapter(consolidatedMenuItems)
         }
 
-        textViewOrderDetailsTitle.text = "테이블 $tableId 주문 상세"
+        textViewOrderDetailsTitle.text = "테이블 $tableId 주문 상세 (이메일: $consumerEmail)"
 
         AlertDialog.Builder(requireContext())
             .setView(dialogView)

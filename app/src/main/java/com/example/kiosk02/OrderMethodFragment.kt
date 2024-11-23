@@ -12,8 +12,11 @@ import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.databinding.ActivityAdminSignBinding
 import com.example.kiosk02.databinding.FragmentOrderMethodBinding
 import com.example.kiosk02.map.SearchStoreActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+
 
 class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
     private lateinit var binding: FragmentOrderMethodBinding
@@ -62,5 +65,6 @@ class OrderMethodFragment:Fragment(R.layout.fragment_order_method) {
             Firebase.auth.signOut()
             findNavController().navigate(R.id.action_to_mainFragment)
         }
+
     }
 }

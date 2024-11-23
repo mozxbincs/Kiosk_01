@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class accountAdapter(
     private val orders: List<Order>,
-    private val onItemClick: (String) -> Unit
+    private val onItemClick: (Order) -> Unit
 ) : RecyclerView.Adapter<accountAdapter.accountViewHolder>() {
 
     class accountViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -30,7 +30,7 @@ class accountAdapter(
         holder.textTime.text = formatOrderTime(order.orderTime)
         holder.textTotal.text = "${formatPrice(order.totalAmount)} 원"
 
-        holder.itemView.setOnClickListener { onItemClick(order.tableId) }
+        holder.itemView.setOnClickListener { onItemClick(order) }
     }
 
     private fun formatOrderTime(orderTime: String): String {
