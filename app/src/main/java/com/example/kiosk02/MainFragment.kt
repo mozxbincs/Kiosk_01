@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -46,7 +47,7 @@ class MainFragment : Fragment() {
         }*/
 
         val view = inflater.inflate(R.layout.fragment_main, container, false)
-        val adminButton = view.findViewById<Button>(R.id.admin_button)
+        val adminButton = view.findViewById<ImageButton>(R.id.admin_button)
 
         adminButton.setOnClickListener {
             findNavController().navigate(R.id.action_to_adminFragment)

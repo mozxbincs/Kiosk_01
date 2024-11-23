@@ -10,6 +10,7 @@ import android.util.Patterns
 
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -133,7 +134,7 @@ class AdminFragment : Fragment(R.layout.fragment_admin) {
 
 
         // GoBack 버튼 클릭 리스너 설정
-        view.findViewById<Button>(R.id.guest_use_button).setOnClickListener {
+        view.findViewById<ImageButton>(R.id.guest_use_button).setOnClickListener {
             findNavController().navigate(R.id.action_to_mainFragment) // 초기화면으로 이동
         }
 ///
