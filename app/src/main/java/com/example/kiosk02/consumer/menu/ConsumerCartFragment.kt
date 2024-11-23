@@ -220,6 +220,7 @@ class ConsumerCartFragment : Fragment() {
 
     private fun placeOrder() {
         if (cartItems.isEmpty()) {
+            hideProgress()
             Toast.makeText(requireContext(), "장바구니가 비어 있습니다.", Toast.LENGTH_SHORT).show()
             return
         }
