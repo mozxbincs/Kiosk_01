@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:backgroundTint="@color/navy01"
+        android:backgroundTint="#F9CF9F"
         android:contentDescription="내 위치로 이동합니다."
         android:src="@drawable/baseline_my_location_24"
         app:layout_anchor="@id/bottomSheetLayout"

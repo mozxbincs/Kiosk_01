@@ -50,8 +50,8 @@
         android:layout_height="wrap_content"
         android:text="추가등록완료"
         android:textColor="@color/black"
+        android:backgroundTint="#F9CF9F"
 
-        android:backgroundTint="@color/navy01"
         android:layout_below="@id/AddInformFloor"/>
     <!--    뒤로가기-->
     <Button

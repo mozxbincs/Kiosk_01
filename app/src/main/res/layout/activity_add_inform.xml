@@ -67,7 +67,7 @@
         android:enabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/navy01"
+        android:backgroundTint="#F9CF9F"
         android:layout_below="@id/addressEditText"/>
 
 
@@ -78,7 +78,7 @@
         android:layout_below="@id/AddInformFinish"
         android:layout_marginTop="7dp"
         android:textColor="@color/black"
-        android:backgroundTint="@color/navy02"
+
 
         android:text="뒤로가기" />
 </RelativeLayout>
