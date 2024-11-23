@@ -1,47 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:layout_height="match_parent">
+    android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="회원가입"
-        android:layout_marginTop="50dp"
-        android:textSize="24sp"
-        android:layout_gravity="center"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/registerBackButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:backgroundTint="@color/defaultBackground"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="100dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="32dp"
+            android:text="회원가입"
+            android:textSize="24sp" />
+
+    </LinearLayout>
 
     <EditText
         android:id="@+id/nameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="이름"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:hint="이름" />
 
     <EditText
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="이메일"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:hint="이메일" />
 
     <EditText
         android:id="@+id/phonNumberEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="전화번호"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:hint="전화번호" />
 
     <EditText
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
         android:hint="비밀번호"
-        android:inputType="textPassword"
-        android:layout_marginBottom="16dp"/>
+        android:inputType="textPassword" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,11 +68,12 @@
         <EditText
             android:id="@+id/confirmPasswordEditText"
             android:layout_width="wrap_content"
-            android:layout_weight="8"
             android:layout_height="wrap_content"
-            android:inputType="number"
+            android:layout_marginBottom="16dp"
+            android:layout_weight="8"
             android:hint="비밀번호 확인"
-            android:layout_marginBottom="16dp"/>
+            android:inputType="number" />
+
         <Button
             android:id="@+id/businessNumberButton"
             android:layout_width="wrap_content"
@@ -67,27 +86,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/registerButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
             android:layout_weight="1"
+            android:backgroundTint="@color/navy01"
             android:text="회원가입"
-            android:textColor="@color/black"
-            android:backgroundTint="#F9CF9F"
-            android:layout_marginEnd="8dp"/>
-
-        <Button
-            android:id="@+id/registerBackButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="뒤로가기"
-            android:textColor="@color/black"
-            android:backgroundTint="@color/navy02"/>
+            android:textColor="@color/black" />
     </LinearLayout>
 
 </LinearLayout>

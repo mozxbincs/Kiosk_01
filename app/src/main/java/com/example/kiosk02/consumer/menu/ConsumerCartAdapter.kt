@@ -19,48 +19,46 @@ class ConsumerCartAdapter(
 
     inner class CartViewHolder(private val binding: ItemCartMenuBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(item: MenuModel) {
             binding.menuNameTextView.text = item.menuName
             binding.priceTextView.text = "${item.price}원"
-            val totalPrice = (item.price ?: 0) * (item.quantity ?: 1)
-
-            binding.totalPriceTextView.text = "${totalPrice}원"
+            updateTotalPrice(item)
 
             Glide.with(binding.menuImageView.context)
                 .load(item.imageUrl)
                 .into(binding.menuImageView)
 
-            val quantityList = (1..10).toList()
-            val adapter = ArrayAdapter(
-                binding.numberSpinner.context,
-                R.layout.simple_spinner_item,
-                quantityList
-            )
-            adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-            binding.numberSpinner.adapter = adapter
-            binding.numberSpinner.setSelection(item.quantity - 1)
+            // 수량 표시
+            binding.menuNumberTextView.text = "${item.quantity}개"
 
-            binding.numberSpinner.onItemSelectedListener =
-                object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        parent: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        // item.quantity 업데이트
-                        item.quantity = quantityList[position]
-                        val totalPrice = (item.price ?: 0) * (item.quantity ?: 1)
-                        binding.totalPriceTextView.text = "${totalPrice}원"
-                        onQuantityChanged()
-                    }
-
-                    override fun onNothingSelected(parent: AdapterView<*>?) {}
+            // - 버튼 클릭 시
+            binding.removeButton.setOnClickListener {
+                if (item.quantity > 1) {
+                    item.quantity--
+                    binding.menuNumberTextView.text = "${item.quantity}개"
+                    updateTotalPrice(item)
+                    onQuantityChanged()
                 }
+            }
 
+            // + 버튼 클릭 시
+            binding.addButton.setOnClickListener {
+                item.quantity++
+                binding.menuNumberTextView.text = "${item.quantity}개"
+                updateTotalPrice(item)
+                onQuantityChanged()
+            }
+
+            // 삭제 버튼 클릭 시
             binding.deleteButton.setOnClickListener {
                 onItemDeleted(item)
             }
+        }
+
+        private fun updateTotalPrice(item: MenuModel) {
+            val totalPrice = (item.price ?: 0) * (item.quantity ?: 1)
+            binding.totalPriceTextView.text = "${totalPrice}원"
         }
     }
 

@@ -2,16 +2,19 @@ package com.example.kiosk02.consumer.menu
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kiosk02.R
 import com.example.kiosk02.admin.menu.data.MenuModel
 import com.example.kiosk02.databinding.FragmentConsumerCartBinding
+import com.google.android.gms.tasks.Task
 import com.google.common.reflect.TypeToken
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,6 +31,13 @@ class ConsumerCartFragment : Fragment() {
     private val cartItems = mutableListOf<MenuModel>()
     private val gson = Gson()
 
+    private var Aemail: String? = null
+    private var Uemail: String? = null
+    private var selectedTableId: String? = null
+    private var selectedFloor: String? = null
+
+    private lateinit var navigationViewModel: NavigationViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -39,15 +49,126 @@ class ConsumerCartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Aemail = arguments?.getString("Aemail")
+        Uemail = arguments?.getString("Uemail")
+        selectedTableId = arguments?.getString("selectedTableId")
+        selectedFloor = arguments?.getString("selectedFloor")
+
+        // Shared ViewModel 초기화
+        navigationViewModel = ViewModelProvider(requireActivity()).get(NavigationViewModel::class.java)
+
         loadCartData()
         setupRecyclerView()
 
         binding.backButton.setOnClickListener {
             goToConsumerMenuList()
+            navigationViewModel.setNavigated(true)
         }
 
         binding.toOrderButton.setOnClickListener {
-            placeOrder()
+            val orderType = arguments?.getString("orderType") ?: "unknown"
+
+            if (orderType == "for_here") {
+                // Firestore에서 해당 테이블의 select 컬렉션 존재 여부 확인
+                val selectDocRef = firestore.collection("admin")
+                    .document(Aemail!!)
+                    .collection("floors")
+                    .document(selectedFloor!!)
+                    .collection("tables")
+                    .document(selectedTableId!!)
+                    .collection("select")
+                    .document(Uemail!!)
+
+                selectDocRef.get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            // select 컬렉션이 존재하면 주문 진행
+                            placeOrder()
+                            navigationViewModel.setNavigated(true)
+                        } else {
+                            // select 컬렉션이 없으면 ConsumerTableFragment로 이동
+                            val updatedArguments = arguments?.let {
+                                val newBundle = Bundle(it)
+                                newBundle.remove("selectedTableId") // selectedTableId 제거
+                                newBundle
+                            }
+
+                            findNavController().navigate(R.id.action_to_table_Select_Fragment, updatedArguments)
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("ConsumerCartFragment", "Firestore 조회 중 오류 발생", exception)
+                    }
+            }else{
+                placeOrder()
+                navigationViewModel.setNavigated(true)
+            }
+        }
+    }
+
+//    override fun onResume() {
+//        super.onResume()
+//        // Fragment로 돌아올 때 select 생성
+//        if (!Aemail.isNullOrEmpty() && !selectedTableId.isNullOrEmpty() && !selectedFloor.isNullOrEmpty()) {
+//            createSelectCollection(Aemail!!, selectedFloor!!, selectedTableId!!)
+//                .addOnSuccessListener {
+//                    Log.d("ConsumerCartFragment", "select 재생성 완료")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("ConsumerCartFragment", "select 재생성 실패", e)
+//                }
+//        }
+//    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // 주문 완료 상태에서는 onPause 동작 방지
+        if (navigationViewModel.isOrderPlaced.value == true) {
+            Log.d("ConsumerOrderFragment", "Order placed - Skipping onPause actions")
+            return
+        }
+
+        if (!navigationViewModel.isNavigated.value!! &&
+            !navigationViewModel.isOrderPlaced.value!!
+        ) {
+            findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
+            deleteSelectCollection()
+        }
+        // onPause 후 isNavigated 플래그 초기화
+        navigationViewModel.setNavigated(false)
+    }
+
+//    private fun createSelectCollection(Aemail: String, floor: String, tableId: String): Task<Void> {
+//        val selectDocRef = firestore.collection("admin")
+//            .document(Aemail)
+//            .collection("floors")
+//            .document(floor)
+//            .collection("tables")
+//            .document(tableId)
+//            .collection("select")
+//            .document(Uemail!!)
+//
+//        return selectDocRef.set(mapOf("select" to true))
+//    }
+
+    private fun deleteSelectCollection() {
+        val Aemail = arguments?.getString("Aemail")
+        val floor = arguments?.getString("selectedFloor")
+        val tableId = arguments?.getString("selectedTableId")
+        val Uemail = arguments?.getString("Uemail")
+
+        if (!Aemail.isNullOrEmpty() && !floor.isNullOrEmpty() && !tableId.isNullOrEmpty() && !Uemail.isNullOrEmpty()) {
+            val selectDocRef = firestore.collection("admin")
+                .document(Aemail)
+                .collection("floors")
+                .document(floor)
+                .collection("tables")
+                .document(tableId)
+                .collection("select")
+                .document(Uemail)
+
+            selectDocRef.delete()
         }
     }
 
@@ -70,6 +191,7 @@ class ConsumerCartFragment : Fragment() {
             adapter = cartAdapter
         }
     }
+
 
     private fun onQuantityChanged() {
         updateTotalPrice()
@@ -96,6 +218,10 @@ class ConsumerCartFragment : Fragment() {
     }
 
     private fun placeOrder() {
+        if (cartItems.isEmpty()) {
+            Toast.makeText(requireContext(), "장바구니가 비어 있습니다.", Toast.LENGTH_SHORT).show()
+            return
+        }
         val adminEmail = arguments?.getString("Aemail") ?: ""
         val consumerEmail = arguments?.getString("Uemail") ?: ""
         val tableId = arguments?.getString("selectedTableId") ?: ""
@@ -134,6 +260,9 @@ class ConsumerCartFragment : Fragment() {
             orderType,
             formattedTime
         )
+
+        // 주문 완료 상태 업데이트
+        navigationViewModel.setOrderPlaced(true)
     }
 
     private fun saveOrderToFirestore(
@@ -204,6 +333,9 @@ class ConsumerCartFragment : Fragment() {
             consumerOrderRef.set(updatedOrderMap)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "주문이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    arguments = arguments?.apply {
+                        putBoolean("isOrderd", true)
+                    }
                     goToConsumerMenuList()
                     clearCart()
                 }
@@ -238,10 +370,7 @@ class ConsumerCartFragment : Fragment() {
 
         orderRef.setValue(orderMap)
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "관리자 주문이 등록되었습니다.", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "관리자 주문 등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "주문이 완료 되었습니다.", Toast.LENGTH_SHORT).show()
             }
     }
 
