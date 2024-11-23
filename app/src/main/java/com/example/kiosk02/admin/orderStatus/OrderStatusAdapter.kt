@@ -18,10 +18,13 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import com.google.firebase.database.FirebaseDatabase
 
-class OrderStatusAdapter(private val orders: MutableList<Order>) :
-    RecyclerView.Adapter<OrderStatusAdapter.OrderViewHolder>() {
+class OrderStatusAdapter(
+    private val orders: MutableList<Order>,
+    private val context: Context
+) : RecyclerView.Adapter<OrderStatusAdapter.OrderViewHolder>() {
 
-    private val completedOrders = mutableSetOf<String>()
+    private val completedOrders = mutableSetOf<String>() // 체크된 주문 ID 저장
+    private val sharedPreferences = context.getSharedPreferences("order_preferences", Context.MODE_PRIVATE)
 
     inner class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val orderDateTextView: TextView = itemView.findViewById(R.id.orderDateTextView)
@@ -32,6 +35,10 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
         val menuStatusRecyclerView: RecyclerView =
             itemView.findViewById(R.id.menuStatusRecyclerView)
         val checkBox: CheckBox = itemView.findViewById(R.id.completeCheckBox)
+    }
+
+    init {
+        loadCompletedOrders()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -80,7 +87,8 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
             } else {
                 completedOrders.remove(order.orderId)
             }
-            reorderList()
+            saveCompletedOrders() // 상태 저장
+            reorderList() // 정렬 후 UI 갱신
         }
 
         // 체크된 항목 배경색 변경
@@ -98,6 +106,19 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
     }
 
     override fun getItemCount(): Int = orders.size
+
+    private fun loadCompletedOrders() {
+        val savedOrders = sharedPreferences.getStringSet("completed_orders", emptySet())
+        completedOrders.clear()
+        completedOrders.addAll(savedOrders ?: emptySet())
+        reorderList() // 로드 후 정렬
+    }
+
+    private fun saveCompletedOrders() {
+        sharedPreferences.edit()
+            .putStringSet("completed_orders", completedOrders)
+            .apply()
+    }
 
     // 주문 시간 포맷팅 함수
     private fun formatOrderTime(orderTime: String): Pair<String, String> {
@@ -125,12 +146,12 @@ class OrderStatusAdapter(private val orders: MutableList<Order>) :
     }
 
     // 리스트를 재정렬하여 체크된 항목을 아래로 이동
-    private fun reorderList() {
+    fun reorderList() {
         orders.sortWith(
-            compareBy<Order> { completedOrders.contains(it.orderId) }
-                .thenByDescending { it.orderTime }
+            compareBy<Order> { completedOrders.contains(it.orderId) } // 체크된 항목을 뒤로 정렬 (false < true)
+                .thenByDescending { it.orderTime } // 체크되지 않은 항목은 시간 순으로 내림차순 정렬
         )
-        notifyDataSetChanged()
+        notifyDataSetChanged() // UI 갱신
     }
 
     private fun showCancelDialog(context: Context, order: Order, position: Int) {

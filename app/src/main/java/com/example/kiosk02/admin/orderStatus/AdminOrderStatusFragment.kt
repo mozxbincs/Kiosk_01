@@ -53,7 +53,7 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
         ordersReference = database.getReference("admin_orders/$safeAdminEmail")
 
         // RecyclerView 설정
-        ordersAdapter = OrderStatusAdapter(ordersList)
+        ordersAdapter = OrderStatusAdapter(ordersList, requireContext())
         binding.orderStatusRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.orderStatusRecyclerView.adapter = ordersAdapter
         binding.orderStatusRecyclerView.setHasFixedSize(true)
@@ -103,9 +103,8 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
                     }
                 }
 
-                // 날짜 및 시간 기준으로 정렬 (최신 주문이 상단)
-                ordersList.sortWith(compareByDescending { it.orderTime })
-                ordersAdapter.notifyDataSetChanged()
+                // 정렬 및 UI 갱신
+                ordersAdapter.reorderList()
             }
 
             override fun onCancelled(error: DatabaseError) {
