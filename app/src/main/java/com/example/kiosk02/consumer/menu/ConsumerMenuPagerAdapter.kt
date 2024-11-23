@@ -1,0 +1,26 @@
+package com.example.kiosk02.consumer.menu
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
+
+class ConsumerMenuPagerAdapter(fragment: Fragment, private val bundle: Bundle?) :
+    FragmentStateAdapter(fragment) {
+
+    private val categories = mutableListOf<String>()
+
+    override fun getItemCount(): Int = categories.size
+
+    fun setCategories(categoryList: List<String>) {
+        categories.clear()
+        categories.addAll(categoryList)
+        notifyDataSetChanged() // 카테고리가 업데이트되면 알림
+    }
+
+    override fun createFragment(position: Int): Fragment {
+        val category = categories[position]
+        return ConsumerMenuFragment.newInstance(category, bundle) // 카테고리별로 Fragment 생성
+    }
+
+    fun getCategoryTitle(position: Int): String = categories[position]
+}
