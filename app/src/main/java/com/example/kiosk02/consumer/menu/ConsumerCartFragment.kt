@@ -66,32 +66,43 @@ class ConsumerCartFragment : Fragment() {
         }
 
         binding.toOrderButton.setOnClickListener {
-            // Firestore에서 해당 테이블의 select 컬렉션 존재 여부 확인
-            val selectDocRef = firestore.collection("admin")
-                .document(Aemail!!)
-                .collection("floors")
-                .document(selectedFloor!!)
-                .collection("tables")
-                .document(selectedTableId!!)
-                .collection("select")
-                .document(Uemail!!)
+            val orderType = arguments?.getString("orderType") ?: "unknown"
 
-            selectDocRef.get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        // select 컬렉션이 존재하면 주문 진행
-                        placeOrder()
-                        navigationViewModel.setNavigated(true)
-                    } else {
-                        // select 컬렉션이 없으면 ConsumerTableFragment로 이동
-                        Toast.makeText(requireContext(), "테이블 정보가 없습니다. 테이블을 다시 선택해주세요.", Toast.LENGTH_SHORT).show()
-                        findNavController().navigate(R.id.action_to_table_Select_Fragment, arguments)
+            if (orderType == "for_here") {
+                // Firestore에서 해당 테이블의 select 컬렉션 존재 여부 확인
+                val selectDocRef = firestore.collection("admin")
+                    .document(Aemail!!)
+                    .collection("floors")
+                    .document(selectedFloor!!)
+                    .collection("tables")
+                    .document(selectedTableId!!)
+                    .collection("select")
+                    .document(Uemail!!)
+
+                selectDocRef.get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            // select 컬렉션이 존재하면 주문 진행
+                            placeOrder()
+                            navigationViewModel.setNavigated(true)
+                        } else {
+                            // select 컬렉션이 없으면 ConsumerTableFragment로 이동
+                            val updatedArguments = arguments?.let {
+                                val newBundle = Bundle(it)
+                                newBundle.remove("selectedTableId") // selectedTableId 제거
+                                newBundle
+                            }
+
+                            findNavController().navigate(R.id.action_to_table_Select_Fragment, updatedArguments)
+                        }
                     }
-                }
-                .addOnFailureListener { exception ->
-                    Log.e("ConsumerCartFragment", "Firestore 조회 중 오류 발생", exception)
-                    Toast.makeText(requireContext(), "테이블 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
-                }
+                    .addOnFailureListener { exception ->
+                        Log.e("ConsumerCartFragment", "Firestore 조회 중 오류 발생", exception)
+                    }
+            }else{
+                placeOrder()
+                navigationViewModel.setNavigated(true)
+            }
         }
     }
 
