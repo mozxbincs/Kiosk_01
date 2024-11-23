@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/mainFragment"> <!-- 기본 시작 목적지로 설정 -->
+
 
 
     <fragment
         android:id="@+id/adminFragment"
         android:name="com.example.kiosk02.admin.AdminFragment"
-        android:label="Admin Fragment"
-        tools:layout="@layout/fragment_admin" />
-
+        android:label="Admin Fragment" />
+    <action
+        android:id="@+id/action_to_adminFragment"
+        app:destination="@id/adminFragment" />
     <fragment
         android:id="@+id/findEmailAdminFragment"
         android:name="com.example.kiosk02.admin.FindEmailAdminFragment"
@@ -27,11 +28,7 @@
     <fragment
         android:id="@+id/adminActivity"
         android:name="com.example.kiosk02.admin.AdminActivity"
-        android:label="관리자 로그인">
-        <action
-            android:id="@+id/action_adminActivity_to_accountFragment2"
-            app:destination="@id/accountFragment" />
-    </fragment>
+        android:label="관리자 로그인" />
     <fragment
         android:id="@+id/adminSignFragment"
         android:name="com.example.kiosk02.admin.AdminSignFragment"
@@ -44,73 +41,7 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.example.kiosk02.MainFragment"
-        android:label="Main Fragment"
-        tools:layout="@layout/fragment_main" />
-
-    <fragment
-        android:id="@+id/showEmailAdminFragment"
-        android:name="com.example.kiosk02.admin.ShowEmailAdminFragment"
-        android:label="ShowEmailAdminFragment" />
-
-
-    <fragment
-        android:id="@+id/adminMenuListFragment"
-        android:name="com.example.kiosk02.admin.menu.data.AdminMenuListFragment"
-        android:label="AdminMenuListFragment"
-        tools:layout="@layout/fragment_admin_menu_list"/>
-
-    <fragment
-        android:id="@+id/editMenuFragment"
-        android:name="com.example.kiosk02.admin.menu.data.EditMenuFragment"
-        android:label="EditMenuFragment"
-        tools:layout="@layout/fragment_edit_menu">
-        <argument
-            android:name="menuModel"
-            app:argType="com.example.kiosk02.admin.menu.data.MenuModel"
-            app:nullable="true"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/manageCategoriesFragment"
-        android:name="com.example.kiosk02.admin.menu.data.ManageCategoriesFragment"
-        android:label="ManageCategoriesFragment"
-        tools:layout="@layout/fragment_manage_categories"/>
-
-    <fragment
-        android:id="@+id/menuListFragment"
-        android:name="com.example.kiosk02.admin.menu.data.MenuListFragment"
-        android:label="MenuListFragment"
-        tools:layout="@layout/fragment_menu_list"/>
-
-    <fragment
-        android:id="@+id/ConsumerMenuList"
-        android:name="com.example.kiosk02.consumer.menu.ConsumerMenuListFragment"
-        android:label="ConsumerMenuList"
-        tools:layout="@layout/fragment_consumer_menu_list"/>
-
-    <fragment
-        android:id="@+id/ConsumerOrderFragment"
-        android:name="com.example.kiosk02.consumer.menu.ConsumerOrderFragment"
-        android:label="ConsumerOrderFragment"
-        tools:layout="@layout/fragment_consumer_order_fragment"/>
-
-    <fragment
-        android:id="@+id/ConsumerCartFragment"
-        android:name="com.example.kiosk02.consumer.menu.ConsumerCartFragment"
-        android:label="ConsumerCartFragment"
-        tools:layout="@layout/fragment_consumer_cart"/>
-
-    <fragment
-        android:id="@+id/AdminOrderStatusFragment"
-        android:name="com.example.kiosk02.admin.orderStatus.AdminOrderStatusFragment"
-        android:label="AdminOrderStatusFragment"
-        tools:layout="@layout/item_admin_order_status"/>
-
-
-    <action
-        android:id="@+id/action_to_adminFragment"
-        app:destination="@id/adminFragment" />
-
+        android:label="Main Fragment" />
     <action
         android:id="@+id/action_to_mainFragment"
         app:destination="@id/mainFragment" />
@@ -134,132 +65,9 @@
         android:id="@+id/action_to_admin_activity"
         app:destination="@id/adminActivity" />
 
+
     <action
         android:id="@+id/action_to_add_inform_activity"
         app:destination="@id/addInformActivity" />
-
-    <action
-        android:id="@+id/action_to_show_email_admin"
-        app:destination="@id/showEmailAdminFragment" />
-    <fragment
-        android:id="@+id/adminInformActivity"
-        android:name="com.example.kiosk02.admin.AdminInformActivity"
-        android:label="AdminInformActivity" />
-    <activity
-        android:id="@+id/searchStoreActivity"
-        android:name="com.example.kiosk02.map.SearchStoreActivity"
-        android:label="activity_search_store"
-        tools:layout="@layout/activity_search_store"/>
-
-    <action
-        android:id="@+id/action_to_admin_inform"
-        app:destination="@id/adminInformActivity" />
-    <fragment
-        android:id="@+id/consumerSignFragment"
-        android:name="com.example.kiosk02.ConsumerSignFragment"
-        android:label="ConsumerSignFragment" />
-
-    <action
-        android:id="@+id/action_to_mainActivity"
-        app:destination="@id/mainFragment" />
-
-    <action
-        android:id="@+id/action_to_fragment_consumer_sig"
-        app:destination="@id/consumerSignFragment" />
-
-    <action
-        android:id="@+id/action_to_activity_search_store"
-        app:destination="@id/searchStoreActivity" />
-    <fragment
-        android:id="@+id/orderMethodFragment"
-        android:name="com.example.kiosk02.OrderMethodFragment"
-        android:label="OrderMethodFragment" />
-
-    <action
-        android:id="@+id/action_to_OderMethod"
-        app:destination="@id/orderMethodFragment" />
-
-    <action
-        android:id="@+id/action_to_admin_menu_list_fragment"
-        app:destination="@id/adminMenuListFragment" />
-
-    <action
-        android:id="@+id/action_to_edit_menu_fragment"
-        app:destination="@id/editMenuFragment"/>
-
-    <action
-        android:id="@+id/action_to_manage_categories_fragment"
-        app:destination="@id/manageCategoriesFragment"/>
-
-    <action
-        android:id="@+id/action_to_ConsumerMenuList"
-        app:destination="@id/ConsumerMenuList" />
-
-    <action
-        android:id="@+id/action_to_ConsumerOrderFragment"
-        app:destination="@id/ConsumerOrderFragment"/>
-
-    <action
-        android:id="@+id/action_to_ConsumerCartFragment"
-        app:destination="@id/ConsumerCartFragment"/>
-
-    <fragment
-        android:id="@+id/tableEditFragment"
-        android:name="com.example.kiosk02.admin.tables.TableManagementEditFragment"
-        android:label="ShowEmailAdminFragment" />
-    <action
-        android:id="@+id/action_to_table_Edit_Fragment"
-        app:destination="@id/tableEditFragment" />
-
-    <fragment
-        android:id="@+id/tableSelectFragment"
-        android:name="com.example.kiosk02.consumer.ConsumerTableFragment"
-        android:label="소비자테이블클릭" />
-    <action
-        android:id="@+id/action_to_table_Select_Fragment"
-        app:destination="@id/tableSelectFragment" />
-    <fragment
-        android:id="@+id/findEmailConsumerFragment"
-        android:name="com.example.kiosk02.FindEmailConsumerFragment"
-        android:label="FindEmailConsumerFragment" />
-
-    <action
-        android:id="@+id/action_to_findEmailConsumerFragment"
-        app:destination="@id/findEmailConsumerFragment" />
-
-    <fragment
-        android:id="@+id/findPasswordConsumerFragment"
-        android:name="com.example.kiosk02.FindPasswordConsumerFragment"
-        android:label="FindPasswordConsumerFragment" />
-
-    <action
-        android:id="@+id/action_to_findPasswordFragment"
-        app:destination="@id/findPasswordConsumerFragment" />
-    <fragment
-        android:id="@+id/accountFragment"
-        android:name="com.example.kiosk02.accountFragment"
-        android:label="accountFragment" />
-    <fragment
-        android:id="@+id/paycheckFragment"
-        android:name="com.example.kiosk02.admin.tables.PayCheckActivity"
-        android:label="PaycheckFragment" />
-
-    <action
-        android:id="@+id/action_to_paycheckFragment"
-        app:destination="@id/paycheckFragment" />
-
-    <action
-        android:id="@+id/action_to_admin_order_StatusFragment"
-        app:destination="@id/AdminOrderStatusFragment"/>
-
-    <fragment
-        android:id="@+id/pickupFragment"
-        android:name="com.example.kiosk02.OrderMethodFragment"
-        android:label="pickup" />
-
-    <action
-        android:id="@+id/action_to_pickupFragment"
-        app:destination="@id/pickupFragment" />
-
 
 </navigation>
