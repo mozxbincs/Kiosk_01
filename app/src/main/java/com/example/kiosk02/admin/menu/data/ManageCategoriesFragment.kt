@@ -10,7 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.kiosk02.AddCategoryDialogFragment
 import com.example.kiosk02.R
+import com.example.kiosk02.admin.DeleteCategoryDialogFragment
 import com.example.kiosk02.databinding.FragmentManageCategoriesBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -139,21 +141,10 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
     }
 
     private fun showAddCategoryDialog() {
-        val input = EditText(requireContext())
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("카테고리 추가")
-            .setView(input)
-            .setPositiveButton("추가") { dialog, _ ->
-                val categoryName = input.text.toString().trim()
-                if (categoryName.isEmpty()) {
-                    Snackbar.make(binding.root, "카테고리명을 입력해주세요.", Snackbar.LENGTH_SHORT).show()
-                } else {
-                    addCategory(categoryName)
-                }
-                dialog.dismiss()
-            }
-            .setNegativeButton("취소", null)
-            .show()
+        val dialog = AddCategoryDialogFragment { categoryName ->
+            addCategory(categoryName)
+        }
+        dialog.show(parentFragmentManager, "AddCategoryDialogFragment")
     }
 
     private fun addCategory(categoryName: String) {
@@ -181,16 +172,12 @@ class ManageCategoriesFragment : Fragment(R.layout.fragment_manage_categories) {
             }
     }
 
+
     private fun showDeleteCategoryDialog(category: String) {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("카테고리 삭제")
-            .setMessage("카테고리 '$category'를 삭제하시겠습니까?")
-            .setPositiveButton("삭제") { dialog, _ ->
-                deleteCategory(category)
-                dialog.dismiss()
-            }
-            .setNegativeButton("취소", null)
-            .show()
+        val dialog = DeleteCategoryDialogFragment(category) {
+            deleteCategory(category)
+        }
+        dialog.show(parentFragmentManager, "DeleteCategoryDialogFragment")
     }
 
     private fun deleteCategory(category: String) {
