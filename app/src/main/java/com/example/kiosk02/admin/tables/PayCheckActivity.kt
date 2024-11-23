@@ -277,52 +277,36 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         // 커스텀 레이아웃을 사용하는 다이얼로그 설정
         val view = layoutInflater.inflate(R.layout.dialog_receipt, null)
 
-        val statusButton = view.findViewById<Button>(R.id.status_button)  // 미착석/착석 버튼
-        val statusTextView = view.findViewById<TextView>(R.id.status_text) // 상태 표시 TextView
-        var isSeated = false  // 착석 여부 초기값
-        var status = "미착석"  // 초기 상태: 미착석
+        val statusButton = view.findViewById<Button>(R.id.status_button)
+        val statusTextView = view.findViewById<TextView>(R.id.status_text)
+        val orderDetailsTextView = view.findViewById<TextView>(R.id.order_details)
 
-        statusTextView.text = status  // 상태 표시 초기값
+        var isSeated = false
+        var status = "미착석"
+
+        statusTextView.text = status
 
         // Firestore에서 기존 상태 불러오기
         consumerEmail?.let {
             checkIfTableIsSelected(Aemail, floorId, tableId) { isTableSelected, _ ->
-                if (isTableSelected) {
-                    status = "착석"
-                    isSeated = true
-                    statusTextView.text = status
-                } else {
-                    status = "미착석"
-                    isSeated = false
-                    statusTextView.text = status
-                }
+                status = if (isTableSelected) "착석" else "미착석"
+                isSeated = isTableSelected
+                statusTextView.text = status
             }
 
-            // Firestore에서 확인 여부 상태 불러오기
             checkIfConfirmed(Aemail, floorId, tableId, it) { isConfirmed ->
-                if (isConfirmed) {
-                    // 이미 확인을 눌렀으면 버튼 비활성화
-                    statusButton.isEnabled = false
-                }
+                if (isConfirmed) statusButton.isEnabled = false
             }
         }
 
         // 상태 변경 버튼 클릭 시
         statusButton.setOnClickListener {
-            if (status == "미착석") {
-                status = "착석"  // 상태 변경
-                isSeated = true
-            } else {
-                status = "미착석"  // 상태 변경
-                isSeated = false
-            }
-            statusTextView.text = status  // 상태 텍스트 변경
+            status = if (status == "미착석") "착석" else "미착석"
+            isSeated = !isSeated
+            statusTextView.text = status
         }
 
-        builder.setView(view)
-        builder.setTitle("영수증")
-
-        // 주문 내역 처리
+        // 주문 내역 동적 생성
         val stringBuilder = StringBuilder()
         var totalAmountSum = 0
         for (order in orderItems) {
@@ -337,67 +321,38 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
         }
         stringBuilder.append("\n전체 총 금액: $totalAmountSum 원")
 
-        builder.setMessage(stringBuilder.toString())
+        // 주문 내역을 TextView에 설정
+        orderDetailsTextView.text = stringBuilder.toString()
+
+        builder.setView(view)
 
         builder.setPositiveButton("확인") { dialog, _ ->
-            // 상태 변경 시
             consumerEmail?.let { email ->
                 if (isSeated) {
-                    // 착석 상태일 때 Firestore에 상태 저장
                     updateTableSelection(Aemail, floorId, tableId, email, isSeated)
                 } else {
-                    // 미착석 상태일 때 예약 삭제(이메일 삭제)
-                    //비동기적으로 작동하므로 서로 충돌 발생-> 순서를 real->database로
-//                    removeOrderData(Aemail, tableId)
-//            removeTableSelection(Aemail, floorId, tableId, email)
-
-// 미착석 상태에서 확인 버튼 클릭 시 호출
                     removeDataSequentially(Aemail, floorId, tableId, email)
-
-
                 }
-
-                // 확인 후 상태 변경 버튼 비활성화
-                updateConfirmationStatus(Aemail, floorId, tableId, email, true)  // 확인 상태를 true로 업데이트
-                statusButton.isEnabled = false  // 상태 변경 버튼 비활성화
+                updateConfirmationStatus(Aemail, floorId, tableId, email, true)
+                statusButton.isEnabled = false
             }
-            dialog.dismiss() // 다이얼로그 종료
+            dialog.dismiss()
         }
 
         builder.setNegativeButton("취소") { dialog, _ ->
-            dialog.dismiss() // 취소 버튼 클릭 시 다이얼로그 종료
+            dialog.dismiss()
         }
 
         builder.setNeutralButton("결제하기") { dialog, _ ->
-            // 결제하기 버튼 클릭 시 처리
-            if(!statusButton.isEnabled){
-                saveTableDataToFirestore(Aemail, tableId, consumerEmail!!,floorId)
-
-                dialog.dismiss() // 결제 후 다이얼로그 종료
-            }
-        else{
+            if (!statusButton.isEnabled) {
+                saveTableDataToFirestore(Aemail, tableId, consumerEmail!!, floorId)
+                dialog.dismiss()
+            } else {
                 Toast.makeText(requireContext(), "착석 상태를 확인해야 결제 가능합니다.", Toast.LENGTH_SHORT).show()
             }
         }
-//  removeDataSequentially(Aemail, floorId, tableId, email)
-        // 다이얼로그 생성 후 버튼 텍스트 변경
+
         val dialog = builder.create()
-        dialog.setOnShowListener {
-            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            val neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-
-            // 상태에 따라 버튼 텍스트 변경
-            if (status == "착석") {
-                positiveButton.text = "결제하기"
-                neutralButton.visibility = View.GONE  // "결제하기" 버튼만 보이도록 설정
-                positiveButton.setOnClickListener {
-
-
-                    dialog.dismiss()
-                }
-            }
-        }
-
         dialog.show()
     }
 
