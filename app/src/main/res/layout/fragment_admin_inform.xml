@@ -96,7 +96,7 @@
         android:backgroundTint="#FF9F32"
         android:enabled="false"
         android:text="추가등록완료"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/AddInformFloor"
         app:layout_constraintVertical_bias="0.195"

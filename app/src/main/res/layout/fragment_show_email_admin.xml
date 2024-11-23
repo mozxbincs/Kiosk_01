@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:backgroundTint="#FF9F32"
         android:text="로그인하러 가기"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:background="@drawable/button_shape"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

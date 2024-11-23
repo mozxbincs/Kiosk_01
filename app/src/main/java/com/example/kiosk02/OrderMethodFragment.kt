@@ -12,8 +12,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.kiosk02.databinding.ActivityAdminSignBinding
 import com.example.kiosk02.databinding.FragmentOrderMethodBinding
 import com.example.kiosk02.map.SearchStoreActivity
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
+
+
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 

@@ -94,7 +94,6 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="로그아웃"
-        android:textStyle="bold"
         android:background="@drawable/button_shape"
         android:textColor="@color/black"
         android:backgroundTint="#FF9F32"

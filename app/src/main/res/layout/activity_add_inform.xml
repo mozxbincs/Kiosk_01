@@ -106,7 +106,7 @@
         android:id="@+id/AddInformFinish"
         android:enabled="false"
         android:text="회원가입"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:layout_marginHorizontal="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
