@@ -7,12 +7,14 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 
 import com.example.kiosk02.databinding.ActivityMainBinding
+import com.example.kiosk02.map.SearchStoreActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 
@@ -46,26 +48,23 @@ class MainActivity : AppCompatActivity() {
         }
 
         // 관리자 버튼 클릭 리스너 설정
-        findViewById<Button>(R.id.admin_button).setOnClickListener {
+        findViewById<ImageButton>(R.id.admin_button).setOnClickListener {
             navController.navigate(R.id.adminFragment) // 관리자 화면으로 이동
         }
 
-        findViewById<Button>(R.id.guest_use_button).setOnClickListener {
-            navController.navigate(R.id.action_to_ConsumerMenuList)
-        }
         /*
         findViewById<Button>(R.id.login_button).setOnClickListener {
             val email = findViewById<EditText>(R.id.email_input).text.toString()
             val password = findViewById<EditText>(R.id.password_input).text.toString()
             LoginToFirebase(email, password)
-        }
+        }*/
 
         findViewById<Button>(R.id.sign_up_button).setOnClickListener {
             navController.navigate(R.id.action_to_fragment_consumer_sig)
         }
-        */
+
     }
-/*
+    /*
     private fun LoginToFirebase(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -77,5 +76,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-    }*/
+    }
+    */
 }
