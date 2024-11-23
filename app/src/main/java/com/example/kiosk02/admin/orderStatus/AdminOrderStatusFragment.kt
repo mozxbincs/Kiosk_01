@@ -85,8 +85,8 @@ class AdminOrderStatusFragment : Fragment(R.layout.fragment_admin_order_status) 
     }
 
     private fun loadOrderStatus() {
-        // 테이블 ID를 순회하며 데이터를 가져옴
-        ordersReference.addListenerForSingleValueEvent(object : ValueEventListener {
+        // 테이블 ID를 순회하며 데이터를 실시간으로 가져옴
+        ordersReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 ordersList.clear() // 기존 주문 리스트 초기화
 
