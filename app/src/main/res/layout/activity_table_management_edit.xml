@@ -12,11 +12,11 @@
         android:orientation="horizontal"
         android:padding="16dp">
 
-        <TextView
+        <ImageView
             android:id="@+id/selected_floor_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="[층 선택]"
+          android:src="@drawable/baseline_stairs_24"
             android:layout_gravity="center_vertical"/>
 
 
@@ -26,26 +26,31 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
 
-        <Button
+        <ImageButton
             android:textColor="@color/black"
 
             android:id="@+id/add_floor_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
             android:background="@drawable/button_shape"
-            android:backgroundTint="#C3D0D9"
-            android:text=" (+)"/>
+            android:backgroundTint="#FF9F32"
+            android:src="@drawable/baseline_add_24"
+         />
 
-        <Button
+        <ImageButton
             android:textColor="@color/black"
-            android:layout_marginStart="10dp"
-            android:backgroundTint="#C3D0D9"
-            android:id="@+id/remove_floor_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/button_shape"
 
-            android:text="(-)"/>
+            android:id="@+id/remove_floor_button"
+            android:layout_width="40dp"
+            android:layout_height="30dp"
+            android:background="@drawable/button_shape"
+            android:backgroundTint="#FF9F32"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/baseline_remove_24"
+            />
+
+
+
     </LinearLayout>
 
 
@@ -54,18 +59,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+
         android:padding="16dp">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
 
+            android:gravity="center"
 
-
-        <TextView
             android:id="@+id/other_seater_text"
+            android:padding="1dp">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_table_bar_24" />
+        <TextView
+
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:padding="7dp"
             android:text="테이블 생성" />
+
+
+
+        </LinearLayout>
     </LinearLayout>
 
 
@@ -84,14 +104,15 @@
 
 
 
-            <Button
+            <ImageButton
                 android:textColor="@color/black"
-                android:backgroundTint="#303EC2"
+
                 android:id="@+id/delete_table_button"
-                android:layout_width="wrap_content"
+                android:layout_width="40sp"
+                android:backgroundTint="#FF9F32"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_shape"
-                android:text="삭제"/>
+             android:src="@drawable/baseline_clear_24"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -121,6 +142,7 @@
         android:padding="16dp"
         android:gravity="start">
         <TextView
+            android:layout_marginTop="30dp"
             android:textColor="@color/black"
             android:backgroundTint="@color/navy01"
             android:id="@+id/back_activity_admin"
@@ -128,16 +150,33 @@
             android:layout_height="wrap_content"
             android:drawableLeft="@drawable/baseline_arrow_back_24"/>
 
-        <Button
-            android:background="@drawable/button_shape"
-            android:textColor="@color/black"
-            android:backgroundTint="#A6C9D9"
-            android:id="@+id/remove_table_button"
+
+
+
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="200dp"
-            android:text="테이블 제거"/>
+            android:layout_marginStart="250dp"
+            android:gravity="center"
 
+            android:id="@+id/remove_table_button"
+            android:padding="1dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_restore_from_trash_24" /> <!-- 이미지 추가 -->
+
+            <TextView
+                android:text="테이블 제거"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="8dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </LinearLayout>

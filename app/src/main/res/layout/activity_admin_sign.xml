@@ -126,9 +126,11 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="10dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/navy01"
+            android:backgroundTint="#FF9F32"
+            android:background="@drawable/button_shape"
+
             android:text="회원가입 및 상호 등록 완료"
-            android:textColor="@color/black" />
+            android:textColor="@color/white" />
 
     </LinearLayout>
 </LinearLayout>

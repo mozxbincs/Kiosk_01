@@ -81,8 +81,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
 
-        android:backgroundTint="#35609F"
-
+        android:backgroundTint="#FF9F32"
+        android:background="@drawable/button_shape"
         android:text="이메일 찾기"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
