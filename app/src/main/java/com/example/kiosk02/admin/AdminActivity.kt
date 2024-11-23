@@ -36,6 +36,7 @@ class AdminActivity : Fragment(R.layout.activity_admin) {
         view.findViewById<ImageButton>(R.id. paymentCheckButton).setOnClickListener {
             findNavController().navigate(R.id.action_to_paycheckFragment)
         }
+
     }
 
 
