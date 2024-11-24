@@ -284,7 +284,7 @@ class ConsumerTableFragment : Fragment(R.layout.activity_consumer_table) {
             // 테이블이 선택된 상태에서 예약자와 현재 사용자를 확인
             if (selectedTableId == tableId) {
                 // 현재 사용자가 선택한 테이블 -> 선택 취소 가능
-                tableView.alpha = 0.7f
+                tableView.alpha = 0.5f
                 tableView.setOnClickListener {
                     deselectTable(tableId)
                 }

@@ -156,9 +156,9 @@ class PayCheckActivity : Fragment(R.layout.activity_paycheck) {
 
         // 테이블 색상 설정
         if (isSelected) {
-            tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.blue01))  // 예약된 테이블 색상
+            tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.Red))  // 예약된 테이블 색상
         } else {
-            tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.yellow))  // 예약되지 않은 테이블 색상
+            tableView.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.Green))  // 예약되지 않은 테이블 색상
         }
 
 
