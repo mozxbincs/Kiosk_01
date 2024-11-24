@@ -14,7 +14,8 @@
     <color name="gray01" >#708090</color>
     <color name="navy02" >#d3d3d3</color>
     <color name="lightGray">#A1A3A5</color>
-
+    <color name="Green">#3CC041</color>
+    <color name="Red">#FF4336</color>
     <color name="gray02" >#FFDDDDDD</color>
     <color name="defaultBackground">#FEF7FF</color>
 

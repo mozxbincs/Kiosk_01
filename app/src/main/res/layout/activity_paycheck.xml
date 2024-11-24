@@ -68,14 +68,43 @@
         android:orientation="horizontal"
         android:padding="16dp"
         android:gravity="start">
+
+        <!-- 뒤로 가기 버튼 -->
         <TextView
             android:textColor="@color/black"
             android:backgroundTint="@color/navy01"
             android:id="@+id/back_activity_admins"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableLeft="@drawable/baseline_arrow_back_24"/>
+            android:drawableLeft="@drawable/baseline_arrow_back_24" />
 
+        <!-- 초록색 사각형 (예약 안된 테이블) -->
+        <View
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:background="@color/Green" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="예약 안된 테이블"
+            android:textColor="@color/black" />
+
+        <!-- 빨간색 사각형 (예약된 테이블) -->
+        <View
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="16dp"
+            android:background="@color/Red" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="예약된 테이블"
+            android:textColor="@color/black" />
     </LinearLayout>
+
 </LinearLayout>
